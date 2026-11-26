@@ -63,6 +63,7 @@ export function createSkyDome() {
   mesh.frustumCulled = false;
   mesh.renderOrder = -10;
   mesh.name = 'sky';
+  mesh.userData.farRangeOnly = true;
   return {
     mesh,
     follow(camera) {

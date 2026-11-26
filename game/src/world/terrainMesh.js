@@ -217,7 +217,10 @@ float tNoise(vec2 p) {
 }`)
       .replace('#include <color_fragment>', `#include <color_fragment>
 float macroNoise = tNoise(vTerrainWorld.xz * 0.0045) * 0.55 + tNoise(vTerrainWorld.xz * 0.017) * 0.3 + tNoise(vTerrainWorld.xz * 0.09) * 0.15;
-diffuseColor.rgb *= 0.84 + 0.3 * macroNoise;`);
+diffuseColor.rgb *= 0.84 + 0.3 * macroNoise;
+// Wet, darker sand in the metre above the waterline, so every coast has a crisp edge.
+float wetSand = smoothstep(1.5, 0.2, vTerrainWorld.y) * smoothstep(-1.2, 0.0, vTerrainWorld.y);
+diffuseColor.rgb *= mix(vec3(1.0), vec3(0.7, 0.66, 0.6), wetSand);`);
   };
   const mesh = new THREE.Mesh(geometry, material);
   mesh.receiveShadow = true;

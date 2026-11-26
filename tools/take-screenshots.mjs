@@ -2,10 +2,13 @@
 // ?shot= URL from shots.json in desktop Chrome at 1280x800, waits for window.__shotReady and saves
 // a JPEG through the DevTools Protocol, lowering the quality until the file fits the size budget.
 // Then it builds tmp/contact-sheet.jpg the way the judge sees the entry (cover 768x480 on top,
-// the others small beneath) for review.
-//   node tools/take-screenshots.mjs [--only=1-cover.jpg] [--budget=235000]
+// the others small beneath) for review. --review also renders the review-only scenes (the
+// shoreline from high and low, night and storm) to tmp/review-*.jpg, without touching screenshots/.
+//   node tools/take-screenshots.mjs [--only=1-cover.jpg] [--budget=235000] [--review]
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { launchChrome, openPage, sleep } from './cdp.mjs';
+
+const REVIEW_SCENES = ['coast-high', 'coast-low', 'night', 'storm'];
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => {
   const [k, ...v] = a.replace(/^--/, '').split('=');
@@ -18,7 +21,19 @@ mkdirSync('tmp', { recursive: true });
 
 const chrome = await launchChrome({ port: 9335 });
 try {
+  if (args.review) {
+    for (const scene of REVIEW_SCENES) {
+      const page = await openPage(chrome.port, `http://localhost:8080/?shot=${scene}`);
+      await page.waitFor('window.__shotReady === true', 60000);
+      await sleep(400);
+      writeFileSync(`tmp/review-${scene}.jpg`, await page.screenshot({ quality: 85 }));
+      const errors = page.consoleMessages.filter((m) => m.type === 'error' || m.type === 'exception');
+      console.log(`tmp/review-${scene}.jpg${errors.length ? `, console errors: ${errors.map((e) => e.text).join(' | ')}` : ''}`);
+      page.close();
+    }
+  }
   for (const shot of shots) {
+    if (args.review && !args.only) break;
     if (args.only && args.only !== shot.name) continue;
     const page = await openPage(chrome.port, `http://localhost:8080/${shot.query}`);
     try {

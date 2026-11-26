@@ -76,6 +76,15 @@ export function stageScreenshot(name, game) {
     game.controls.controls.throttle = 0.32;
     run(game, 3);
   }
+  if (name === 'coast-high' || name === 'coast-low') {
+    // Shoreline review scenes (not in shots.json): a shallow look along Marenza's south coast,
+    // from 1100 m and from 120 m, where land and sea used to flicker through each other.
+    const high = name === 'coast-high';
+    game.startMission(null);
+    session.simulation.start(session.spec, { x: -4600, y: high ? 1100 : 120, z: 4700, heading: 64, pitch: 0, speed: 60, flaps: 0, throttle: 0.62, gearDown: false }, { birds: false });
+    game.controls.controls.throttle = 0.62;
+    run(game, 1.5);
+  }
   if (game.state === 'flying') game.feedHud(0, true);
   game.render();
   return new Promise((resolve) => {

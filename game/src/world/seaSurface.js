@@ -26,6 +26,8 @@ uniform vec3 uSky;
 uniform vec3 uHorizon;
 uniform sampler2D uHeightTex;
 uniform float uWorldHalf;
+uniform float uGridStep;
+uniform float uGridN;
 varying vec3 vWorld;
 #include <common>
 #include <fog_pars_fragment>
@@ -55,11 +57,18 @@ void main() {
   float dist = length(cameraPosition - vWorld);
   vec3 n = seaNormal(p, uTime, dist);
   vec3 viewDir = normalize(cameraPosition - vWorld);
-  vec2 uv = (p + uWorldHalf) / (2.0 * uWorldHalf);
+  // Texel centres sit on the terrain's grid vertices; red holds -64..64 m, green -8..8 m finely.
+  vec2 uv = ((p + uWorldHalf) / uGridStep + 0.5) / uGridN;
   float ground = -60.0;
-  if (uv.x > 0.0 && uv.x < 1.0 && uv.y > 0.0 && uv.y < 1.0) ground = texture2D(uHeightTex, uv).r * 128.0 - 64.0;
+  if (uv.x > 0.0 && uv.x < 1.0 && uv.y > 0.0 && uv.y < 1.0) {
+    vec4 heights = texture2D(uHeightTex, uv);
+    float coarse = heights.r * 128.0 - 64.0;
+    ground = abs(coarse) < 7.0 ? heights.g * 16.0 - 8.0 : coarse;
+  }
   float depth = max(0.0, -ground);
   vec3 water = mix(uShallow, uDeep, smoothstep(0.6, 26.0, depth));
+  // The sand shows through the first metre or two of water.
+  water = mix(water, mix(uShallow, vec3(0.78, 0.74, 0.55), 0.55), smoothstep(2.2, 0.2, depth) * 0.5);
   water = mix(water, uDeep * 0.6, uStorm * 0.5);
   float facing = max(dot(n, viewDir), 0.0);
   float fresnel = 0.03 + 0.97 * pow(1.0 - facing, 5.0);
@@ -69,10 +78,14 @@ void main() {
   vec3 halfway = normalize(uSunDir + viewDir);
   float glitter = pow(max(dot(n, halfway), 0.0), 320.0) * 4.0 + pow(max(dot(n, halfway), 0.0), 40.0) * 0.18;
   col += uSunColor * glitter * (1.0 - uStorm * 0.8);
-  float foamZone = smoothstep(2.4, 0.15, depth) * step(ground, 0.8);
+  // Foam: a steady white wash where the sea meets the sand (seen from any height) and rolling
+  // surf lines over the shallows close up.
   float ripple = sin(p.x * 0.33 + uTime * 1.4) * sin(p.y * 0.29 - uTime * 1.15) * 0.5 + 0.5;
-  float surf = smoothstep(0.55, 1.0, sin(depth * 2.6 - uTime * 1.6) * 0.5 + 0.5);
-  col = mix(col, vec3(0.93, 0.95, 0.94), foamZone * (0.25 + 0.55 * max(ripple, surf)) * (1.0 - smoothstep(900.0, 3500.0, dist)));
+  float lap = 0.5 + 0.5 * sin(depth * 2.6 - uTime * 1.6 + ripple * 1.5);
+  float waterline = smoothstep(0.8, 0.05, depth) * (0.62 + 0.3 * ripple);
+  float surf = smoothstep(2.6, 0.5, depth) * smoothstep(0.62, 1.0, lap) * 0.55 * (1.0 - smoothstep(900.0, 3500.0, dist));
+  float foamLight = clamp(dot(uSky, vec3(0.3, 0.5, 0.2)) * 5.0, 0.2, 1.0);
+  col = mix(col, vec3(0.93, 0.95, 0.94) * foamLight, max(waterline, surf) * step(ground, 1.5));
   gl_FragColor = vec4(col, 1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -80,15 +93,16 @@ void main() {
 }
 `;
 
-/** Packs the terrain heights near sea level into a texture the sea shader can read. */
+/** Packs the terrain heights into a texture the sea shader can read: red spans -64..64 m for
+ * the water colour by depth, green -8..8 m in 6 cm steps for the shoreline foam. */
 function createHeightTexture(terrain) {
   const { n, heights } = terrain;
   const data = new Uint8Array(n * n * 4);
+  const pack = (h, low, span) => Math.max(0, Math.min(255, Math.round(((h - low) / span) * 255)));
   for (let i = 0; i < n * n; i += 1) {
-    const v = Math.max(0, Math.min(255, Math.round(((heights[i] + 64) / 128) * 255)));
-    data[i * 4] = v;
-    data[i * 4 + 1] = v;
-    data[i * 4 + 2] = v;
+    data[i * 4] = pack(heights[i], -64, 128);
+    data[i * 4 + 1] = pack(heights[i], -8, 16);
+    data[i * 4 + 2] = 0;
     data[i * 4 + 3] = 255;
   }
   const texture = new THREE.DataTexture(data, n, n, THREE.RGBAFormat, THREE.UnsignedByteType);
@@ -114,6 +128,8 @@ export function createSeaSurface(terrain) {
       uHorizon: { value: new THREE.Color('#ffd2a6') },
       uHeightTex: { value: null },
       uWorldHalf: { value: terrain.half },
+      uGridStep: { value: terrain.step },
+      uGridN: { value: terrain.n },
     },
   ]);
   uniforms.uHeightTex.value = createHeightTexture(terrain);
