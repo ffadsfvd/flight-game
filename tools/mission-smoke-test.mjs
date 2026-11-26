@@ -30,8 +30,11 @@ const DRIVER = String.raw`(async (id) => {
     const b = () => s.body;
     if (kind === 'takeoff') {
       c.throttle = 1;
+      if (s.body.flapSetting > 1) s.body.flapSetting = 1;
       for (let i = 0; i < 60 * 60 && g.runner.objective === o && g.state === 'flying'; i += 1) {
-        c.pitch = b().airspeed > b().spec.vRotate ? (b().agl < 30 ? 0.55 : 0.25) : 0;
+        const v = b().airspeed;
+        const vr = b().spec.vRotate;
+        c.pitch = v > vr ? (v < vr * 1.2 ? 0.3 : b().agl < 30 ? 0.45 : 0.22) : 0;
         c.roll = 0;
         step();
       }
@@ -98,7 +101,13 @@ const DRIVER = String.raw`(async (id) => {
           step(60 * 9);
         }
         const [fx, fz] = t.fires[pass % t.fires.length];
-        place({ x: fx - 150, y: ground(fx, fz) + 45, z: fz, heading: 90, speed: 42, throttle: 0.85, gearDown: false, flaps: 1 });
+        // Run in along the slope's contour so the ground stays level under the drop.
+        const slope = g.world.terrain.normalAt(fx, fz, new THREE.Vector3());
+        let hx = -slope.z;
+        let hz = slope.x;
+        const across = Math.hypot(hx, hz);
+        if (across > 0.03) { hx /= across; hz /= across; } else { hx = 1; hz = 0; }
+        place({ x: fx - hx * 150, y: ground(fx, fz) + 45, z: fz - hz * 150, heading: (THREE.MathUtils.radToDeg(Math.atan2(hx, -hz)) + 360) % 360, speed: 42, throttle: 0.85, gearDown: false, flaps: 1 });
         s.body.water = s.body.water;
         c.throttle = 0.85;
         const holdY = ground(fx, fz) + 45;

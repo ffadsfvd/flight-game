@@ -30,6 +30,7 @@ import { createSoundEffects } from '../audio/soundEffects.js';
 import { createMusicLoop } from '../audio/musicLoop.js';
 import { createEffectsDirector } from '../effects/effectsDirector.js';
 import { createGlidePathGates } from '../effects/glidePathGates.js';
+import { createTowBanner } from '../effects/towBanner.js';
 import { hasSavedCareer, loadCareer, saveCareer, clearCareer } from '../save/saveStore.js';
 import { approachPlacement, createFlightSession, runwayPlacement } from './flightSession.js';
 import { createFlightEventHandler } from './flightEventHandler.js';
@@ -78,6 +79,11 @@ export function createGameDirector({ view, world, shotMode = false }) {
   let landingsThisFlight = [];
   let menuReturn = 'title';
   let flashLevel = 0;
+  let banner = null;
+  const dropBanner = () => {
+    banner?.dispose();
+    banner = null;
+  };
   const flashEl = document.createElement('div');
   flashEl.style.cssText = 'position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity 0.25s';
   document.body.appendChild(flashEl);
@@ -125,6 +131,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
   function showTitle() {
     state = 'title';
     runner.stop();
+    dropBanner();
     hud.show(false);
     gates.set(null);
     effects.setRain(0);
@@ -152,6 +159,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
 
   function showBoard() {
     state = 'menu';
+    dropBanner();
     if (audio.ready) music.start();
     router.show('screen-mission-board', missionBoardHtml(career), {
       brief: (id) => showBriefing(missionById(id)),
@@ -304,6 +312,11 @@ export function createGameDirector({ view, world, shotMode = false }) {
     const freeStart = (FREE_STARTS.find((s) => s.id === settings.freeStart) ?? FREE_STARTS[0]).start;
     const placement = placementFor(def?.start ?? freeStart, spec, world);
     session.start(id, upgrades, placement, { birds: settings.birdStrikes && !shotMode, fuelFraction: def?.fuel ?? 1 });
+    dropBanner();
+    if (def?.banner) {
+      banner = createTowBanner(def.banner);
+      session.rig.root.add(banner.group);
+    }
     session.body.payload = def?.payload ?? 0;
     session.body.flightAssist = settings.flightAssist;
     controls.mouse.state.sensitivity = 0.0045 * settings.mouseSensitivity;
@@ -454,6 +467,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     } else if (state === 'flying') {
       updateFlying(dt, actionsOverride);
       focus = session.body.position;
+      banner?.update(time);
     } else {
       controls.update(dt, false);
       session.update(dt, time, light.lightsOn, false);

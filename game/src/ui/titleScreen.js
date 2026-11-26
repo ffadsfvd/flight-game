@@ -8,7 +8,7 @@ import { featureCounts, careerRank } from '../career/careerProgress.js';
 export function titleScreenHtml(career, hasSave) {
   const c = featureCounts();
   const islands = ISLANDS.filter((i) => i.rx > 1000).length;
-  const features = `${c.missions} missions · ${c.aircraft} aircraft · ${AIRFIELDS.length} airfields · ${islands} islands · career & logbook`;
+  const features = `${c.missions} missions in ${c.chapters} chapters · ${c.aircraft} aircraft · ${AIRFIELDS.length} airfields · ${islands} islands · medals & logbook`;
   const rank = career ? careerRank(career) : null;
   const passed = career ? Object.values(career.missions).filter((m) => m.passed).length : 0;
   return `
