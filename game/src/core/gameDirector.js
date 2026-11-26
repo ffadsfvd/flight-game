@@ -18,7 +18,7 @@ import { briefingHtml } from '../ui/briefingScreen.js';
 import { hangarHtml } from '../ui/hangarScreen.js';
 import { logbookHtml } from '../ui/logbookScreen.js';
 import { controlsHelpHtml } from '../ui/controlsHelp.js';
-import { settingsHtml } from '../ui/settingsScreen.js';
+import { settingsHtml, FREE_STARTS } from '../ui/settingsScreen.js';
 import { pauseMenuHtml } from '../ui/pauseMenu.js';
 import { resultsHtml } from '../ui/resultsScreen.js';
 import { paintPortrait } from '../ui/portraitPainter.js';
@@ -221,11 +221,12 @@ export function createGameDirector({ view, world, shotMode = false }) {
     menuReturn = from;
     const refresh = () => {
       router.show('screen-settings', settingsHtml(settings), handlers);
-      const select = document.querySelector('#screen-settings select[data-setting]');
-      select?.addEventListener('change', () => {
-        settings.timeOfDay = select.value;
-        save();
-      });
+      for (const select of document.querySelectorAll('#screen-settings select[data-setting]')) {
+        select.addEventListener('change', () => {
+          settings[select.dataset.setting] = select.value;
+          save();
+        });
+      }
     };
     const clamp = (v) => Math.max(0, Math.min(1.5, Math.round(v * 10) / 10));
     const handlers = {
@@ -299,7 +300,8 @@ export function createGameDirector({ view, world, shotMode = false }) {
     effects.clearMissionEffects();
     effects.setRain(light.storm ? 1 : 0);
     const spec = tunedSpec(id, upgrades);
-    const placement = placementFor(def?.start ?? { type: 'runway', field: 'marenza', end: 1 }, spec, world);
+    const freeStart = (FREE_STARTS.find((s) => s.id === settings.freeStart) ?? FREE_STARTS[0]).start;
+    const placement = placementFor(def?.start ?? freeStart, spec, world);
     session.start(id, upgrades, placement, { birds: settings.birdStrikes && !shotMode, fuelFraction: def?.fuel ?? 1 });
     session.body.payload = def?.payload ?? 0;
     session.body.flightAssist = settings.flightAssist;
@@ -377,7 +379,11 @@ export function createGameDirector({ view, world, shotMode = false }) {
       flightEvents.handleNotices(session.handleActions(actions));
       const simEvents = session.update(dt, time, light.lightsOn, true);
       flightEvents.handleSim(simEvents, session.body);
-      for (const e of simEvents) if (e.kind === 'landed') landingsThisFlight.push(e.report);
+      for (const e of simEvents) {
+        if (e.kind === 'landed') landingsThisFlight.push(e.report);
+        if (e.kind === 'refuelled') career.money = Math.max(0, career.money - e.kg * 2);
+        if (e.kind === 'refuel-full') save();
+      }
       const result = runner.update(dt, simEvents, actions);
       if (result) ending = { result, timer: result.severity === 'crash' ? 2.6 : 1.6 };
     }

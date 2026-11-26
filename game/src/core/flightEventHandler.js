@@ -29,6 +29,10 @@ export function createFlightEventHandler({ effects, sfx, hud, radioFor }) {
           hud.toast(e.text.toUpperCase(), 'bad');
         } else if (e.kind === 'refuel-full') {
           hud.toast('TANKS FULL', 'good');
+        } else if (e.kind === 'engine-out') {
+          sfx.play('engine-fail');
+          hud.toast('ENGINE FAILURE', 'bad');
+          if (e.cause !== 'a broken crankshaft') hud.radio.say(radioFor('warn'), `Engine failure: ${e.cause}. Best glide speed, pick the nearest field and commit.`, { priority: true });
         } else if (e.kind === 'ended') {
           if (e.result.severity === 'crash') {
             effects.burst('crash', body.position);

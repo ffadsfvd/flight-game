@@ -76,7 +76,9 @@ export function createAircraftSimulation(world, wind) {
   function stepOnce(controls, events) {
     const body = sim.body;
     const before = body.position.clone();
+    const wasRunning = body.engine.running;
     stepAircraft(body, world, wind, controls, PHYSICS_STEP);
+    if (wasRunning && !body.engine.running) events.push({ kind: 'engine-out', cause: body.engine.failureCause });
     sim.distance += before.distanceTo(body.position);
     if (!body.onGround) sim.flightTime += PHYSICS_STEP;
     for (const e of stepDamage(body, sim.damage, PHYSICS_STEP)) events.push(e);

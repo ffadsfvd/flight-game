@@ -2,10 +2,10 @@
 // every mission, the logbook and the settings, with the rules for unlocking and buying.
 import { AIRCRAFT, UPGRADES, aircraftById } from '../aircraft/aircraftCatalog.js';
 import { CHAPTERS, MISSIONS } from '../missions/missionCatalog.js';
-import { rankIndexFor, rankProgress } from './pilotRanks.js';
+import { RANKS, rankIndexFor, rankProgress } from './pilotRanks.js';
 import { createLogbook, logFlight } from './pilotLogbook.js';
 
-export const DEFAULT_SETTINGS = { invertPitch: false, flightAssist: true, volume: 0.8, music: 0.5, mouseSensitivity: 1, birdStrikes: true, timeOfDay: 'golden', quality: 'high' };
+export const DEFAULT_SETTINGS = { invertPitch: false, flightAssist: true, volume: 0.8, music: 0.5, mouseSensitivity: 1, birdStrikes: true, timeOfDay: 'golden', freeStart: 'marenza-27', quality: 'high' };
 
 /** A brand new career. */
 export function createCareer() {
@@ -27,7 +27,7 @@ export function aircraftAvailability(career, id) {
   const spec = aircraftById(id);
   if (career.owned.includes(id)) return { owned: true, canBuy: false, reason: 'Owned' };
   const rank = rankIndexFor(career.xp);
-  if (rank < spec.unlockRank) return { owned: false, canBuy: false, reason: `Needs rank ${spec.unlockRank + 1}` };
+  if (rank < spec.unlockRank) return { owned: false, canBuy: false, reason: `Needs ${RANKS[spec.unlockRank].name}` };
   if (career.money < spec.price) return { owned: false, canBuy: false, reason: `${spec.price} cr` };
   return { owned: false, canBuy: true, reason: `Buy ${spec.price} cr` };
 }
