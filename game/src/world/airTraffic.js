@@ -56,14 +56,25 @@ export function trafficRoutes(terrain) {
   ];
 }
 
-/** Aircraft waiting on the ground with engines running: [field, aircraft, livery, registration, along, across]. */
-const HOLDING = [['marenza', 'pelican', 'solvaraAir', 'SV-655', -862, 56]];
+/** Aircraft waiting on the ground with engines running: [field, aircraft, livery, registration, along, across, heading]. */
+const HOLDING = [['marenza', 'pelican', 'solvaraAir', 'SV-655', -862, 58, 32]];
 
 function sprayPlume() {
+  // A soft cone of droplets streaming back from the wing, thick at the spray bar and fading out.
   const geometry = new THREE.ConeGeometry(5.5, 26, 14, 1, true);
   geometry.rotateX(-Math.PI / 2);
   geometry.translate(0, -1.1, 13 + 1.5);
-  const material = new THREE.MeshBasicMaterial({ color: '#f4f7f0', transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide, fog: true });
+  const canvas = document.createElement('canvas');
+  canvas.width = 4;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  const g = ctx.createLinearGradient(0, 0, 0, 64);
+  g.addColorStop(0, 'rgba(255,255,255,0.55)');
+  g.addColorStop(0.35, 'rgba(255,255,255,0.22)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 4, 64);
+  const material = new THREE.MeshBasicMaterial({ color: '#eef3ea', map: new THREE.CanvasTexture(canvas), transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: true });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.name = 'crop-spray';
   return mesh;
@@ -83,7 +94,7 @@ export function createAirTraffic(scene, terrain) {
     const curve = new THREE.CatmullRomCurve3(route.points, true, 'centripetal', 0.5);
     return { route, rig, curve, spray, length: curve.getLength(), distance: route.phase * curve.getLength(), bank: 0, lastHeading: null };
   });
-  const holding = HOLDING.map(([fieldId, aircraft, livery, registration, along, across]) => {
+  const holding = HOLDING.map(([fieldId, aircraft, livery, registration, along, across, heading]) => {
     const field = airfieldById(fieldId);
     const rig = buildAircraftModel(aircraft, { livery: TRAFFIC_LIVERIES[livery], registration });
     rig.root.traverse((o) => {
@@ -92,7 +103,7 @@ export function createAirTraffic(scene, terrain) {
     const p = fromRunwayFrame(field, along, across * field.apronSide);
     const lowest = Math.min(...rig.spec.gear.map((g) => g[1])) - rig.spec.wheelRadius;
     rig.root.position.set(p.x, field.elevationResolved - lowest + 0.05, p.z);
-    rig.root.rotation.set(0, -THREE.MathUtils.degToRad(field.heading - 90 * field.apronSide), 0);
+    rig.root.rotation.set(0, -THREE.MathUtils.degToRad(heading), 0);
     scene.add(rig.root);
     return { rig, field };
   });
@@ -145,7 +156,7 @@ export function createAirTraffic(scene, terrain) {
       }
       for (const h of holding) {
         spinProps(h.rig, dt);
-        h.rig.lights.update(time, false, 0.6);
+        h.rig.lights.update(time, true, 0.6);
       }
     },
   };

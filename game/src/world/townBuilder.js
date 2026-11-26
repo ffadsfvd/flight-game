@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { createSeededRandom } from '../core/seededRandom.js';
 import { mergeColoredParts } from '../core/geometryMerge.js';
 import { ROADS, TOWNS } from './archipelagoMap.js';
-import { airfieldAt } from './airfieldDirectory.js';
+import { AIRFIELDS, airfieldAt, toRunwayFrame } from './airfieldDirectory.js';
 import { createLightBatch } from './lightPoints.js';
 import { createBuildingMaterials } from './buildingTextures.js';
 
@@ -259,6 +259,17 @@ function seaDirection(terrain, town) {
   return best;
 }
 
+/** True inside the cleared strip under a runway's approach lights, where nothing is built. */
+function underApproachLights(x, z) {
+  for (const field of AIRFIELDS) {
+    if (!field.approachLights) continue;
+    const p = toRunwayFrame(field, x, z);
+    const beyond = Math.abs(p.along) - field.length / 2;
+    if (beyond > 0 && beyond < 1000 && Math.abs(p.across) < 55) return true;
+  }
+  return false;
+}
+
 /** Builds towns and roads on the terrain; returns the group, the building grid and a query. */
 export function buildTowns(terrain) {
   const group = new THREE.Group();
@@ -300,6 +311,7 @@ export function buildTowns(terrain) {
     if (h < 2.2 || h > 220) return null;
     if (terrain.normalAt(x, z, normal).y < 0.9) return null;
     if (airfieldAt(x, z, 60)) return null;
+    if (underApproachLights(x, z)) return null;
     return h;
   };
 
@@ -413,7 +425,7 @@ export function buildTowns(terrain) {
     }
 
     // Streets between the blocks, only where houses line them, kept off water and runways.
-    const keep = (x, z) => terrain.heightAt(x, z) > 1.2 && !airfieldAt(x, z, 20) && clashes(x, z, 14);
+    const keep = (x, z) => terrain.heightAt(x, z) > 1.2 && !airfieldAt(x, z, 20) && !underApproachLights(x, z) && clashes(x, z, 14);
     for (let k = -n - 1; k <= n; k += 1) {
       const c = (k + 0.5) * pitch;
       if (Math.abs(c) >= town.radius) continue;

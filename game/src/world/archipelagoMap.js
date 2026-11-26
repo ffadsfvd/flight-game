@@ -62,7 +62,8 @@ export const PLAINS = [
 export const TOWNS = [
   { id: 'porto-celeste', name: 'Porto Celeste', island: 'marenza', x: -350, z: 3450, radius: 480, buildings: 900, flatten: 6, city: true, harbour: true },
   { id: 'san-telmo', name: 'San Telmo', island: 'marenza', x: 1150, z: 3000, radius: 360, buildings: 360, flatten: 4, harbour: true },
-  { id: 'marina-sabbia', name: 'Marina Sabbia', island: 'marenza', x: -3180, z: 3370, radius: 250, buildings: 220, flatten: 0, harbour: true },
+  { id: 'marina-sabbia', name: 'Marina Sabbia', island: 'marenza', x: -3480, z: 3140, radius: 290, buildings: 300, flatten: 0, harbour: true },
+  { id: 'casale-vento', name: 'Casale Vento', island: 'marenza', x: -3620, z: 2700, radius: 210, buildings: 160, flatten: 0, stone: 0.35 },
   { id: 'nordelle', name: 'Nordelle', island: 'marenza', x: -2000, z: -1250, radius: 380, buildings: 260, flatten: 0, stone: 0.45, slate: 0.35 },
   { id: 'ventara', name: 'Ventara', island: 'lumeno', x: 4350, z: 3950, radius: 330, buildings: 220, flatten: 0, harbour: true },
   { id: 'orsa-harbour', name: 'Orsa Harbour', island: 'orsa', x: -4900, z: -2500, radius: 220, buildings: 110, flatten: 0, harbour: true, stone: 0.5 },

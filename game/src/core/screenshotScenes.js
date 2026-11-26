@@ -108,15 +108,20 @@ export function stageScreenshot(name, game) {
   }
   if (name === 'duster' || name === 'seaplane') {
     // Traffic review scenes (not in shots.json): the crop duster spraying north of Marenza, and
-    // the Heron seaplane touching down on Lumeno Lagoon.
+    // the Heron seaplane touching down on Lumeno Lagoon, seen from just behind them.
     game.startMission(null);
     const duster = name === 'duster';
-    game.traffic.place(duster ? 'Crop duster' : 'Lagoon seaplane', duster ? 0.06 : 0.16);
-    const at = duster ? { x: -2750, y: 70, z: 2330, heading: 80 } : { x: 2600, y: 110, z: 2900, heading: 70 };
-    session.simulation.start(session.spec, { ...at, pitch: 0, speed: 45, flaps: 0, throttle: 0.55, gearDown: false }, { birds: false });
-    game.controls.controls.throttle = 0.55;
-    Object.assign(game.cameras.chaseFraming, { height: 1.4, distance: 1.1, lookAhead: 80, lookUp: -14, yaw: 0.3, fov: 50 });
-    run(game, 1.0);
+    const route = duster ? 'Crop duster' : 'Lagoon seaplane';
+    const u = duster ? 0.06 : 0.2;
+    game.traffic.place(route, u);
+    const flyer = game.traffic.flyers.find((f) => f.route.name === route);
+    const at = flyer.curve.getPointAt(u);
+    const dir = flyer.curve.getTangentAt(u);
+    const heading = (THREE.MathUtils.radToDeg(Math.atan2(dir.x, -dir.z)) + 360) % 360;
+    session.simulation.start(session.spec, { x: at.x - dir.x * 70 + dir.z * 25, y: at.y + 28, z: at.z - dir.z * 70 - dir.x * 25, heading, pitch: 0, speed: flyer.route.speed, flaps: 1, throttle: 0.5, gearDown: false }, { birds: false });
+    game.controls.controls.throttle = 0.5;
+    Object.assign(game.cameras.chaseFraming, { height: 1.2, distance: 1.0, lookAhead: 70, lookUp: -20, yaw: 0.25, fov: 50 });
+    run(game, 0.5);
   }
   if (name === 'coast-high' || name === 'coast-low') {
     // Shoreline review scenes (not in shots.json): a shallow look along Marenza's south coast,
