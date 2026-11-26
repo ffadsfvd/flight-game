@@ -11,7 +11,8 @@ const tmp2 = new THREE.Vector3();
 /** Creates the effects director for a scene and the world's emitters. */
 export function createEffectsDirector(scene, worldEmitters) {
   const smoke = createParticleSystem(scene, { max: 3200, name: 'smoke' });
-  const fire = createParticleSystem(scene, { max: 1400, additive: true, name: 'fire' });
+  const fire = createParticleSystem(scene, { max: 1600, name: 'fire' });
+  const sparks = createParticleSystem(scene, { max: 600, additive: true, name: 'sparks' });
   const water = createParticleSystem(scene, { max: 1800, name: 'water' });
   const fires = [];
   const flares = [];
@@ -106,7 +107,8 @@ export function createEffectsDirector(scene, worldEmitters) {
           const a = random() * Math.PI * 2;
           const r = Math.sqrt(random()) * f.radius;
           const hot = random();
-          fire.emit(f.x + Math.cos(a) * r, f.y + 2.5, f.z + Math.sin(a) * r, 0, 3.5 + random() * 6, 0, { life: 0.8 + random() * 0.9, size: 4 + random() * 6, grow: 2.5, alpha: 0.55 + hot * 0.25, color: [1, 0.3 + hot * 0.3, 0.05 + hot * 0.06], drag: 0.6, lift: 2.5 });
+          fire.emit(f.x + Math.cos(a) * r, f.y + 2.5, f.z + Math.sin(a) * r, 0, 3.5 + random() * 6, 0, { life: 0.9 + random() * 0.9, size: 6 + random() * 8, grow: 3, alpha: 0.85, color: [1, 0.36 + hot * 0.34, 0.06 + hot * 0.08], drag: 0.6, lift: 2.5 });
+          if (random() < 0.3) sparks.emit(f.x + Math.cos(a) * r, f.y + 3, f.z + Math.sin(a) * r, (random() - 0.5) * 3, 4 + random() * 6, (random() - 0.5) * 3, { life: 0.7, size: 2.5, grow: 0, alpha: 0.9, color: [1, 0.7, 0.3], drag: 1, lift: 1 });
         }
         if (random() < dt * 12 * f.intensity) {
           smoke.emit(f.x + (random() - 0.5) * f.radius, f.y + 10, f.z + (random() - 0.5) * f.radius, 0, 8 + random() * 4, 0, { life: 18, size: 12, grow: 8, alpha: 0.3, color: [0.46, 0.42, 0.38], drag: 0.25, lift: 0.4 });
@@ -132,6 +134,7 @@ export function createEffectsDirector(scene, worldEmitters) {
       updateAircraft(body, dt, smokeOn);
       smoke.update(dt, viewScale, wind);
       fire.update(dt, viewScale, wind);
+      sparks.update(dt, viewScale, wind);
       water.update(dt, viewScale, wind);
     },
   };

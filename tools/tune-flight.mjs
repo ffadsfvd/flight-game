@@ -17,12 +17,13 @@ try {
     const g = window.__solvara.game;
     const scripts = {
       takeoff: (t) => ({ throttle: 1, pitch: t > 9 ? 0.75 : 0, roll: 0, yaw: 0, brakes: 0 }),
+      rotate: (t) => ({ throttle: 1, pitch: t > 9.5 && t < 11.5 ? 0.7 : t >= 11.5 && t < 13 ? 0.15 : 0, roll: 0, yaw: 0, brakes: 0 }),
       climb: (t) => ({ throttle: 1, pitch: t > 9 && t < 14 ? 0.7 : t >= 14 ? 0.1 : 0, roll: 0, yaw: 0, brakes: 0 }),
       turn: (t) => ({ throttle: 0.8, pitch: t < 4 ? 0 : 0.25, roll: t > 2 && t < 3.2 ? 0.8 : 0, yaw: 0, brakes: 0 }),
       approach: (t) => ({ throttle: 0.3, pitch: 0, roll: 0, yaw: 0, brakes: 0 }),
       stall: (t) => ({ throttle: 0.1, pitch: t > 2 ? 1 : 0, roll: 0, yaw: 0, brakes: 0 }),
     };
-    const air = '${script}' !== 'takeoff' && '${script}' !== 'climb';
+    const air = !['takeoff', 'climb', 'rotate'].includes('${script}');
     g.startMission(null, '${aircraft}');
     const s = g.session;
     if (air) s.simulation.start(s.spec, { x: -1000, y: 400, z: 4500, heading: 90, speed: s.spec.vApproach * 1.4, flaps: 0, throttle: 0.7 }, { birds: false });

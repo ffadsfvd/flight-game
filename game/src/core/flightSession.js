@@ -29,7 +29,7 @@ export function approachPlacement(spec, fieldId, end, distance, { slope = 3, fla
   const p = fromRunwayFrame(field, along, offset);
   const ground = field.kind === 'water' ? 0 : field.elevationResolved;
   const y = ground + 12 + Math.tan(THREE.MathUtils.degToRad(slope)) * distance + height;
-  return { x: p.x, y, z: p.z, heading: dir.heading, pitch: -1, speed: spec.vApproach * 1.05, gearDown: field.kind !== 'water', flaps, throttle: 0.36 };
+  return { x: p.x, y, z: p.z, heading: dir.heading, pitch: -slope, speed: spec.vApproach * 1.05, gearDown: field.kind !== 'water', flaps, throttle: 0.36 };
 }
 
 /** Creates the session for a world, wind field, camera director and controls. */

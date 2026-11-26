@@ -205,11 +205,16 @@ export function stepAircraft(body, world, wind, controls, dt) {
   const alphaUp = spec.alphaStall * 1.08 - alphaTrim;
   const alphaDown = spec.alphaStall * 0.6 + alphaTrim;
   let alphaCmd = alphaTrim + (controls.pitch >= 0 ? controls.pitch * alphaUp : controls.pitch * alphaDown);
-  if (body.flightAssist && q > 50) {
+  if (body.flightAssist && !body.onGround && q > 30) {
+    // Flight assist in the air: the stick commands load factor. Centred it holds the flight path
+    // (1 G, more in a bank so turns stay level), forward or back asks for less or more G, and the
+    // wing is kept just short of the stall unless the stick is held fully back.
     const flapLift = spec.cl0 + spec.flapCl * body.flapPosition;
-    const alphaG = ((spec.gLimit * 0.92 * body.mass * G) / (q * spec.wingArea) - flapLift) / spec.clAlpha;
-    const alphaNeg = ((-spec.gLimit * 0.45 * body.mass * G) / (q * spec.wingArea) - flapLift) / spec.clAlpha;
-    alphaCmd = THREE.MathUtils.clamp(alphaCmd, alphaNeg, Math.max(alphaTrim, alphaG));
+    const bankRad = Math.min(1.13, THREE.MathUtils.degToRad(Math.abs(body.bank)));
+    const level = Math.abs(body.bank) < 100 ? 1 + 0.85 * (1 / Math.cos(bankRad) - 1) : 0.6;
+    const nCmd = controls.pitch >= 0 ? level + controls.pitch * (spec.gLimit * 0.9 - level) : level + controls.pitch * (level + spec.gLimit * 0.4);
+    alphaCmd = ((nCmd * body.mass * G) / (q * spec.wingArea) - flapLift) / spec.clAlpha;
+    alphaCmd = THREE.MathUtils.clamp(alphaCmd, -spec.alphaStall * 0.7, spec.alphaStall * (controls.pitch > 0.95 ? 1.12 : 0.96));
   }
   const alphaClamped = THREE.MathUtils.clamp(alpha, -0.7, 0.7);
   const pitchGain = spec.pitchStability * 2.6;
