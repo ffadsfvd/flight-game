@@ -26,16 +26,20 @@ export function stageScreenshot(name, game) {
     game.backdrop.setAngle(80);
     for (let i = 0; i < 240; i += 1) game.frame(STEP);
   } else if (name === 'cover') {
-    // Short final to runway 09 at Marenza International, coming in off the sea at golden hour:
-    // the beach, Porto Celeste and the Monte Aurio range ahead, seen from behind the right wing.
+    // Short final to runway 09 at Marenza International at golden hour, about 150 ft AGL and
+    // 640 m from the threshold on the 3° path, seen through a long lens from behind and a little
+    // to the left: the aircraft in the lower third, the approach lights leading to the runway
+    // with its edge lights, PAPI and markings, Porto Celeste and the hills beyond.
     game.startMission(missionById('first-solo'));
     game.runner.skipTo(2);
     const spec = session.spec;
-    session.simulation.start(spec, { ...approachPlacement(spec, 'marenza', 0, 1180, { flaps: 2, offset: -10, height: 0 }), bank: 8, throttle: 0.32 }, { birds: false });
+    session.simulation.start(spec, { ...approachPlacement(spec, 'marenza', 0, 640, { flaps: 2 }), bank: 4, throttle: 0.32 }, { birds: false });
     session.body.landingLights = true;
     game.controls.controls.throttle = 0.32;
-    Object.assign(game.cameras.chaseFraming, { height: 1.5, distance: 1.0, lookAhead: 10, lookUp: -1.5, yaw: -0.17 });
+    Object.assign(game.cameras.chaseFraming, { height: 2.6, distance: 3.4, lookAhead: 750, lookUp: -52, yaw: -0.1, fov: 24 });
     run(game, 1.6);
+    // The 3D glide-path frames would stand between the camera and the runway: hide them here.
+    game.runnerContext.scene.getObjectByName('glide-path-gates').visible = false;
     game.hud.radio.say('dario', 'SV-102, Marenza Tower, runway 09, wind 075 at 6, cleared to land.', { priority: true });
     game.hud.radio.hold();
     run(game, 0.4);

@@ -364,7 +364,7 @@ export function buildAirfields(terrain) {
   if (approachLights) group.add(approachLights);
 
   const papiBatch = createLightBatch();
-  for (const papi of papis) for (const l of papi.lights) papiBatch.add(l.x, l.y, l.z, RED, 3.6);
+  for (const papi of papis) for (const l of papi.lights) papiBatch.add(l.x, l.y, l.z, RED, 5.4);
   const papiPoints = papiBatch.build();
   papiPoints.material.userData.fixed = 1.4;
   group.add(papiPoints);

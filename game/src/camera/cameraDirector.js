@@ -70,7 +70,7 @@ export function createCameraDirector(camera) {
         camera.up.set(0, 1, 0);
         camera.lookAt(body.position);
       } else {
-        setFov(60);
+        setFov(chase.framing.fov ?? 60);
         chase.update(camera, body, spec, dt, world, look);
       }
       return null;
