@@ -99,10 +99,11 @@ export function stageScreenshot(name, game) {
     game.controls.controls.throttle = 0.62;
     run(game, 1.5);
   }
-  if (name === 'search' || name === 'platform' || name === 'nesta-strip' || name === 'coral-strip') {
+  if (name === 'search' || name === 'platform' || name === 'platform-night' || name === 'nesta-strip' || name === 'coral-strip') {
     // Mission review scenes (not in shots.json): the night search with the boat caught in the
-    // light, and short finals to the Sette platform, the Nesta mountain strip and Coral Keys.
-    const approach = { platform: ['sette-deck', 'sette', 1], 'nesta-strip': ['nesta-hut', 'nesta', 0], 'coral-strip': ['reef-doctor', 'coral', 0] }[name];
+    // light, and short finals to the Sette platform by day and night, the Nesta mountain strip
+    // and Coral Keys.
+    const approach = { platform: ['sette-deck', 'sette', 1], 'platform-night': ['sette-night', 'sette', 1], 'nesta-strip': ['nesta-hut', 'nesta', 0], 'coral-strip': ['reef-doctor', 'coral', 0] }[name];
     game.startMission(missionById(name === 'search' ? 'dark-water' : approach[0]));
     if (name === 'search') {
       session.simulation.start(session.spec, { x: 150, y: 75, z: -3900 + 380, heading: 0, pitch: -3, speed: 40, flaps: 1, throttle: 0.5 }, { birds: false });
@@ -126,6 +127,12 @@ export function stageScreenshot(name, game) {
     const at = name === 'orsa' ? { x: -7000, y: 380, z: -1800, heading: 47 } : { x: -1700, y: 620, z: -4250, heading: 62 };
     session.simulation.start(session.spec, { ...at, pitch: 0, speed: 60, flaps: 0, throttle: 0.62, gearDown: false }, { birds: false });
     game.controls.controls.throttle = 0.62;
+    run(game, 1.5);
+  }
+  if (name === 'terrace-takeoff') {
+    // Review scene (not in shots.json): lined up on the Nesta terrace for the rescue take-off.
+    game.startMission(missionById('off-the-mountain'));
+    Object.assign(game.cameras.chaseFraming, { height: 1.4, distance: 1.1, lookAhead: 20, lookUp: -1, yaw: 0.6 });
     run(game, 1.5);
   }
   if (name === 'ice' || name === 'ice-cockpit') {
