@@ -6,7 +6,7 @@ import { createKeyboardInput } from './keyboardInput.js';
 import { createMouseStick } from './mouseStick.js';
 
 export const ACTION_KEYS = {
-  KeyF: 'flaps', KeyG: 'gear', KeyC: 'camera', KeyL: 'lights', KeyR: 'refuel', KeyT: 'smoke', Space: 'action',
+  KeyF: 'flaps', KeyG: 'gear', KeyC: 'camera', KeyL: 'lights', KeyR: 'refuel', KeyT: 'smoke', Space: 'action', KeyI: 'antiIce',
   Escape: 'pause', KeyP: 'pause', KeyH: 'help', F1: 'help', KeyV: 'lookBack', KeyX: 'assist', Enter: 'confirm', KeyN: 'radio',
 };
 

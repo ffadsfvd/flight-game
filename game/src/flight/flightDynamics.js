@@ -5,6 +5,7 @@
 // stalled wing dropping, and the torques of the landing gear on the ground.
 import * as THREE from 'three';
 import { AIR_DENSITY, dragCoefficient, liftCoefficient, stallAmount } from './aerodynamics.js';
+import { iceDrag, iceLiftFactor, iceThrustFactor } from './icingModel.js';
 import { createEngineState, stepEngine } from './engineModel.js';
 import { computeGroundContact, createContactResult } from './groundContact.js';
 
@@ -146,9 +147,9 @@ export function stepAircraft(body, world, wind, controls, dt) {
   const heightAbove = body.position.y - groundBelow;
   const groundEffect = THREE.MathUtils.clamp(1 - heightAbove / spec.span, 0, 1);
   const wingDamage = 1 - body.airframe;
-  let cl = liftCoefficient(spec, alpha, body.flapPosition, wingDamage) * (1 + 0.1 * groundEffect);
+  let cl = liftCoefficient(spec, alpha, body.flapPosition, wingDamage) * (1 + 0.1 * groundEffect) * iceLiftFactor(body.ice ?? 0);
   const gearDrag = spec.gearRetracts ? body.gearPosition : 1;
-  const cd = dragCoefficient(spec, cl, alpha, body.flapPosition, gearDrag, wingDamage) - spec.inducedK * cl * cl * 0.4 * groundEffect;
+  const cd = dragCoefficient(spec, cl, alpha, body.flapPosition, gearDrag, wingDamage) - spec.inducedK * cl * cl * 0.4 * groundEffect + iceDrag(body.ice ?? 0);
   const stall = stallAmount(spec, alpha, body.flapPosition);
   body.stall = V > 8 ? stall : 0;
 
@@ -162,7 +163,7 @@ export function stepAircraft(body, world, wind, controls, dt) {
     aero.addScaledVector(vHat, -q * spec.wingArea * cd);
     aero.addScaledVector(r, -q * spec.wingArea * spec.sideArea * 0.6 * beta);
   }
-  const thrust = stepEngine(body.engine, spec, controls.throttle, V, dt);
+  const thrust = stepEngine(body.engine, spec, controls.throttle, V, dt) * iceThrustFactor(body);
   body.thrust = thrust;
   aero.addScaledVector(f, thrust);
   force.add(aero);

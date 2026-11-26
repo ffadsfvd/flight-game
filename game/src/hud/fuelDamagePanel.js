@@ -1,6 +1,6 @@
 // Fuel and condition: fuel in kilograms with minutes of endurance at the current power, engine
 // temperature against its red line, and the health of the engine, airframe and gear, plus the
-// cargo or water load when the mission carries one.
+// cargo or water load when the mission carries one and the ice load in icing conditions.
 
 function row(label, id) {
   return `<div class="sys-row"><label>${label}</label><div class="bar"><i data-id="${id}"></i></div><b data-id="${id}-v"></b></div>`;
@@ -12,14 +12,16 @@ function healthColor(v) {
 
 /** Creates the fuel and damage panel in its container. */
 export function createFuelDamagePanel(element) {
-  element.innerHTML = `<div class="panel-title">Fuel &amp; condition</div>${row('FUEL', 'fuel')}${row('ENG TEMP', 'temp')}${row('ENGINE', 'eng')}${row('AIRFRAME', 'air')}${row('GEAR', 'gear')}<div data-id="load-row">${row('LOAD', 'load')}</div>`;
+  element.innerHTML = `<div class="panel-title">Fuel &amp; condition</div>${row('FUEL', 'fuel')}${row('ENG TEMP', 'temp')}${row('ENGINE', 'eng')}${row('AIRFRAME', 'air')}${row('GEAR', 'gear')}<div data-id="ice-row">${row('ICE', 'ice')}</div><div data-id="load-row">${row('LOAD', 'load')}</div>`;
   const q = (id) => element.querySelector(`[data-id="${id}"]`);
   const el = {};
-  for (const id of ['fuel', 'temp', 'eng', 'air', 'gear', 'load']) {
+  for (const id of ['fuel', 'temp', 'eng', 'air', 'gear', 'ice', 'load']) {
     el[id] = q(id);
     el[`${id}V`] = q(`${id}-v`);
   }
   const loadRow = q('load-row');
+  const iceRow = q('ice-row');
+  iceRow.style.display = 'none';
   return {
     update(d, load) {
       el.fuel.style.width = `${Math.round(d.fuelFrac * 100)}%`;
@@ -33,6 +35,14 @@ export function createFuelDamagePanel(element) {
         el[id].style.width = `${Math.round(v * 100)}%`;
         el[id].style.background = healthColor(v);
         el[`${id}V`].textContent = `${Math.round(v * 100)}%`;
+      }
+      if (d.icingLevelFt !== null || d.ice > 0.01) {
+        iceRow.style.display = '';
+        el.ice.style.width = `${Math.max(2, Math.round(d.ice * 100))}%`;
+        el.ice.style.background = d.ice > 0.6 ? '#ff4d3d' : d.ice > 0.25 ? '#ffb02e' : '#bfe4ff';
+        el.iceV.textContent = d.ice > 0.01 ? `${Math.round(d.ice * 100)}%` : `FZL ${Math.round((d.icingLevelFt ?? 0) / 10) * 10}`;
+      } else {
+        iceRow.style.display = 'none';
       }
       if (load) {
         loadRow.style.display = '';

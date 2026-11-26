@@ -112,6 +112,9 @@ export function createFlightSession({ scene, world, wind, director, controls }) 
         } else if (action === 'lights') {
           body.landingLights = !body.landingLights;
           notices.push({ kind: 'lights', on: body.landingLights });
+        } else if (action === 'antiIce') {
+          body.antiIce = !body.antiIce;
+          notices.push({ kind: 'antiIce', on: body.antiIce });
         } else if (action === 'smoke') {
           body.smokeOn = !body.smokeOn;
           notices.push({ kind: 'smoke', on: body.smokeOn });

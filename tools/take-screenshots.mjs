@@ -8,7 +8,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { launchChrome, openPage, sleep } from './cdp.mjs';
 
-const REVIEW_SCENES = ['coast-high', 'coast-low', 'night', 'storm', 'orsa', 'nesta'];
+const REVIEW_SCENES = ['coast-high', 'coast-low', 'night', 'storm', 'orsa', 'nesta', 'ice', 'ice-cockpit'];
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => {
   const [k, ...v] = a.replace(/^--/, '').split('=');

@@ -1,6 +1,6 @@
 // Reacts to what just happened in flight: touchdowns kick up dust and thump, bounces and hard
-// landings get called out, bird strikes and failures come over the radio, cockpit switches click
-// and whirr, and a crash sets off the fireball.
+// landings get called out, bird strikes, failures and wing ice come over the radio, cockpit
+// switches click and whirr, and a crash sets off the fireball.
 
 const FPM_LIMIT_CALL = 450;
 
@@ -29,6 +29,11 @@ export function createFlightEventHandler({ effects, sfx, hud, radioFor }) {
           hud.toast(e.text.toUpperCase(), 'bad');
         } else if (e.kind === 'refuel-full') {
           hud.toast('TANKS FULL', 'good');
+        } else if (e.kind === 'icing') {
+          sfx.play('warning');
+          hud.toast('ICE ON THE WINGS', 'bad');
+          const fzl = Math.round((e.level * 3.281) / 10) * 10;
+          hud.radio.say(radioFor('coach'), body.antiIce ? `Ice is still building on the wings. Get down below the freezing level, ${fzl} ft, and keep your speed up.` : `Ice is building on the wings. Anti-ice on, that's I, or get below the freezing level at ${fzl} ft. Your stall speed is going up.`, { priority: true });
         } else if (e.kind === 'engine-out') {
           const planned = e.cause === 'a broken crankshaft' || e.cause === 'motor stopped for soaring';
           sfx.play(planned && e.cause !== 'a broken crankshaft' ? 'click' : 'engine-fail');
@@ -58,6 +63,7 @@ export function createFlightEventHandler({ effects, sfx, hud, radioFor }) {
           sfx.play('flaps');
           hud.toast(`FLAPS ${['UP', '15°', '35°'][n.setting] ?? n.setting}`);
         } else if (n.kind === 'lights') hud.toast(n.on ? 'LANDING LIGHTS ON' : 'LANDING LIGHTS OFF');
+        else if (n.kind === 'antiIce') hud.toast(n.on ? 'ANTI-ICE ON · 8% LESS POWER' : 'ANTI-ICE OFF', n.on ? 'good' : '');
         else if (n.kind === 'smoke') hud.toast(n.on ? 'SMOKE ON' : 'SMOKE OFF');
         else if (n.kind === 'assist') hud.toast(n.on ? 'FLIGHT ASSIST ON' : 'FLIGHT ASSIST OFF');
         else if (n.kind === 'refuel-start') hud.toast(`REFUELLING AT ${n.field.code}`, 'good');

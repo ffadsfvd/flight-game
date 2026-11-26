@@ -267,5 +267,7 @@ export function buildAircraftModel(id) {
     if (o.isMesh && o.material && !o.material.transparent) o.castShadow = true;
   });
 
-  return { id, root, exterior, surfaces, prop, jet, gearLegs, lights, cockpitAnchor, design, spec };
+  // The painted skins whitened by the animator as rime ice builds on the airframe.
+  const iceMaterials = [skin, surface, tipMaterial, tailSkin, fuselageMaterial];
+  return { id, root, exterior, surfaces, prop, jet, gearLegs, lights, cockpitAnchor, design, spec, iceMaterials };
 }

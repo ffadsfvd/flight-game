@@ -72,7 +72,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
   const music = createMusicLoop(audio);
   const hud = createHudController(world.terrain, { onRadio: () => sfx.play('radio') });
   const router = createScreenRouter(SCREENS, () => sfx.play('click'));
-  const flightEvents = createFlightEventHandler({ effects, sfx, hud, radioFor: () => 'dario' });
+  const flightEvents = createFlightEventHandler({ effects, sfx, hud, radioFor: (kind) => (kind === 'coach' && mission?.giver) || 'dario' });
   const backdrop = createTitleBackdrop(session, cameras, view.camera);
   const readout = createReadout();
   const cockpits = new Map();
@@ -93,6 +93,10 @@ export function createGameDirector({ view, world, shotMode = false }) {
   const flashEl = document.createElement('div');
   flashEl.style.cssText = 'position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity 0.25s';
   document.body.appendChild(flashEl);
+  const frostEl = document.createElement('div');
+  frostEl.id = 'windscreen-frost';
+  frostEl.style.cssText = 'position:fixed;inset:0;opacity:0;pointer-events:none;background:radial-gradient(ellipse 60% 54% at 50% 36%, rgba(225,236,248,0) 50%, rgba(222,234,247,0.6) 78%, rgba(240,247,255,0.9) 100%);-webkit-mask-image:linear-gradient(to bottom,#000 50%,transparent 66%);mask-image:linear-gradient(to bottom,#000 50%,transparent 66%)';
+  document.getElementById('hud').before(frostEl);
 
   const ctx = {
     get body() {
@@ -324,7 +328,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     const spec = tunedSpec(id, upgrades);
     const freeStart = (FREE_STARTS.find((s) => s.id === settings.freeStart) ?? FREE_STARTS[0]).start;
     const placement = placementFor(def?.start ?? freeStart, spec, world);
-    session.start(id, upgrades, placement, { birds: settings.birdStrikes && !shotMode, fuelFraction: def?.fuel ?? 1 });
+    session.start(id, upgrades, placement, { birds: settings.birdStrikes && !shotMode, fuelFraction: def?.fuel ?? 1, icing: def?.icing ?? null });
     dropBanner();
     if (def?.banner) {
       banner = createTowBanner(def.banner);
@@ -428,7 +432,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     } else {
       gates.set(null);
     }
-    updateReadout(readout, body, controls.controls, { ...guidanceExtras(guidance), refuelling: session.refuelling });
+    updateReadout(readout, body, controls.controls, { ...guidanceExtras(guidance), refuelling: session.refuelling, icing: session.simulation.icing });
     const rank = careerRank(career);
     hud.update({
       readout,
@@ -448,6 +452,8 @@ export function createGameDirector({ view, world, shotMode = false }) {
     const cockpit = cockpitFor(session.rig);
     cockpit.visible = cameras.view === 'cockpit';
     cockpit.update(readout, controls.controls, dt, { landingLights: body.landingLights, clock: light.clock });
+    // Rime creeping in from the edges of the windscreen as ice builds (cockpit view only).
+    frostEl.style.opacity = cameras.view === 'cockpit' && state !== 'results' ? Math.min(0.95, readout.ice * 1.3).toFixed(2) : '0';
     flightSounds.update(state === 'flying' && !ending, readout, hud.warnings, time);
   }
 
@@ -494,6 +500,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
       flashEl.style.opacity = String(flashLevel);
       flashLevel = Math.max(0, flashLevel - dt * 3);
     } else flashEl.style.opacity = '0';
+    if (state !== 'flying' && state !== 'paused') frostEl.style.opacity = '0';
     effects.update(dt, viewScale, wind.state.current, state === 'flying' ? session.body : null, view.camera, session.body?.smokeOn);
     traffic.update(dt, time);
     world.update(time, wind.state.current, focus, view.camera, view.viewHeight);

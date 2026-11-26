@@ -1,6 +1,6 @@
 // Cockpit warnings worked out from the flight state: STALL, PULL UP (terrain closing fast), LOW
 // FUEL, OVERSPEED, OVERHEAT, ENGINE OUT, GEAR UP on a low approach, FLAPS beyond their speed,
-// BANK ANGLE and over-G. Returns the active list so the HUD and the sound can both use it.
+// ICING, BANK ANGLE and over-G. Returns the active list so the HUD and the sound can both use it.
 
 /** The warnings active for a readout: [{ id, text, level: 'warn'|'danger' }]. */
 export function activeWarnings(d, { approachActive = false, runwayApproach = false } = {}) {
@@ -21,6 +21,7 @@ export function activeWarnings(d, { approachActive = false, runwayApproach = fal
   if (d.gearRetracts && runwayApproach && !d.gearDown && d.aglFt < 600 && d.vsFpm < -150) list.push({ id: 'gear', text: 'GEAR UP', level: 'danger' });
   if (d.gearRetracts && approachActive && !runwayApproach && d.gearDown && d.aglFt < 600) list.push({ id: 'gear', text: 'GEAR DOWN ON WATER', level: 'danger' });
   if (d.flaps > 0.05 && d.kt > d.vfeKt) list.push({ id: 'flaps', text: 'FLAP SPEED', level: 'warn' });
+  if (d.ice > 0.25) list.push({ id: 'ice', text: d.ice > 0.6 ? 'HEAVY ICE' : 'ICING', level: d.ice > 0.6 ? 'danger' : 'warn' });
   if (Math.abs(d.bank) > 60) list.push({ id: 'bank', text: 'BANK ANGLE', level: 'warn' });
   if (d.gForce > 4.5) list.push({ id: 'g', text: `${d.gForce.toFixed(1)} G`, level: 'warn' });
   return list;

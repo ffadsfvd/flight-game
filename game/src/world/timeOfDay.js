@@ -1,6 +1,6 @@
-// Times of day and weather as lighting presets: golden hour (the default), midday, dusk, night and
-// storm. One preset drives the sun, the sky, the sea, the fog and the exposure together, so terrain
-// and sky always share one light.
+// Times of day and weather as lighting presets: golden hour (the default), midday, dusk, night,
+// storm and a grey cold front. One preset drives the sun, the sky, the sea, the fog and the
+// exposure together, so terrain and sky always share one light.
 import * as THREE from 'three';
 
 const PRESETS = {
@@ -33,6 +33,12 @@ const PRESETS = {
     hemiSky: '#8a96a8', hemiGround: '#4a4a45', hemiIntensity: 1.1, fogColor: '#7d8794', fogDensity: 0.00024,
     skyZenith: '#4d5a6c', skyHorizon: '#8b95a3', skySunGlow: 0.15, seaDeep: '#1c3442', seaShallow: '#3d6c70',
     exposure: 1.05, night: 0.2, storm: 1, lightsOn: 1,
+  },
+  cold: {
+    label: 'Cold front', clock: '15:20', sunAzimuth: 205, sunElevation: 19, sunColor: '#e4e9f0', sunIntensity: 1.9,
+    hemiSky: '#a3b4c9', hemiGround: '#5a5850', hemiIntensity: 1.15, fogColor: '#aab6c4', fogDensity: 0.00011,
+    skyZenith: '#566d8c', skyHorizon: '#bfc9d4', skySunGlow: 0.35, seaDeep: '#173a52', seaShallow: '#3f8088',
+    exposure: 1.0, night: 0.05, storm: 0, lightsOn: 0.5, warmth: 0.2,
   },
 };
 
@@ -70,6 +76,7 @@ export function lightingFor(name) {
     night: p.night,
     storm: p.storm,
     lightsOn: p.lightsOn,
+    warmth: p.warmth ?? (name === 'midday' ? 0.3 : 1),
   };
 }
 

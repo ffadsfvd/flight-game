@@ -128,6 +128,19 @@ export function stageScreenshot(name, game) {
     game.controls.controls.throttle = 0.62;
     run(game, 1.5);
   }
+  if (name === 'ice' || name === 'ice-cockpit') {
+    // Icing review scenes (not in shots.json): climbing at the Velo Saddle gate in the cold front
+    // with ice on the wings, from the chase view and from the frosted cockpit.
+    game.startMission(missionById('velo-ice'));
+    const ring = game.runner.objective.jumpTo(1, game.runnerContext, 38);
+    const p = ring.position.clone().addScaledVector(ring.normal, -380);
+    session.simulation.start(session.spec, { x: p.x, y: p.y - 22, z: p.z, heading: 180, pitch: 4, speed: 37, flaps: 0, throttle: 1 }, { birds: false });
+    session.body.ice = 0.55;
+    game.controls.controls.throttle = 1;
+    if (name === 'ice-cockpit') game.cameras.view = 'cockpit';
+    else Object.assign(game.cameras.chaseFraming, { height: 1.3, distance: 1.0, lookAhead: 30, lookUp: -2, yaw: -0.5 });
+    run(game, 1.5);
+  }
   if (game.state === 'flying') game.feedHud(0, true);
   game.render();
   return new Promise((resolve) => {

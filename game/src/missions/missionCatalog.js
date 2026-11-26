@@ -1,7 +1,7 @@
 // The Solvara career: six chapters of missions, one small file per mission under career/, each
-// with its giver, aircraft, start, weather, briefing dialogue, stages and pay. Stage types:
-// takeoff, rings (with rivals: a race; engineOff: soaring), land (water, short field, engine
-// failure), reach, supply-drop, firefighting, photo, aerobatics, formation and search.
+// with its giver, aircraft, start, weather (wind, light, icing), briefing dialogue, stages and pay.
+// Stage types: takeoff, rings (with rivals: a race; engineOff: soaring), land (water, short field,
+// engine failure), reach, supply-drop, firefighting, photo, aerobatics, formation and search.
 import { firstSolo } from './career/flightSchool/firstSolo.js';
 import { corvoCanyon } from './career/flightSchool/corvoCanyon.js';
 import { highstripShortField } from './career/flightSchool/highstripShortField.js';
@@ -32,6 +32,7 @@ import { nightMail } from './career/nightAndStorm/nightMail.js';
 import { orsaGale } from './career/nightAndStorm/orsaGale.js';
 import { darkWater } from './career/nightAndStorm/darkWater.js';
 import { snowsOfMonteNesta } from './career/expedition/snowsOfMonteNesta.js';
+import { iceOnVeloSaddle } from './career/expedition/iceOnVeloSaddle.js';
 import { silentWings } from './career/expedition/silentWings.js';
 import { nestaHutSupply } from './career/expedition/nestaHutSupply.js';
 import { grandTour } from './career/expedition/grandTour.js';
@@ -42,7 +43,7 @@ export const CHAPTERS = [
   { id: 3, name: 'Rescue Service', subtitle: 'Supply drops, a medevac and fire duty with Rescue Control and Fire Base Calvera', rank: 1 },
   { id: 4, name: 'Racing and Airshow', subtitle: 'Display flying, formation, banners and the races of the summer season', rank: 2 },
   { id: 5, name: 'Night and Storm', subtitle: 'Engine failure, squall lines, gales and the night mail', rank: 2 },
-  { id: 6, name: 'The Expedition', subtitle: 'Mountain flying over Nesta and the grand tour of the archipelago', rank: 3 },
+  { id: 6, name: 'The Expedition', subtitle: 'Mountain flying and icing over Nesta and Aurio, and the grand tour of the archipelago', rank: 3 },
 ];
 
 export const MISSIONS = [
@@ -51,7 +52,7 @@ export const MISSIONS = [
   flareOnGannetSkerry, fireOnCalvera, coralKeysDrop, medevacToMarenza, fireOnNesta, reefDoctor,
   skyBallet, barnstormer, wingOfTheLead, beachBannerRun, ignaraRingRun, mesaGrandPrix, archipelagoCup,
   deadStick, stormFront, nightMail, orsaGale, darkWater,
-  snowsOfMonteNesta, silentWings, nestaHutSupply, grandTour,
+  snowsOfMonteNesta, iceOnVeloSaddle, silentWings, nestaHutSupply, grandTour,
 ];
 
 /** The mission with this id. */

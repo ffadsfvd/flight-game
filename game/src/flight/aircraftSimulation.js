@@ -1,11 +1,13 @@
-// One flight in progress: the rigid body, its damage, the landing monitor and the crash detector
-// stepped together at a fixed rate, with a flight recorder for the replay camera. Every step
-// returns the events (touchdown, crash, bird strike...) that missions, radio and sound react to.
+// One flight in progress: the rigid body, its damage and airframe ice, the landing monitor and the
+// crash detector stepped together at a fixed rate, with a flight recorder for the replay camera.
+// Every step returns the events (touchdown, crash, bird strike, icing...) that missions, radio and
+// sound react to.
 import * as THREE from 'three';
 import { createAircraftBody, placeAircraft, stepAircraft } from './flightDynamics.js';
 import { applyTouchdownDamage, createDamageTracker, stepDamage } from './damageModel.js';
 import { createLandingMonitor, stepLandingMonitor } from './landingMonitor.js';
 import { detectCrash } from './crashDetector.js';
+import { stepIcing } from './icingModel.js';
 
 export const PHYSICS_STEP = 1 / 120;
 const RECORD_SECONDS = 14;
@@ -49,10 +51,12 @@ function explainCrash(cause, body, history) {
   const stall = history.stall;
   if (stall && body.time - stall.time < 9) {
     const flaps = ['flaps up', 'flaps 15°', 'full flaps'][stall.flaps] ?? 'flaps up';
-    return `Stalled at ${stall.aglFt} ft and ${stall.kt} kt with ${flaps}${body.spec.gearRetracts && !body.gearDown ? ' and the gear up' : ''}, then ${tail}`;
+    const iced = stall.ice > 0.2 ? `With ${Math.round(stall.ice * 100)}% ice on the wings, stalled` : 'Stalled';
+    return `${iced} at ${stall.aglFt} ft and ${stall.kt} kt with ${flaps}${body.spec.gearRetracts && !body.gearDown ? ' and the gear up' : ''}, then ${tail}`;
   }
   const out = history.engineOut;
   if (out && !body.engine.running) return `Engine out at ${out.aglFt} ft (${out.cause ?? 'failure'}), then ${tail}`;
+  if ((body.ice ?? 0) > 0.35) return `Iced up (${Math.round(body.ice * 100)}% ice, lift and climb gone), ${tail}`;
   return cause;
 }
 
@@ -67,13 +71,20 @@ export function createAircraftSimulation(world, wind) {
     accumulator: 0,
     flightTime: 0,
     distance: 0,
+    icing: null,
+    peakIce: 0,
     history: { stall: null, engineOut: null },
   };
 
   /** Starts a flight in `spec` at `placement` (see placeAircraft). */
-  sim.start = function start(spec, placement, { birds = true, random = Math.random } = {}) {
+  sim.start = function start(spec, placement, { birds = true, random = Math.random, icing } = {}) {
     sim.body = createAircraftBody(spec);
     placeAircraft(sim.body, placement);
+    // Icing conditions carry over when a test or a scene re-places the aircraft mid-flight.
+    if (icing !== undefined) sim.icing = icing;
+    sim.body.ice = 0;
+    sim.body.antiIce = false;
+    sim.peakIce = 0;
     sim.damage = createDamageTracker({ birds, random });
     sim.landing = createLandingMonitor(placement.speed > 10);
     sim.ended = null;
@@ -98,8 +109,10 @@ export function createAircraftSimulation(world, wind) {
       sim.history.engineOut = { time: body.time, aglFt: Math.round(body.agl * 3.281), cause: body.engine.failureCause };
     }
     if (!body.onGround && body.stall > 0.55 && (!sim.history.stall || body.time - sim.history.stall.time > 9)) {
-      sim.history.stall = { time: body.time, aglFt: Math.round(body.agl * 3.281), kt: Math.round(body.airspeed * 1.944), flaps: body.flapSetting };
+      sim.history.stall = { time: body.time, aglFt: Math.round(body.agl * 3.281), kt: Math.round(body.airspeed * 1.944), flaps: body.flapSetting, ice: body.ice ?? 0 };
     }
+    if (stepIcing(body, sim.icing, PHYSICS_STEP) === 'icing') events.push({ kind: 'icing', level: sim.icing?.level ?? 0 });
+    sim.peakIce = Math.max(sim.peakIce, body.ice);
     sim.distance += before.distanceTo(body.position);
     if (!body.onGround) sim.flightTime += PHYSICS_STEP;
     for (const e of stepDamage(body, sim.damage, PHYSICS_STEP)) events.push(e);

@@ -1,6 +1,7 @@
 // Moves the model with the flight model every frame: places it, deflects ailerons, elevators and
 // rudders with the pilot's inputs, runs the flaps and gear to their real positions, spins the
-// propeller with the engine RPM (blades blur into a disc), lights the jet exhaust, blinks lights.
+// propeller with the engine RPM (blades blur into a disc), lights the jet exhaust, blinks lights
+// and frosts the skin with the ice load.
 import * as THREE from 'three';
 import { deflect } from './aircraftModelBuilder.js';
 
@@ -13,6 +14,7 @@ const MAX_FLAP = THREE.MathUtils.degToRad(36);
 export function createAircraftAnimator(rig) {
   const smooth = { pitch: 0, roll: 0, yaw: 0 };
   let propAngle = 0;
+  let frost = -1;
   return {
     rig,
     /** Applies the body state and control inputs to the model. */
@@ -59,6 +61,12 @@ export function createAircraftAnimator(rig) {
         }
       }
       for (const leg of rig.gearLegs) leg.wheel.rotation.x -= (body.onGround ? body.groundSpeed : 0) * dt / 0.3;
+      // Rime ice frosts the painted skins pale blue-white as it builds.
+      const ice = Math.round((body.ice ?? 0) * 40) / 40;
+      if (rig.iceMaterials && ice !== frost) {
+        frost = ice;
+        for (const m of rig.iceMaterials) m.emissive.setRGB(0.5 * ice, 0.56 * ice, 0.64 * ice);
+      }
       rig.lights.update(time, body.landingLights, lightLevel);
     },
   };

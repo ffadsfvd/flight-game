@@ -158,6 +158,12 @@ export function createMissionRunner(ctx) {
       rows.push(['Cargo condition', `${cargo}%`]);
       score = Math.round(score * (0.6 + 0.4 * condition));
     }
+    // Icing missions reward running the anti-ice: a wing that carried heavy ice costs up to 40%.
+    if (mission?.icing) {
+      const peak = ctx.sim.peakIce ?? 0;
+      rows.push(['Worst ice load', `${Math.round(peak * 100)}%`]);
+      if (success) score = Math.round(score * (1 - 0.4 * Math.max(0, Math.min(1, (peak - 0.2) / 0.8))));
+    }
     rows.push(['Fuel used', `${Math.round(body.engine.fuelUsed)} kg`], ['Aircraft condition', `${Math.round(condition * 100)}%`], ['Mission time', formatTime(ctx.time)]);
     const medal = success ? medalFor(mission, score) : 'none';
     const reward = mission?.reward ?? { money: 0, xp: 0 };

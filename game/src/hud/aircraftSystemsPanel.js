@@ -1,5 +1,6 @@
 // Engine controls and configuration: throttle and RPM bars, flap setting in degrees, gear state
-// (down, up, in transit, damaged), brakes, landing lights and flight assist.
+// (down, up, in transit, damaged), brakes, landing lights, flight assist, and display smoke or,
+// in icing conditions, the anti-ice.
 
 const FLAP_DEGREES = ['UP', '15°', '35°'];
 
@@ -30,7 +31,13 @@ export function createAircraftSystemsPanel(element) {
       el.brakes.className = d.brakes > 0 ? 'bad' : '';
       el.lights.className = d.lights ? 'on' : '';
       el.assist.className = d.assist ? 'on' : '';
-      el.smoke.className = d.smoke ? 'on' : '';
+      if (d.icingLevelFt !== null) {
+        el.smoke.textContent = 'ANTI-ICE';
+        el.smoke.className = d.antiIce ? 'on' : d.ice > 0.25 ? 'bad' : '';
+      } else {
+        el.smoke.textContent = 'SMOKE';
+        el.smoke.className = d.smoke ? 'on' : '';
+      }
     },
   };
 }

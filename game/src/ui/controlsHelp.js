@@ -6,7 +6,7 @@ const KEYS = [
   ['Mouse (click to capture)', 'Stick: pitch and roll'], ['Right mouse drag', 'Free look'], ['F', 'Flaps: next notch (up after full)'],
   ['G', 'Landing gear up / down'], ['B (hold)', 'Wheel brakes'], ['Space', 'Drop crate / water, take photo'],
   ['C', 'Camera: chase, cockpit, fly-by'], ['V', 'Look back'], ['L', 'Landing lights'],
-  ['R', 'Refuel (stopped at an airfield)'], ['T', 'Display smoke'], ['X', 'Flight assist on / off'],
+  ['R', 'Refuel (stopped at an airfield)'], ['T', 'Display smoke'], ['I', 'Anti-ice on / off (costs 8% power)'], ['X', 'Flight assist on / off'],
   ['Esc / P', 'Pause menu'], ['H', 'This help'],
 ];
 

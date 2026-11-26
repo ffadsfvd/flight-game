@@ -76,7 +76,7 @@ export function createSkyDome() {
       uniforms.uHorizon.value.copy(light.skyHorizon);
       uniforms.uHaze.value.copy(light.fogColor);
       uniforms.uNight.value = light.night;
-      uniforms.uWarm.value = (1 - light.night) * (1 - light.storm * 0.9) * (light.name === 'midday' ? 0.3 : 1);
+      uniforms.uWarm.value = (1 - light.night) * (1 - light.storm * 0.9) * light.warmth;
     },
   };
 }
