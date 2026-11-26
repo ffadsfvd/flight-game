@@ -52,6 +52,7 @@ export function createFlightEventHandler({ effects, sfx, hud, radioFor }) {
           sfx.play('gear');
           hud.toast(n.down ? 'GEAR DOWN' : 'GEAR UP');
         } else if (n.kind === 'gear-blocked') hud.toast('GEAR LOCKED ON THE GROUND', 'bad');
+        else if (n.kind === 'gear-fixed') hud.toast('FIXED GEAR ON THIS AIRCRAFT');
         else if (n.kind === 'flaps') {
           sfx.play('flaps');
           hud.toast(`FLAPS ${['UP', '15°', '35°'][n.setting] ?? n.setting}`);

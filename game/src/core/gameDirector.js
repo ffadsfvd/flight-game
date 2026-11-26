@@ -152,6 +152,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
 
   function showBoard() {
     state = 'menu';
+    if (audio.ready) music.start();
     router.show('screen-mission-board', missionBoardHtml(career), {
       brief: (id) => showBriefing(missionById(id)),
       back: showTitle,
@@ -425,6 +426,9 @@ export function createGameDirector({ view, world, shotMode = false }) {
   // ----- Frame -----
   canvas.addEventListener('click', () => {
     if (state === 'flying') controls.mouse.lock();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && state === 'flying' && !shotMode) showPause();
   });
   window.addEventListener('keydown', (event) => {
     if (state === 'flying') return;

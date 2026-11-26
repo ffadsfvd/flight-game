@@ -5,39 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Solvara Skies - an island flight career</title>
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="./styles/hud.css">
-<link rel="stylesheet" href="./styles/menus.css">
+<link rel="stylesheet" href="./styles/hud.css"> <link rel="stylesheet" href="./styles/menus.css">
 <script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js" } }</script>
 </head>
 <body>
 <canvas id="world-view" aria-label="Solvara Skies: fly over the Solvara Archipelago"></canvas>
 <div id="hud" class="hud is-hidden">
-  <div id="hud-career-badge" class="panel"></div>
-  <canvas id="hud-heading-tape" width="440" height="58"></canvas>
-  <div id="hud-mission-tracker" class="panel"></div>
-  <div id="hud-minimap-frame" class="panel"><canvas id="hud-minimap" width="236" height="236"></canvas></div>
-  <div id="hud-radio-message" class="panel"></div>
-  <div id="hud-approach-guide" class="panel"></div>
-  <canvas id="hud-airspeed-tape" width="84" height="300"></canvas>
-  <canvas id="hud-altitude-tape" width="104" height="300"></canvas>
-  <div id="hud-flight-warnings"></div>
-  <div id="hud-aircraft-systems" class="panel"></div>
-  <canvas id="hud-instrument-strip" width="820" height="150"></canvas>
-  <div id="hud-fuel-and-damage" class="panel"></div>
-  <div id="hud-camera-label"></div>
-  <div id="hud-stick-indicator"><i></i></div>
+  <div id="hud-career-badge" class="panel"></div> <canvas id="hud-heading-tape"></canvas> <div id="hud-flight-warnings"></div>
+  <div id="hud-mission-tracker" class="panel"></div> <div id="hud-radio-message" class="panel"></div>
+  <div id="hud-minimap-frame" class="panel"><canvas id="hud-minimap"></canvas></div> <div id="hud-approach-guide" class="panel"></div>
+  <canvas id="hud-airspeed-tape"></canvas> <canvas id="hud-altitude-tape"></canvas> <canvas id="hud-instrument-strip"></canvas>
+  <div id="hud-aircraft-systems" class="panel"></div> <div id="hud-fuel-and-damage" class="panel"></div>
+  <div id="hud-camera-label"></div> <div id="hud-stick-indicator"><i></i></div>
 </div>
-<div id="screen-title" class="screen"></div>
-<div id="screen-mission-board" class="screen"></div>
-<div id="screen-hangar" class="screen"></div>
-<div id="screen-logbook" class="screen"></div>
-<div id="screen-controls-help" class="screen"></div>
-<div id="screen-settings" class="screen"></div>
-<div id="screen-mission-briefing" class="screen"></div>
-<div id="screen-pause-menu" class="screen"></div>
-<div id="screen-mission-results" class="screen"></div>
-<div id="toast-messages"></div>
-<p id="status-line" role="status" aria-live="polite"></p>
+<div id="screen-title" class="screen"></div> <div id="screen-mission-board" class="screen"></div> <div id="screen-mission-briefing" class="screen"></div>
+<div id="screen-hangar" class="screen"></div> <div id="screen-logbook" class="screen"></div> <div id="screen-controls-help" class="screen"></div>
+<div id="screen-settings" class="screen"></div> <div id="screen-pause-menu" class="screen"></div> <div id="screen-mission-results" class="screen"></div>
+<div id="toast-messages"></div> <p id="status-line" role="status" aria-live="polite"></p>
 <script type="module" src="./src/main.js"></script>
 </body>
 </html>

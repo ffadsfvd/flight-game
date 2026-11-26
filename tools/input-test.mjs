@@ -19,6 +19,8 @@ const READ = `(() => { const g = window.__solvara.game; const b = g.session.body
     bank: b ? b.bank : 0, pitch: b ? b.pitch : 0, onGround: b ? b.onGround : false, onWater: b ? b.onWater : false, gear: b ? b.gearDown : true,
     throttle: g.controls.controls.throttle, bearing: g.state === 'flying' ? g.runner.bearing() : null,
     glide: g.state === 'flying' && g.runner.guidance() ? g.runner.guidance().glideDev : null,
+    guideHdg: g.state === 'flying' && g.runner.guidance() ? g.runner.guidance().heading : null,
+    guideLat: g.state === 'flying' && g.runner.guidance() ? g.runner.guidance().lateral : null,
     rings: info && info.stats && info.stats[0] ? String(info.stats[0][1]) : '', result: window.__lastResult || null }; })()`;
 
 async function read(page) {
@@ -177,7 +179,8 @@ try {
     }
     const flare = s.agl < 30;
     const glideVs = s.glide === null ? -250 : -330 - 500 * Math.max(-1, Math.min(1, s.glide));
-    await pilotStep(page, s, { heading: s.bearing ?? 70, vs: flare ? -120 : glideVs, kt: flare ? 50 : 60, maxBank: s.agl < 120 ? 8 : 20 });
+    const heading = s.guideHdg === null ? s.bearing ?? 70 : s.guideHdg - Math.max(-25, Math.min(25, s.guideLat * 0.25));
+    await pilotStep(page, s, { heading, vs: flare ? -120 : glideVs, kt: flare ? 50 : 60, maxBank: s.agl < 120 ? 8 : 20 });
     if (s.agl < 12) await page.press('Digit1');
   }
   for (let i = 0; i < 40 && s.state === 'flying'; i += 1) {

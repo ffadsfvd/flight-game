@@ -106,6 +106,8 @@ export function createFlightSession({ scene, world, wind, director, controls }) 
             body.gearDown = !body.gearDown;
             notices.push({ kind: 'gear', down: body.gearDown });
           }
+        } else if (action === 'gear') {
+          notices.push({ kind: 'gear-fixed' });
         } else if (action === 'lights') {
           body.landingLights = !body.landingLights;
           notices.push({ kind: 'lights', on: body.landingLights });
