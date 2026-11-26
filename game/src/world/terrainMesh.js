@@ -199,6 +199,26 @@ export function createTerrainMesh(terrain) {
   geometry.computeBoundingSphere();
 
   const material = new THREE.MeshLambertMaterial({ vertexColors: true, map: createDetailTexture() });
+  // Break up large even areas with world-space value noise at two scales, so plains and slopes
+  // never show the detail texture's repeat.
+  material.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vTerrainWorld;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvTerrainWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>
+varying vec3 vTerrainWorld;
+float tHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float tNoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(tHash(i), tHash(i + vec2(1.0, 0.0)), f.x), mix(tHash(i + vec2(0.0, 1.0)), tHash(i + vec2(1.0, 1.0)), f.x), f.y);
+}`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+float macroNoise = tNoise(vTerrainWorld.xz * 0.0045) * 0.55 + tNoise(vTerrainWorld.xz * 0.017) * 0.3 + tNoise(vTerrainWorld.xz * 0.09) * 0.15;
+diffuseColor.rgb *= 0.84 + 0.3 * macroNoise;`);
+  };
   const mesh = new THREE.Mesh(geometry, material);
   mesh.receiveShadow = true;
   mesh.name = 'terrain';

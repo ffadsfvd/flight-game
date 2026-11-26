@@ -36,7 +36,7 @@ export function createMouseStick(canvas) {
     state,
     /** Eases the stick toward centre (and free look back to straight ahead when released). */
     relax(dt) {
-      const k = Math.exp(-dt * 1.6);
+      const k = Math.exp(-dt * 0.7);
       state.x *= k;
       state.y *= k;
       if (!state.looking) {

@@ -31,6 +31,8 @@ export function createHudController(terrain, { onRadio } = {}) {
   const warnings = createWarningPanel($('hud-flight-warnings'));
   const badge = createCareerBadge($('hud-career-badge'));
   const cameraLabel = $('hud-camera-label');
+  const stick = $('hud-stick-indicator');
+  const stickDot = stick.querySelector('i');
   const toasts = $('toast-messages');
   let textTimer = 0;
   let currentWarnings = [];
@@ -72,7 +74,11 @@ export function createHudController(terrain, { onRadio } = {}) {
         warnings.update(currentWarnings);
         tracker.update(s.mission);
         badge.update(s.career);
-        cameraLabel.textContent = `${VIEW_NAMES[s.view] ?? ''}  ·  C CAMERA  ·  ESC PAUSE  ·  H HELP`;
+        cameraLabel.textContent = `${VIEW_NAMES[s.view] ?? ''}  ·  C CAMERA  ·  CLICK MOUSE STICK  ·  ESC PAUSE  ·  H HELP`;
+      }
+      if (s.stick) {
+        stick.classList.toggle('is-active', s.stick.active);
+        stickDot.style.transform = `translate(${(s.stick.x * 1.9).toFixed(2)}em, ${(s.stick.y * 1.9).toFixed(2)}em)`;
       }
       if (s.guidance) {
         approach.show(true);

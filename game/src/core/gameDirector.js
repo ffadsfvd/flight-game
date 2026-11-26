@@ -412,6 +412,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
       targetKt: body.spec.vApproach * 1.944,
       career: { rank: rank.name, money: career.money, clock: light.clock, weather: light.label, aircraft: body.spec.name },
       load: runner.load(),
+      stick: { active: controls.mouse.state.locked || controls.mouse.state.dragging, x: controls.mouse.state.x, y: controls.mouse.state.y },
       dt,
       force,
     });
