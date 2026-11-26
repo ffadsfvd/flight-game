@@ -2,7 +2,7 @@
 export const orsaGale = {
   id: 'orsa-gale', chapter: 5, title: 'Gale at Orsa Cay', kind: 'Storm approach', giver: 'mags', aircraft: 'wren',
   summary: 'Beat the gale into Orsa Cay: a long final to runway 22 in heavy gusts and rain, with the mesas beside the approach.',
-  time: 'storm', wind: { from: 205, speed: 10, gust: 6, turbulence: 1.6 }, fuel: 0.45, payload: 60,
+  time: 'storm', wind: { from: 205, speed: 9, gust: 4.5, turbulence: 1.3 }, fuel: 0.45, payload: 60,
   start: { type: 'approach', field: 'orsa', end: 1, distance: 5200, height: 90, flaps: 0 },
   briefing: [['mags', 'The Orsa ferry is cancelled, so the doctor flies with you. The front reaches the cay in twenty minutes.'], ['mags', 'Gusts to thirty knots on the approach. Carry a little extra speed, crab into it, and do not drift toward the big mesa.']],
   stages: [

@@ -180,8 +180,8 @@ try {
     const flare = s.agl < 30;
     const glideVs = s.glide === null ? -250 : -330 - 500 * Math.max(-1, Math.min(1, s.glide));
     const heading = s.guideHdg === null ? s.bearing ?? 70 : s.guideHdg - Math.max(-25, Math.min(25, s.guideLat * 0.25));
-    await pilotStep(page, s, { heading, vs: flare ? -120 : glideVs, kt: flare ? 50 : 60, maxBank: s.agl < 120 ? 8 : 20 });
-    if (s.agl < 12) await page.press('Digit1');
+    await pilotStep(page, s, { heading, vs: flare ? -190 : glideVs, kt: flare ? 48 : 60, maxBank: s.agl < 120 ? 8 : 20 });
+    if (s.agl < 20) await page.press('Digit1');
   }
   for (let i = 0; i < 40 && s.state === 'flying'; i += 1) {
     await sleep(250);
