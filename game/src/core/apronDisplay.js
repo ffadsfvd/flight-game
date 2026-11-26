@@ -11,6 +11,7 @@ const PARKING = [
   { field: 'marenza', aircraft: 'swiftlet', along: 10 },
   { field: 'marenza', aircraft: 'kestrel', along: -40 },
   { field: 'marenza', aircraft: 'pelican', along: -110 },
+  { field: 'marenza', aircraft: 'saker', along: -168 },
   { field: 'orsa', aircraft: 'wren', along: 40 },
   { field: 'calvera', aircraft: 'wren', along: 0 },
 ];

@@ -241,9 +241,11 @@ export function buildAircraftModel(id) {
     const group = new THREE.Group();
     group.position.set(...leg.attach);
     const offset = new THREE.Vector3(leg.wheel[0] - leg.attach[0], leg.wheel[1] - leg.attach[1], leg.wheel[2] - leg.attach[2]);
-    const wheelMesh = wheel(spec.wheelRadius, leg.pant ? 0.14 : 0.18);
+    // A leg may carry its own smaller wheel (tailwheels), placed so it touches where the physics does.
+    const radius = leg.radius ?? spec.wheelRadius;
+    const wheelMesh = wheel(radius, leg.pant ? 0.14 : leg.radius ? 0.1 : 0.18);
     wheelMesh.position.copy(offset);
-    group.add(strut([0, 0, 0], [offset.x, offset.y + spec.wheelRadius * 0.3, offset.z], 0.045, metal));
+    group.add(strut([0, 0, 0], [offset.x, offset.y + radius * 0.3, offset.z], 0.045, metal));
     group.add(wheelMesh);
     if (leg.pant) {
       const pant = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 10), new THREE.MeshPhongMaterial({ color: livery.stripe, shininess: 50 }));

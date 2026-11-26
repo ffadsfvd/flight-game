@@ -1,7 +1,7 @@
-// The five aircraft of Solvane Aeroworks (trainer, amphibian, biplane, twin and jet) with their
-// flight-model numbers: mass, wing, lift and drag curves, engine, control rates, stability, gear
-// and damage limits, plus what each costs and unlocks in the career. Speeds are m/s, masses kg,
-// forces N.
+// The seven aircraft of Solvane Aeroworks (trainer, amphibian, biplane, twin, motor glider, jet and
+// racer) with their flight-model numbers: mass, wing, lift and drag curves, engine, control rates,
+// stability, gear and damage limits, plus what each costs and unlocks in the career. Speeds are
+// m/s, masses kg, forces N.
 
 export const AIRCRAFT = [
   {
@@ -116,6 +116,25 @@ export const AIRCRAFT = [
     floats: null,
     crashPoints: [[0, -0.1, -4.4, 'nose'], [-4.7, -0.35, 1.2, 'wingtip'], [4.7, -0.35, 1.2, 'wingtip'], [0, -0.2, 4.2, 'tail'], [0, -0.62, 0.3, 'belly'], [0, 0.95, -1.4, 'canopy'], [-1.1, 1.7, 3.9, 'fin'], [1.1, 1.7, 3.9, 'fin']],
     eye: [0, 0.68, -1.55], chaseDistance: 17, chaseHeight: 3.8,
+    cargoCapacity: 0, waterCapacity: 0,
+  },
+  {
+    id: 'saker', name: 'Saker R4', role: 'Single-seat pylon racer', maker: 'Solvane Aeroworks', registration: 'SV-488',
+    blurb: 'A big engine with a small wing and the cockpit far aft: the fastest propeller on the islands, a taildragger with folding gear that lands hot and stalls hard.',
+    unlockRank: 3, price: 3900,
+    mass: 980, fuelCapacity: 110, fuelBurnFull: 0.11, fuelBurnIdle: 0.01,
+    wingArea: 10.5, span: 7.4, chord: 1.45, cl0: 0.18, clAlpha: 4.9, alphaStall: 0.25, cd0: 0.022, inducedK: 0.07,
+    flapCl: 0.55, flapCd: 0.05, flapDetents: [0, 0.4, 1], gearCd: 0.018, sideArea: 0.55,
+    engine: 'prop', thrustStatic: 5200, propSpeedLimit: 125, spool: 0.7, propWash: 0.6, heatRate: 1.15,
+    refSpeed: 68, pitchRate: 1.4, rollRate: 2.8, yawRate: 0.7, response: 5.0,
+    pitchStability: 7.0, yawStability: 5.5, dihedral: 1.0, alphaTrim: 0.02,
+    inertia: [1500, 2100, 1100],
+    gLimit: 6.5, vne: 120, vFlapMax: 55, vGearMax: 70, vRotate: 36, vApproach: 41, gearRetracts: true,
+    gearLimitFpm: 600, gearCollapseFpm: 1100,
+    wheelRadius: 0.28, gear: [[-1.1, -1.05, -0.55, 'main'], [1.1, -1.05, -0.55, 'main'], [0, -0.45, 4.1, 'tailwheel']],
+    floats: null,
+    crashPoints: [[0, -0.9, -3.1, 'prop'], [0, -0.1, -3.0, 'nose'], [-3.7, -0.1, -0.2, 'wingtip'], [3.7, -0.1, -0.2, 'wingtip'], [0, -0.3, 4.35, 'tail'], [0, -0.6, 0.2, 'belly'], [0, 0.85, 0.8, 'canopy'], [0, 1.35, 4.0, 'fin']],
+    eye: [0, 0.62, 0.78], chaseDistance: 15, chaseHeight: 3.4,
     cargoCapacity: 0, waterCapacity: 0,
   },
 ];

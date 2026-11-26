@@ -114,11 +114,12 @@ export function stageScreenshot(name, game) {
     Object.assign(game.cameras.chaseFraming, { height: 1.3, distance: 1.0, lookAhead: 40, lookUp: -3, yaw: 0.35 });
     run(game, 2.5);
   }
-  if (name === 'kestrel' || name === 'pelican' || name === 'swallow') {
+  if (name === 'kestrel' || name === 'pelican' || name === 'swallow' || name === 'saker') {
     // Aircraft review scenes (not in shots.json): the new aircraft in flight in a 3/4 view.
-    game.startMission(missionById({ kestrel: 'barnstormer', pelican: 'market-shuttle', swallow: 'silent-wings' }[name]));
-    if (name === 'pelican') session.simulation.start(session.spec, { x: -3600, y: 260, z: 3300, heading: 300, pitch: 0, speed: 50, flaps: 0, throttle: 0.7 }, { birds: false });
-    Object.assign(game.cameras.chaseFraming, { height: 1.1, distance: 0.9, lookAhead: 6, lookUp: -0.5, yaw: -0.7 });
+    game.startMission(name === 'saker' ? null : missionById({ kestrel: 'barnstormer', pelican: 'market-shuttle', swallow: 'silent-wings' }[name]), name === 'saker' ? 'saker' : null);
+    if (name === 'pelican' || name === 'saker') session.simulation.start(session.spec, { x: -3600, y: 260, z: 3300, heading: 300, pitch: 0, speed: name === 'saker' ? 85 : 50, flaps: 0, throttle: 0.7, gearDown: name !== 'saker' }, { birds: false });
+    if (name === 'saker') game.controls.controls.throttle = 0.85;
+    Object.assign(game.cameras.chaseFraming, { height: 1.1, distance: 0.9, lookAhead: 6, lookUp: -0.5, yaw: name === 'saker' ? -0.45 : -0.7 });
     run(game, 1.2);
   }
   if (name === 'orsa' || name === 'nesta') {
@@ -134,6 +135,17 @@ export function stageScreenshot(name, game) {
     game.startMission(missionById('off-the-mountain'));
     Object.assign(game.cameras.chaseFraming, { height: 1.4, distance: 1.1, lookAhead: 20, lookUp: -1, yaw: 0.6 });
     run(game, 1.5);
+  }
+  if (name === 'sprint') {
+    // Review scene (not in shots.json): the Saker racing a rival down the beach toward gate 4.
+    game.startMission(missionById('coast-sprint'));
+    const ring = game.runner.objective.jumpTo(3, game.runnerContext, 34);
+    const p = ring.position.clone().addScaledVector(ring.normal, -420);
+    const heading = (THREE.MathUtils.radToDeg(Math.atan2(ring.normal.x, -ring.normal.z)) + 360) % 360;
+    session.simulation.start(session.spec, { x: p.x, y: p.y, z: p.z, heading, pitch: 0, bank: -12, speed: 98, flaps: 0, throttle: 1, gearDown: false }, { birds: false });
+    game.controls.controls.throttle = 1;
+    Object.assign(game.cameras.chaseFraming, { height: 1.2, distance: 1.0, lookAhead: 30, lookUp: -1.5, yaw: -0.4 });
+    run(game, 1.2);
   }
   if (name === 'ice' || name === 'ice-cockpit') {
     // Icing review scenes (not in shots.json): climbing at the Velo Saddle gate in the cold front

@@ -1,4 +1,4 @@
-// The shapes and paint of the three aircraft as data for the model builder: fuselage
+// The shapes and paint of every aircraft as data for the model builder: fuselage
 // cross-sections, wing and tail stations, control-surface spans, gear legs, floats, propeller or
 // jet nozzle, livery colours and light positions. Model space: nose -z, up +y, right +x.
 
@@ -109,7 +109,7 @@ export const AIRCRAFT_DESIGNS = {
       legs: [
         { attach: [-0.42, -0.38, -1.1], wheel: [-0.95, -1.35, -1.05], pant: true },
         { attach: [0.42, -0.38, -1.1], wheel: [0.95, -1.35, -1.05], pant: true },
-        { attach: [0, -0.05, 3.85], wheel: [0, -0.46, 4.0] },
+        { attach: [0, -0.05, 3.85], wheel: [0, -0.59, 4.0], radius: 0.17 },
       ],
     },
     lights: { left: [-3.9, 1.1, -0.85], right: [3.9, 1.1, -0.85], tail: [0, 0.42, 4.15], landing: [-1.6, -0.3, -1.15] },
@@ -216,5 +216,37 @@ export const AIRCRAFT_DESIGNS = {
     },
     lights: { left: [-4.75, 0.02, 1.55], right: [4.75, 0.02, 1.55], tail: [0, 0.4, 4.4], landing: [0, -0.62, -2.9] },
     panel: { z: -2.2, y: 0.12, width: 0.92, tilt: 0.36 },
+  },
+  saker: {
+    livery: { base: '#f2c230', stripe: '#1c1c22', accent: '#d8262a', wing: '#f2c230', tip: '#1c1c22', tail: '#1c1c22', textAt: 0.62, nose: '#1c1c22' },
+    fuselage: {
+      squareness: 2.2,
+      sections: [
+        { z: -3.05, w: 0.3, h: 0.3, y: -0.02 }, { z: -2.92, w: 0.6, h: 0.58, y: -0.02 }, { z: -2.35, w: 0.76, h: 0.74, y: 0.0 },
+        { z: -1.35, w: 0.82, h: 0.8, y: 0.03 }, { z: -0.2, w: 0.78, h: 0.78, y: 0.06 }, { z: 0.9, w: 0.64, h: 0.7, y: 0.1 },
+        { z: 2.0, w: 0.44, h: 0.52, y: 0.14 }, { z: 3.1, w: 0.27, h: 0.36, y: 0.2 }, { z: 4.0, w: 0.13, h: 0.22, y: 0.26 },
+        { z: 4.45, w: 0.03, h: 0.05, y: 0.28 },
+      ],
+    },
+    canopy: { w: 0.48, h: 0.4, length: 1.05, y: 0.44, z: 0.72 },
+    pilot: { y: 0.12, z: 0.82 },
+    wing: {
+      root: { x: 0.38, le: -1.3, chord: 1.8, y: -0.32, t: 0.13 },
+      tip: { x: 3.7, le: -0.78, chord: 0.86, y: -0.1, t: 0.09 },
+      flap: [0.5, 1.9, 0.3], aileron: [2.1, 3.5, 0.28],
+    },
+    stabilizer: { root: { x: 0.1, le: 3.55, chord: 0.8, y: 0.26, t: 0.08 }, tip: { x: 1.45, le: 3.88, chord: 0.44, y: 0.26, t: 0.07 }, elevator: 0.4 },
+    fins: [{ x: 0, cant: 0, root: { x: 0.3, le: 3.2, chord: 1.2, y: 0, t: 0.09 }, tip: { x: 1.25, le: 3.95, chord: 0.5, y: 0, t: 0.07 }, rudder: 0.4 }],
+    propeller: { z: -3.1, y: -0.02, radius: 0.95, blades: 3, spinner: 0.27, spinnerLength: 0.55 },
+    gear: {
+      retracts: true,
+      legs: [
+        { attach: [-0.72, -0.35, -0.6], wheel: [-1.1, -1.05, -0.55], fold: 'inward' },
+        { attach: [0.72, -0.35, -0.6], wheel: [1.1, -1.05, -0.55], fold: 'inward' },
+        { attach: [0, -0.05, 3.95], wheel: [0, -0.58, 4.1], radius: 0.15, fold: 'fixed' },
+      ],
+    },
+    lights: { left: [-3.72, -0.1, -0.2], right: [3.72, -0.1, -0.2], tail: [0, 0.3, 4.47], landing: [-1.5, -0.3, -1.0] },
+    panel: { z: 0.32, y: 0.32, width: 0.66, tilt: 0.34 },
   },
 };
