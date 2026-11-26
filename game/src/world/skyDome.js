@@ -20,13 +20,14 @@ uniform vec3 uHorizon;
 uniform vec3 uHaze;
 uniform float uSunSize;
 uniform float uNight;
+uniform float uWarm;
 varying vec3 vDir;
 #include <common>
 float hash(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
 void main() {
   vec3 dir = normalize(vDir);
   float y = dir.y;
-  vec3 cream = mix(uHorizon, vec3(1.0, 0.93, 0.8), 0.55);
+  vec3 cream = mix(uHorizon, vec3(1.0, 0.93, 0.8), 0.55 * uWarm);
   vec3 col = mix(uHorizon, cream, smoothstep(-0.02, 0.1, y));
   col = mix(col, uZenith, smoothstep(0.06, 0.55, y));
   col = mix(col, uHaze, smoothstep(0.02, -0.12, y));
@@ -55,6 +56,7 @@ export function createSkyDome() {
     uHaze: { value: new THREE.Color('#e9b98f') },
     uSunSize: { value: 0.00022 },
     uNight: { value: 0 },
+    uWarm: { value: 1 },
   };
   const material = new THREE.ShaderMaterial({ uniforms, vertexShader: VERTEX, fragmentShader: FRAGMENT, side: THREE.BackSide, depthWrite: false, fog: false });
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(30000, 48, 24), material);
@@ -73,6 +75,7 @@ export function createSkyDome() {
       uniforms.uHorizon.value.copy(light.skyHorizon);
       uniforms.uHaze.value.copy(light.fogColor);
       uniforms.uNight.value = light.night;
+      uniforms.uWarm.value = (1 - light.night) * (1 - light.storm * 0.9) * (light.name === 'midday' ? 0.3 : 1);
     },
   };
 }

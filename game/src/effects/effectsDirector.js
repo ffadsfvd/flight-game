@@ -101,14 +101,15 @@ export function createEffectsDirector(scene, worldEmitters) {
       }
       for (const f of fires) {
         if (f.intensity <= 0.02) continue;
-        const n = dt * 90 * f.intensity;
+        const n = dt * 75 * f.intensity;
         for (let i = 0; i < n; i += 1) {
           const a = random() * Math.PI * 2;
           const r = Math.sqrt(random()) * f.radius;
-          fire.emit(f.x + Math.cos(a) * r, f.y + 3, f.z + Math.sin(a) * r, 0, 5 + random() * 6, 0, { life: 1.1 + random() * 0.9, size: 9 + random() * 9, grow: 3, alpha: 0.9, color: [1, 0.42 + random() * 0.35, 0.1], drag: 0.6, lift: 2.5 });
+          const hot = random();
+          fire.emit(f.x + Math.cos(a) * r, f.y + 2.5, f.z + Math.sin(a) * r, 0, 3.5 + random() * 6, 0, { life: 0.8 + random() * 0.9, size: 4 + random() * 6, grow: 2.5, alpha: 0.55 + hot * 0.25, color: [1, 0.3 + hot * 0.3, 0.05 + hot * 0.06], drag: 0.6, lift: 2.5 });
         }
         if (random() < dt * 12 * f.intensity) {
-          smoke.emit(f.x + (random() - 0.5) * f.radius, f.y + 14, f.z + (random() - 0.5) * f.radius, 0, 8 + random() * 4, 0, { life: 18, size: 14, grow: 8, alpha: 0.34, color: [0.42, 0.38, 0.35], drag: 0.25, lift: 0.4 });
+          smoke.emit(f.x + (random() - 0.5) * f.radius, f.y + 10, f.z + (random() - 0.5) * f.radius, 0, 8 + random() * 4, 0, { life: 18, size: 12, grow: 8, alpha: 0.3, color: [0.46, 0.42, 0.38], drag: 0.25, lift: 0.4 });
         }
       }
       for (const f of flares) {
@@ -123,9 +124,9 @@ export function createEffectsDirector(scene, worldEmitters) {
         }
       }
       if (rain > 0 && camera) {
-        const n = dt * 500 * rain;
+        const n = dt * 900 * rain;
         for (let i = 0; i < n; i += 1) {
-          water.emit(camera.position.x + (random() - 0.5) * 140, camera.position.y + 30 + random() * 20, camera.position.z + (random() - 0.5) * 140, wind.x, -28, wind.z, { life: 2, size: 0.18, grow: 0, alpha: 0.5, color: [0.8, 0.85, 0.95], drag: 0 });
+          water.emit(camera.position.x + (random() - 0.5) * 120, camera.position.y + 20 + random() * 25, camera.position.z + (random() - 0.5) * 120, wind.x, -30, wind.z, { life: 1.6, size: 0.45, grow: 0, alpha: 0.55, color: [0.78, 0.82, 0.9], drag: 0 });
         }
       }
       updateAircraft(body, dt, smokeOn);

@@ -56,17 +56,25 @@ export function stageScreenshot(name, game) {
     const fire = { x: 3250, z: -1780 };
     const ground = Math.max(0, game.world.terrain.heightAt(fire.x, fire.z));
     for (let i = 0; i < 420; i += 1) game.effects.update(STEP, 700, game.wind.state.current, null, game.camera, false);
-    const heading = 25;
+    const heading = 100;
     const h = THREE.MathUtils.degToRad(heading);
-    const start = { x: fire.x - Math.sin(h) * 210, z: fire.z + Math.cos(h) * 210 };
-    session.simulation.start(session.spec, { x: start.x, y: ground + 58, z: start.z, heading, pitch: 2, speed: 43, flaps: 1, throttle: 0.9, gearDown: false }, { birds: false });
+    const start = { x: fire.x - Math.sin(h) * 280, z: fire.z + Math.cos(h) * 280 };
+    session.simulation.start(session.spec, { x: start.x, y: ground + 58, z: start.z, heading, pitch: 2, speed: 41, flaps: 0, throttle: 0.85, gearDown: false }, { birds: false });
     session.body.water = session.spec.waterCapacity;
-    game.controls.controls.throttle = 0.9;
-    Object.assign(game.cameras.chaseFraming, { height: 2.1, distance: 1.25, lookAhead: 60, lookUp: -6 });
-    run(game, 2.4, { 60: ['action'] });
+    game.controls.controls.throttle = 0.85;
+    Object.assign(game.cameras.chaseFraming, { height: 1.55, distance: 1.2, lookAhead: 150, lookUp: -2 });
+    run(game, 2.4, { 105: ['action'] });
     game.hud.radio.say('bruno', 'Good drop on the west flank! Two hot spots left, come round again.', { priority: true });
     game.hud.radio.hold();
     run(game, 0.2);
+  }
+  if (name === 'night' || name === 'storm') {
+    game.startMission(missionById(name === 'night' ? 'night-mail' : 'storm-approach'));
+    game.runner.skipTo(name === 'night' ? 2 : 0);
+    const spec = session.spec;
+    session.simulation.start(spec, { ...approachPlacement(spec, 'marenza', 1, 1400, { flaps: 2 }), throttle: 0.32 }, { birds: false });
+    game.controls.controls.throttle = 0.32;
+    run(game, 3);
   }
   if (game.state === 'flying') game.feedHud(0, true);
   game.render();
