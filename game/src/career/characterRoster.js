@@ -9,6 +9,7 @@ export const CHARACTERS = {
   bruno: { name: 'Bruno Keel', role: 'Island fire marshal', callsign: 'Fire Base Calvera', skin: '#d4a07a', hair: '#9a9a96', hairStyle: 'bald', shirt: '#b8401e', backdrop: '#4a2a14', helmet: true, beard: true },
   teo: { name: 'Teo Ranieri', role: 'Rival racer, team Scirocco', callsign: 'Scirocco One', skin: '#d9a87e', hair: '#c79a3a', hairStyle: 'swept', shirt: '#1f3f8a', backdrop: '#1c2a52', shades: true },
   nadia: { name: 'Nadia Ferro', role: 'Solvara Gazette photographer', callsign: 'Gazette', skin: '#b9825a', hair: '#6a2c1a', hairStyle: 'long', shirt: '#7a4ab0', backdrop: '#3a2458' },
+  pia: { name: 'Pia Lund', role: 'Unicom 122.75', callsign: 'Solvara Radio', skin: '#f0c9a8', hair: '#8a5a2a', hairStyle: 'bob', shirt: '#3a6a4a', backdrop: '#1e3a2e', headset: true },
 };
 
 /** The character for an id (the instructor if unknown). */

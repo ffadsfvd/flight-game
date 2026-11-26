@@ -36,6 +36,8 @@ import { approachPlacement, createFlightSession, runwayPlacement } from './fligh
 import { createFlightEventHandler } from './flightEventHandler.js';
 import { createTitleBackdrop } from './titleBackdrop.js';
 import { parkDisplayAircraft } from './apronDisplay.js';
+import { createAirTraffic } from '../world/airTraffic.js';
+import { createAtcRadio } from './atcRadio.js';
 
 const SCREENS = ['screen-title', 'screen-mission-board', 'screen-hangar', 'screen-logbook', 'screen-controls-help', 'screen-settings', 'screen-mission-briefing', 'screen-pause-menu', 'screen-mission-results'];
 
@@ -60,6 +62,8 @@ export function createGameDirector({ view, world, shotMode = false }) {
   const effects = createEffectsDirector(view.scene, world.landmarks.emitters);
   const gates = createGlidePathGates(view.scene);
   parkDisplayAircraft(view.scene);
+  const traffic = createAirTraffic(view.scene);
+  const atc = createAtcRadio({ say: (who, text) => hud.radio.say(who, text), wind, traffic });
   const audio = createAudioEngine();
   const flightSounds = createFlightSounds(audio);
   const sfx = createSoundEffects(audio);
@@ -324,6 +328,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     runner.start(def);
     ending = null;
     landingsThisFlight = [];
+    atc.reset();
     hud.radio.clear();
     hud.show(true);
     router.hideAll();
@@ -400,6 +405,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
       }
       const result = runner.update(dt, simEvents, actions);
       if (result) ending = { result, timer: result.severity === 'crash' ? 2.6 : 1.6 };
+      if (!mission && !ending) atc.update(dt, session.body, session.spec.registration);
     }
     feedHud(dt);
   }
@@ -421,7 +427,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
       position: body.position,
       mission: runner.trackerInfo(),
       markers: runner.markers(),
-      others: runner.others(),
+      others: [...runner.others(), ...traffic.flyers.map((f) => ({ x: f.rig.root.position.x, z: f.rig.root.position.z, color: '#d8e2ee' }))],
       guidance,
       targetKt: body.spec.vApproach * 1.944,
       career: { rank: rank.name, money: career.money, clock: light.clock, weather: light.label, aircraft: body.spec.name },
@@ -480,6 +486,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
       flashLevel = Math.max(0, flashLevel - dt * 3);
     } else flashEl.style.opacity = '0';
     effects.update(dt, viewScale, wind.state.current, state === 'flying' ? session.body : null, view.camera, session.body?.smokeOn);
+    traffic.update(dt, time);
     world.update(time, wind.state.current, focus, view.camera, view.viewHeight);
     view.render();
   }
