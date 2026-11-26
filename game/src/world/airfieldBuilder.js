@@ -325,13 +325,13 @@ export function buildAirfields(terrain) {
       for (let along = -field.length / 2; along <= field.length / 2 + 0.1; along += 60) {
         for (const s of [-1, 1]) {
           const p = fromRunwayFrame(field, along, s * (field.width / 2 + 1.5));
-          edgeBatch.add(p.x, y + 0.6, p.z, WHITE, 2.6);
+          edgeBatch.add(p.x, y + 0.6, p.z, WHITE, 3.3);
         }
       }
       for (const end of [-1, 1]) {
         for (let a = -field.width / 2; a <= field.width / 2 + 0.1; a += field.width / 8) {
           const p = fromRunwayFrame(field, end * (field.length / 2 + 2), a);
-          edgeBatch.add(p.x, y + 0.6, p.z, GREEN, 3.0);
+          edgeBatch.add(p.x, y + 0.6, p.z, GREEN, 3.8);
         }
       }
     }
