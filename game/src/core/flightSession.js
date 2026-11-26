@@ -161,6 +161,7 @@ export function createFlightSession({ scene, world, wind, director, controls }) 
           rig.root.quaternion.copy(pose.quaternion);
         }
         rig.exterior.visible = director.view !== 'cockpit';
+        if (director.view === 'cockpit') rig.lights.beam.visible = false;
       }
       return events;
     },

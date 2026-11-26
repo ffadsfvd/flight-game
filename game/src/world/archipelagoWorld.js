@@ -12,6 +12,7 @@ import { buildAirfields } from './airfieldBuilder.js';
 import { buildTowns } from './townBuilder.js';
 import { plantForests } from './forestPlanter.js';
 import { buildLandmarks } from './landmarkBuilder.js';
+import { buildRivers } from './riverBuilder.js';
 import { AIRFIELDS, isOnRunway } from './airfieldDirectory.js';
 import { canopyHeight, forestDensity } from './vegetationMap.js';
 import { updateLightPoints } from './lightPoints.js';
@@ -28,7 +29,8 @@ export function createArchipelagoWorld(scene) {
   const towns = buildTowns(terrain);
   const forests = plantForests(terrain);
   const landmarks = buildLandmarks(terrain);
-  scene.add(sky.mesh, terrainMesh, sea.mesh, clouds.group, airfields.group, towns.group, forests.group, landmarks.group);
+  const rivers = buildRivers(terrain);
+  scene.add(sky.mesh, terrainMesh, sea.mesh, clouds.group, airfields.group, towns.group, forests.group, landmarks.group, rivers);
   const colliders = [...airfields.colliders, ...landmarks.colliders];
   const local = new THREE.Vector3();
 

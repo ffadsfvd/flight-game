@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { AIRCRAFT_DESIGNS } from './aircraftDesigns.js';
 import { aircraftById } from './aircraftCatalog.js';
-import { aircraftLights, canopy, hingedSurface, liveryTexture, loftFuselage, pilot, propeller, strut, wheel, wingPanel } from './aircraftParts.js';
+import { aircraftLights, canopy, hingedSurface, liveryTexture, loftFuselage, panelLineTexture, pilot, propeller, strut, wheel, wingPanel } from './aircraftParts.js';
 
 function lerpStation(root, tip, x) {
   const t = (x - root.x) / (tip.x - root.x);
@@ -78,10 +78,10 @@ export function buildAircraftModel(id) {
   const exterior = new THREE.Group();
   root.add(exterior);
 
-  const skin = new THREE.MeshPhongMaterial({ color: livery.wing, shininess: 45, specular: '#555555' });
-  const surface = new THREE.MeshPhongMaterial({ color: livery.wing, shininess: 35, specular: '#444444' });
-  const tipMaterial = new THREE.MeshPhongMaterial({ color: livery.tip, shininess: 45, specular: '#555555' });
-  const tailSkin = new THREE.MeshPhongMaterial({ color: livery.tail, shininess: 45, specular: '#555555' });
+  const skin = new THREE.MeshPhongMaterial({ map: panelLineTexture(livery.wing), shininess: 45, specular: '#555555' });
+  const surface = new THREE.MeshPhongMaterial({ map: panelLineTexture(livery.wing), shininess: 35, specular: '#444444' });
+  const tipMaterial = new THREE.MeshPhongMaterial({ map: panelLineTexture(livery.tip), shininess: 45, specular: '#555555' });
+  const tailSkin = new THREE.MeshPhongMaterial({ map: panelLineTexture(livery.tail), shininess: 45, specular: '#555555' });
   const metal = new THREE.MeshPhongMaterial({ color: '#b9bec4', shininess: 70 });
   const dark = new THREE.MeshLambertMaterial({ color: '#2a2d31' });
 

@@ -79,8 +79,8 @@ export function createCockpitPanel(rig) {
     post.rotation.z = side * -0.42;
     post.rotation.x = -0.45;
     frame.add(post);
-    const sill = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 1.4), new THREE.MeshLambertMaterial({ color: rig.design.livery.base }));
-    sill.position.set(side * width * 0.72, -0.02, 0.7);
+    const sill = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.06, 1.3), new THREE.MeshLambertMaterial({ color: '#4a4f57' }));
+    sill.position.set(side * width * 0.74, -0.04, 0.7);
     frame.add(sill);
   }
   const bow = new THREE.Mesh(new THREE.BoxGeometry(width * 0.9, 0.03, 0.03), frameMaterial);

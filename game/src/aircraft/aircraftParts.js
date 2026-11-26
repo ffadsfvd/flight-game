@@ -61,11 +61,13 @@ export function wingPanel(root, tip, { camber = 0.02, capTip = true } = {}) {
   const profile = airfoilPoints(1, camber);
   const n = profile.length;
   const positions = [];
+  const uvs = [];
   const indices = [];
   for (const st of [root, tip]) {
-    for (const [px, py] of profile) {
+    profile.forEach(([px, py], j) => {
       positions.push(st.x, st.y + py * st.t * st.chord, st.le + px * st.chord);
-    }
+      uvs.push(st.x / 8, j / (n - 1));
+    });
   }
   for (let j = 0; j < n - 1; j += 1) {
     const a = j;
@@ -75,13 +77,36 @@ export function wingPanel(root, tip, { camber = 0.02, capTip = true } = {}) {
   if (capTip) {
     const centre = positions.length / 3;
     positions.push(tip.x, tip.y, tip.le + tip.chord * 0.4);
+    uvs.push(tip.x / 8, 0.5);
     for (let j = 0; j < n - 1; j += 1) indices.push(centre, n + j, n + j + 1);
   }
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
   geometry.setIndex(indices);
   geometry.computeVertexNormals();
   return geometry;
+}
+
+/** A skin texture for wings and tails: the paint colour with rib and spar panel lines. */
+export function panelLineTexture(color) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, 512, 128);
+  ctx.fillStyle = 'rgba(0,0,0,0.16)';
+  for (let x = 20; x < 512; x += 38) ctx.fillRect(x, 0, 1.5, 128);
+  for (const y of [30, 64, 98]) ctx.fillRect(0, y, 512, 1.5);
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.fillRect(0, 56, 512, 14);
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  for (let x = 20; x < 512; x += 38) for (const y of [26, 34, 94, 102]) ctx.fillRect(x - 0.5, y, 2.5, 2.5);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+  return texture;
 }
 
 /**
@@ -309,6 +334,13 @@ export function liveryTexture({ base, stripe, accent, registration, stripeBand =
   band(0.75 + b0 - 0.018, 0.75 + b0 - 0.004, 0.1, 1, accent);
   if (noseColor) band(0, 1, 0, 0.1, noseColor);
   if (tailBand) band(0, 1, tailBand[0], tailBand[1], tailBand[2]);
+  // Panel joints round the fuselage and a cabin door outline on the left side.
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  for (const v of [0.12, 0.3, 0.46, 0.62, 0.78]) ctx.fillRect(0, (1 - v) * 512, 1024, 2);
+  ctx.fillRect(0.48 * 1024, 0, 2, 512);
+  ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect((0.75 - 0.05) * 1024, (1 - 0.44) * 512, 0.1 * 1024, 0.12 * 512);
   ctx.fillStyle = '#18222e';
   ctx.font = '700 64px Bahnschrift, "Segoe UI", sans-serif';
   ctx.textAlign = 'center';
