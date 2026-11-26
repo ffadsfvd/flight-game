@@ -115,6 +115,41 @@ export const AIRCRAFT_DESIGNS = {
     lights: { left: [-3.9, 1.1, -0.85], right: [3.9, 1.1, -0.85], tail: [0, 0.42, 4.15], landing: [-1.6, -0.3, -1.15] },
     panel: { z: -0.42, y: 0.36, width: 0.72, tilt: 0.3 },
   },
+  pelican: {
+    livery: { base: '#f4f1ea', stripe: '#1f6f9a', accent: '#f0a020', wing: '#f4f1ea', tip: '#1f6f9a', tail: '#1f6f9a', textAt: 0.6 },
+    fuselage: {
+      squareness: 2.6,
+      sections: [
+        { z: -3.3, w: 0.2, h: 0.2, y: -0.05 }, { z: -3.1, w: 0.6, h: 0.55, y: -0.05 }, { z: -2.5, w: 1.05, h: 1.0, y: 0.0 },
+        { z: -1.6, w: 1.3, h: 1.35, y: 0.08 }, { z: 0.0, w: 1.36, h: 1.45, y: 0.1 }, { z: 1.8, w: 1.3, h: 1.4, y: 0.12 },
+        { z: 3.2, w: 0.9, h: 1.0, y: 0.3 }, { z: 4.6, w: 0.45, h: 0.55, y: 0.5 }, { z: 5.6, w: 0.12, h: 0.2, y: 0.62 }, { z: 5.8, w: 0.03, h: 0.05, y: 0.64 },
+      ],
+    },
+    canopy: { w: 1.0, h: 0.6, length: 1.3, y: 0.55, z: -1.95 },
+    pilot: { y: 0.15, z: -1.4 },
+    wing: {
+      root: { x: 0.6, le: -0.9, chord: 1.9, y: 0.78, t: 0.16 },
+      tip: { x: 8.2, le: -0.55, chord: 1.15, y: 0.95, t: 0.11 },
+      flap: [0.8, 4.2, 0.28], aileron: [5.2, 7.6, 0.27],
+    },
+    nacelles: [{ x: 2.6, y: 0.55, z: -2.55, length: 3.3, radius: 0.34 }],
+    propellers: [
+      { x: -2.6, y: 0.55, z: -2.62, radius: 1.0, blades: 3, spinner: 0.18, spinnerLength: 0.34 },
+      { x: 2.6, y: 0.55, z: -2.62, radius: 1.0, blades: 3, spinner: 0.18, spinnerLength: 0.34 },
+    ],
+    stabilizer: { root: { x: 0.2, le: 4.6, chord: 1.2, y: 0.62, t: 0.09 }, tip: { x: 3.0, le: 5.0, chord: 0.75, y: 0.66, t: 0.08 }, elevator: 0.38 },
+    fins: [{ x: 0, cant: 0, root: { x: 0.6, le: 4.1, chord: 1.6, y: 0, t: 0.1 }, tip: { x: 2.5, le: 5.0, chord: 0.8, y: 0, t: 0.08 }, rudder: 0.36 }],
+    gear: {
+      retracts: false,
+      legs: [
+        { attach: [0, -0.55, -2.6], wheel: [0, -1.25, -2.6] },
+        { attach: [-2.6, 0.25, 0.3], wheel: [-2.6, -1.25, 0.45], pant: true },
+        { attach: [2.6, 0.25, 0.3], wheel: [2.6, -1.25, 0.45], pant: true },
+      ],
+    },
+    lights: { left: [-8.25, 0.95, -0.2], right: [8.25, 0.95, -0.2], tail: [0, 0.7, 5.8], landing: [-2.6, 0.25, -2.45] },
+    panel: { z: -2.15, y: 0.3, width: 1.2, tilt: 0.32, yoke: true },
+  },
   swiftlet: {
     livery: { base: '#1f3f8a', stripe: '#f2b632', accent: '#ffffff', wing: '#1f3f8a', tip: '#f2b632', tail: '#f2b632', textAt: 0.6, nose: '#f4f2ec' },
     fuselage: {

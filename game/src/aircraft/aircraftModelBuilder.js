@@ -158,7 +158,7 @@ export function buildAircraftModel(id) {
     surfaces.rudders.push(built.surfaces.rudder);
   }
 
-  // Propeller or jet.
+  // Propeller(s) or jet. A twin's propellers turn together behind one facade, counter-rotating.
   let prop = null;
   let jet = null;
   if (design.propeller) {
@@ -166,6 +166,32 @@ export function buildAircraftModel(id) {
     prop = propeller({ radius: p.radius, blades: p.blades, spinner: p.spinner, spinnerLength: p.spinnerLength, spinnerColor: livery.accent === '#1e3a5f' ? '#e8641e' : livery.stripe });
     prop.group.position.set(0, p.y, p.z);
     root.add(prop.group);
+  }
+  if (design.propellers) {
+    const props = design.propellers.map((p) => {
+      const built = propeller({ radius: p.radius, blades: p.blades, spinner: p.spinner, spinnerLength: p.spinnerLength, spinnerColor: livery.stripe });
+      built.group.position.set(p.x, p.y, p.z);
+      root.add(built.group);
+      return built;
+    });
+    prop = {
+      spin: { rotation: { get z() { return props[0].spin.rotation.z; }, set z(v) { props.forEach((p, i) => { p.spin.rotation.z = i % 2 ? -v : v; }); } } },
+      disc: { material: { get opacity() { return props[0].disc.material.opacity; }, set opacity(v) { for (const p of props) p.disc.material.opacity = v; } }, set visible(v) { for (const p of props) p.disc.visible = v; } },
+      blades: props.flatMap((p) => p.blades),
+    };
+  }
+  if (design.nacelles) {
+    for (const n of design.nacelles) {
+      for (const side of [-1, 1]) {
+        const nacelle = new THREE.Mesh(loftFuselage([
+          { z: n.z, w: n.radius * 1.2, h: n.radius * 1.2, y: 0 }, { z: n.z + 0.35, w: n.radius * 2, h: n.radius * 2, y: 0 }, { z: n.z + n.length * 0.45, w: n.radius * 2.1, h: n.radius * 2.2, y: -0.04 },
+          { z: n.z + n.length * 0.85, w: n.radius * 1.3, h: n.radius * 1.4, y: -0.02 }, { z: n.z + n.length, w: 0.04, h: 0.06, y: 0 },
+        ], { radial: 14, squareness: 2.2 }), skin);
+        nacelle.position.set(n.x * side, n.y, 0);
+        nacelle.castShadow = true;
+        root.add(nacelle);
+      }
+    }
   }
   if (design.jet) {
     const j = design.jet;

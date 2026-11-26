@@ -1,6 +1,7 @@
-// The four aircraft of Solvane Aeroworks with their flight-model numbers: mass, wing, lift and
-// drag curves, engine, control rates, stability, gear and damage limits, plus what each costs and
-// unlocks in the career. Speeds are m/s, masses kg, forces N.
+// The five aircraft of Solvane Aeroworks (trainer, amphibian, biplane, twin and jet) with their
+// flight-model numbers: mass, wing, lift and drag curves, engine, control rates, stability, gear
+// and damage limits, plus what each costs and unlocks in the career. Speeds are m/s, masses kg,
+// forces N.
 
 export const AIRCRAFT = [
   {
@@ -59,6 +60,25 @@ export const AIRCRAFT = [
     crashPoints: [[0, -0.95, -2.15, 'prop'], [0, 0.05, -2.2, 'nose'], [-3.85, 1.0, -0.85, 'wingtip'], [3.85, 1.0, -0.85, 'wingtip'], [-3.6, -0.3, -0.5, 'wingtip'], [3.6, -0.3, -0.5, 'wingtip'], [0, -0.45, 4.15, 'tail'], [0, -0.75, 0.3, 'belly'], [0, 0.95, 0.25, 'canopy'], [0, 1.3, 4.0, 'fin']],
     eye: [0, 0.74, 0.25], chaseDistance: 13, chaseHeight: 3.2,
     cargoCapacity: 0, waterCapacity: 0,
+  },
+  {
+    id: 'pelican', name: 'Pelican T6', role: 'Twin-engine island hopper', maker: 'Solvane Aeroworks', registration: 'SV-640',
+    blurb: 'Two engines, eight seats and a high wing for rough island strips. Heavy, steady in gusts, carries the most cargo and lands short for its size.',
+    unlockRank: 3, price: 3400,
+    mass: 2300, fuelCapacity: 260, fuelBurnFull: 0.13, fuelBurnIdle: 0.016,
+    wingArea: 26, span: 16.4, chord: 1.6, cl0: 0.32, clAlpha: 5.0, alphaStall: 0.27, cd0: 0.036, inducedK: 0.045,
+    flapCl: 0.6, flapCd: 0.055, flapDetents: [0, 0.45, 1], gearCd: 0.012, sideArea: 1.4,
+    engine: 'prop', thrustStatic: 7600, propSpeedLimit: 88, spool: 0.8, propWash: 0.45, heatRate: 1.0,
+    refSpeed: 50, pitchRate: 0.85, rollRate: 1.1, yawRate: 0.5, response: 3.2,
+    pitchStability: 7.5, yawStability: 6.0, dihedral: 2.2, alphaTrim: 0.035,
+    inertia: [5200, 8200, 5600],
+    gLimit: 3.8, vne: 90, vFlapMax: 50, vGearMax: 999, vRotate: 31, vApproach: 36, gearRetracts: false,
+    gearLimitFpm: 560, gearCollapseFpm: 1050,
+    wheelRadius: 0.34, gear: [[0, -1.25, -2.6, 'nose'], [-2.6, -1.25, 0.45, 'main'], [2.6, -1.25, 0.45, 'main']],
+    floats: null,
+    crashPoints: [[-2.6, -0.42, -2.62, 'prop'], [2.6, -0.42, -2.62, 'prop'], [0, -0.1, -3.35, 'nose'], [-8.2, 0.85, -0.1, 'wingtip'], [8.2, 0.85, -0.1, 'wingtip'], [0, 0.0, 5.7, 'tail'], [0, -0.68, 0.3, 'belly'], [0, 0.95, -1.0, 'canopy'], [0, 2.6, 5.4, 'fin']],
+    eye: [0, 0.72, -1.35], chaseDistance: 25, chaseHeight: 5.6,
+    cargoCapacity: 700, waterCapacity: 0,
   },
   {
     id: 'swiftlet', name: 'Swiftlet S9', role: 'Aerobatic light jet', maker: 'Solvane Aeroworks', registration: 'SV-901',
