@@ -34,6 +34,7 @@ import { hasSavedCareer, loadCareer, saveCareer, clearCareer } from '../save/sav
 import { approachPlacement, createFlightSession, runwayPlacement } from './flightSession.js';
 import { createFlightEventHandler } from './flightEventHandler.js';
 import { createTitleBackdrop } from './titleBackdrop.js';
+import { parkDisplayAircraft } from './apronDisplay.js';
 
 const SCREENS = ['screen-title', 'screen-mission-board', 'screen-hangar', 'screen-logbook', 'screen-controls-help', 'screen-settings', 'screen-mission-briefing', 'screen-pause-menu', 'screen-mission-results'];
 
@@ -57,6 +58,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
   const session = createFlightSession({ scene: view.scene, world, wind, director: cameras, controls });
   const effects = createEffectsDirector(view.scene, world.landmarks.emitters);
   const gates = createGlidePathGates(view.scene);
+  parkDisplayAircraft(view.scene);
   const audio = createAudioEngine();
   const flightSounds = createFlightSounds(audio);
   const sfx = createSoundEffects(audio);
@@ -328,6 +330,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     cameras.replay.start(session.simulation.recorder.frames(), world);
     cameras.view = 'replay';
     gates.set(null);
+    hud.show(false);
     sfx.play(result.success ? 'success' : 'fail');
     router.show('screen-mission-results', resultsHtml(result, progress), {
       retry: () => startMission(mission, freeAircraft),
@@ -419,10 +422,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
   window.addEventListener('keydown', (event) => {
     if (state === 'flying') return;
     if (event.code === 'Escape') router.back();
-    if (event.code === 'Enter') {
-      if (state === 'results') startMission(mission, freeAircraft);
-      else if (router.open === 'screen-mission-briefing') startMission(mission ?? null);
-    }
+    if (event.code === 'Enter') router.confirm();
   });
 
   function frame(dt, actionsOverride = null) {

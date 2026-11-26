@@ -7,6 +7,9 @@ const UP = new THREE.Vector3(0, 1, 0);
 
 export function createAiFlyer(scene, { aircraft = 'swiftlet', path, speed = 60, startDelay = 0, lateral = 0, start, name = 'Rival', color = '#ff6a4a', seed = Math.random() * 10 }) {
   const rig = buildAircraftModel(aircraft);
+  rig.root.traverse((o) => {
+    if (o.isLight) o.visible = false;
+  });
   scene.add(rig.root);
   const points = start ? [start.clone(), ...path] : path;
   const curve = new THREE.CatmullRomCurve3(points, false, 'centripetal', 0.5);

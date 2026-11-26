@@ -29,7 +29,7 @@ export function stageScreenshot(name, game) {
     game.startMission(missionById('first-solo'));
     game.runner.skipTo(2);
     const spec = session.spec;
-    session.simulation.start(spec, { ...approachPlacement(spec, 'marenza', 0, 760, { flaps: 2, offset: 0, height: 2 }), throttle: 0.3 }, { birds: false });
+    session.simulation.start(spec, { ...approachPlacement(spec, 'marenza', 0, 600, { flaps: 2, offset: 0, height: 2 }), throttle: 0.3 }, { birds: false });
     session.body.landingLights = true;
     game.controls.controls.throttle = 0.3;
     Object.assign(game.cameras.chaseFraming, { height: 1.65, distance: 1.12, lookAhead: 120, lookUp: -3, yaw: 0 });

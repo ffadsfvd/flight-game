@@ -11,7 +11,7 @@ export function resultsHtml(result, progress) {
   const landing = result.landing ? `<h3>Landing report · ${result.landing.grade}</h3><table class="result-table">${result.landing.remarks.map((r) => `<tr><td>${r}</td><td></td></tr>`).join('')}</table>` : '';
   const rows = result.rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
   const promoted = progress?.promoted ? `<p style="color:#ffc46a"><b>Promoted to ${progress.rank.name}!</b></p>` : '';
-  return `<div class="sheet"><div class="grade-badge">${grade}</div><div class="result-banner ${tone}">${banner}</div>
+  return `<div class="replay-tag">● REPLAY · the last seconds of the flight</div><div class="sheet"><div class="grade-badge">${grade}</div><div class="result-banner ${tone}">${banner}</div>
   <div class="result-cause">${result.cause ?? (result.success ? `${result.title}: score ${result.score} of 100.` : '')}</div>
   ${landing}<h3>Flight</h3><table class="result-table">${rows}<tr><td>Pay</td><td>+${result.money} cr</td></tr><tr><td>Repairs</td><td>−${result.repairs} cr</td></tr><tr><td>Experience</td><td>+${result.xp} XP</td></tr></table>${promoted}
   <div class="btn-row"><button class="btn" data-action="retry">Retry <small>Enter</small></button><button class="btn" data-action="board">Mission board</button></div></div>`;

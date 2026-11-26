@@ -36,7 +36,7 @@ export function createTitleBackdrop(session, director, camera) {
       }
       camera.up.set(0, 1, 0);
       camera.lookAt(camera.position.x + forward.x * 100, camera.position.y + forward.y * 100, camera.position.z + forward.z * 100);
-      position.copy(camera.position).addScaledVector(forward, 36).addScaledVector(right, 10.5).addScaledVector(up, -3.2 + Math.sin(time * 0.7) * 0.4);
+      position.copy(camera.position).addScaledVector(forward, 29).addScaledVector(right, 8.6).addScaledVector(up, -2.9 + Math.sin(time * 0.7) * 0.4);
       const motion = Math.atan2(right.x, -right.z);
       const heading = motion - THREE.MathUtils.degToRad(28);
       euler.set(0.03 + Math.sin(time * 0.5) * 0.01, -heading, -0.16 + Math.sin(time * 0.33) * 0.04);

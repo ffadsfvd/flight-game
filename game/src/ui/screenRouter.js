@@ -34,5 +34,8 @@ export function createScreenRouter(ids, onClick = () => {}) {
     back() {
       handlers.back?.();
     },
+    confirm() {
+      handlers.confirm?.();
+    },
   };
 }

@@ -149,7 +149,8 @@ export function createMissionRunner(ctx) {
     const rows = [];
     for (const o of objectives) for (const r of o.rows ?? []) rows.push(r);
     const body = ctx.body;
-    const condition = overallCondition(body);
+    const severityCondition = { crash: 0, ditch: 0.3, belly: 0.5 }[ending?.severity];
+    const condition = severityCondition ?? overallCondition(body);
     if (mission?.cargo && success) {
       const cargo = Math.round(Math.max(0, condition) * 100);
       rows.push(['Cargo condition', `${cargo}%`]);
@@ -159,7 +160,7 @@ export function createMissionRunner(ctx) {
     const medal = success ? medalFor(mission, score) : 'none';
     const reward = mission?.reward ?? { money: 0, xp: 0 };
     const money = success ? Math.round(reward.money * (0.5 + score / 200)) : 0;
-    const repairs = Math.round((1 - condition) * 400);
+    const repairs = Math.round((1 - condition) * 500);
     const xp = success ? Math.round(reward.xp * ({ gold: 1.3, silver: 1.1, bronze: 1, none: 0.8 }[medal])) : Math.round(reward.xp * 0.1);
     const landing = objectives.map((o) => o.report).filter(Boolean).at(-1) ?? landings.at(-1) ?? null;
     result = {

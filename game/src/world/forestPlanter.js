@@ -4,6 +4,8 @@ import * as THREE from 'three';
 import { mergeColoredParts } from '../core/geometryMerge.js';
 import { hash2 } from '../core/seededRandom.js';
 import { forestDensity } from './vegetationMap.js';
+import { TOWNS } from './archipelagoMap.js';
+import { airfieldAt } from './airfieldDirectory.js';
 
 function pineGeometry() {
   const trunk = new THREE.CylinderGeometry(0.35, 0.5, 5, 5);
@@ -57,6 +59,7 @@ export function plantForests(terrain, { maxTrees = 11000, maxPalms = 900 } = {})
   const pines = [];
   const oaks = [];
   const palms = [];
+  const orchards = [];
   const spacing = 30;
   const half = terrain.half - 200;
   for (let z = -half; z < half; z += spacing) {
@@ -68,12 +71,19 @@ export function plantForests(terrain, { maxTrees = 11000, maxPalms = 900 } = {})
       const pz = z + (hash2(ix, iz, 7) - 0.5) * spacing * 0.9;
       const h = terrain.heightAt(px, pz);
       if (h < 1.5) continue;
-      if (h < 11 && palms.length < maxPalms) {
-        if (r < 0.1 && terrain.normalAt(px, pz, { x: 0, y: 0, z: 0 }).y > 0.93) palms.push([px, h, pz, r]);
+      if (h < 6 && palms.length < maxPalms) {
+        if (r < 0.16 && terrain.normalAt(px, pz, { x: 0, y: 0, z: 0 }).y > 0.93) palms.push([px, h, pz, r]);
         continue;
       }
       const density = forestDensity(terrain, px, pz, h);
-      if (density <= 0 || r > density * 0.95) continue;
+      if (density <= 0 || r > density * 0.95) {
+        if (orchardAt(terrain, px, pz, h) && pines.length + oaks.length < maxTrees) {
+          const ox = Math.round(px / 18) * 18;
+          const oz = Math.round(pz / 18) * 18;
+          orchards.push([ox, terrain.heightAt(ox, oz), oz, r]);
+        }
+        continue;
+      }
       if (pines.length + oaks.length >= maxTrees) continue;
       (hash2(ix, iz, 11) < 0.55 + (h > 200 ? 0.3 : 0) ? pines : oaks).push([px, h, pz, r]);
     }
@@ -104,5 +114,34 @@ export function plantForests(terrain, { maxTrees = 11000, maxPalms = 900 } = {})
   build(pines, pineGeometry(), 0.04);
   build(oaks, oakGeometry(), 0.07);
   build(palms, palmGeometry(), 0.05);
-  return { group, counts: { pines: pines.length, oaks: oaks.length, palms: palms.length } };
+  build(orchards, olivetreeGeometry(), 0.03);
+  return { group, counts: { pines: pines.length, oaks: oaks.length, palms: palms.length, orchards: orchards.length } };
+}
+
+/** A small round-crowned orchard tree (olive or citrus). */
+function olivetreeGeometry() {
+  const trunk = new THREE.CylinderGeometry(0.25, 0.35, 2.2, 5);
+  trunk.translate(0, 1.1, 0);
+  const crown = new THREE.IcosahedronGeometry(2.4, 0);
+  crown.scale(1.1, 0.75, 1.1);
+  crown.translate(0, 3.2, 0);
+  return mergeColoredParts([
+    { geometry: trunk, color: '#6a5238' },
+    { geometry: crown, color: '#7d9446' },
+  ]);
+}
+
+/** Orchards: some farmland plots on the flat lowland are planted in rows of trees. */
+function orchardAt(terrain, x, z, h) {
+  if (h < 4 || h > 60) return false;
+  const u = (x * 0.95 + z * 0.31) / 170;
+  const v = (-x * 0.31 + z * 0.95) / 120;
+  if (hash2(Math.floor(u), Math.floor(v), 33) > 0.8) return false;
+  if (hash2(Math.floor(u), Math.floor(v), 77) > 0.22) return false;
+  const fu = u - Math.floor(u);
+  const fv = v - Math.floor(v);
+  if (fu < 0.08 || fu > 0.92 || fv < 0.08 || fv > 0.92) return false;
+  if (airfieldAt(x, z, 260)) return false;
+  for (const town of TOWNS) if (Math.hypot(x - town.x, z - town.z) < town.radius * 1.15) return false;
+  return terrain.normalAt(x, z, { x: 0, y: 0, z: 0 }).y > 0.97;
 }
