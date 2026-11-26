@@ -17,6 +17,7 @@ import { missionBoardHtml } from '../ui/missionBoard.js';
 import { briefingHtml } from '../ui/briefingScreen.js';
 import { hangarHtml } from '../ui/hangarScreen.js';
 import { logbookHtml } from '../ui/logbookScreen.js';
+import { challengesHtml } from '../ui/challengesScreen.js';
 import { controlsHelpHtml } from '../ui/controlsHelp.js';
 import { settingsHtml, FREE_STARTS } from '../ui/settingsScreen.js';
 import { pauseMenuHtml } from '../ui/pauseMenu.js';
@@ -39,7 +40,7 @@ import { parkDisplayAircraft } from './apronDisplay.js';
 import { createAirTraffic } from '../world/airTraffic.js';
 import { createAtcRadio } from './atcRadio.js';
 
-const SCREENS = ['screen-title', 'screen-mission-board', 'screen-hangar', 'screen-logbook', 'screen-controls-help', 'screen-settings', 'screen-mission-briefing', 'screen-pause-menu', 'screen-mission-results'];
+const SCREENS = ['screen-title', 'screen-mission-board', 'screen-hangar', 'screen-logbook', 'screen-challenges', 'screen-controls-help', 'screen-settings', 'screen-mission-briefing', 'screen-pause-menu', 'screen-mission-results'];
 
 /** Where a mission's `start` puts an aircraft of `spec`. */
 export function placementFor(start, spec, world) {
@@ -154,6 +155,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
       free: () => startMission(null),
       hangar: () => showHangar('title'),
       logbook: () => showLogbook('title'),
+      challenges: () => showChallenges('title'),
       controls: () => showControls('title'),
       settings: () => showSettings('title'),
       back: () => {},
@@ -169,6 +171,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
       brief: (id) => showBriefing(missionById(id)),
       back: showTitle,
       hangar: () => showHangar('board'),
+      challenges: () => showChallenges('board'),
       free: () => startMission(null),
     });
   }
@@ -223,6 +226,11 @@ export function createGameDirector({ view, world, shotMode = false }) {
   function showLogbook(from) {
     menuReturn = from;
     router.show('screen-logbook', logbookHtml(career), { back: () => back(menuReturn) });
+  }
+
+  function showChallenges(from) {
+    menuReturn = from;
+    router.show('screen-challenges', challengesHtml(career), { back: () => back(menuReturn) });
   }
 
   function showControls(from) {
@@ -344,7 +352,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
   function finishFlight(result) {
     const body = session.body;
     const spec = body.spec;
-    const progress = applyFlightResult(career, result, { title: result.title, aircraft: spec.name, seconds: session.simulation.flightTime, distance: session.simulation.distance, landings: landingsThisFlight });
+    const progress = applyFlightResult(career, result, { title: result.title, aircraft: spec.name, aircraftId: spec.id, night: light.night > 0.5, seconds: session.simulation.flightTime, distance: session.simulation.distance, landings: landingsThisFlight });
     save();
     state = 'results';
     controls.mouse.unlock();

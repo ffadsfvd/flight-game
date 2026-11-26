@@ -25,5 +25,5 @@ export function missionBoardHtml(career) {
     return `<h3>Chapter ${chapter.id}: ${chapter.name}${locked ? ` · unlocks at ${RANKS[chapter.rank].name}` : ''}</h3><p>${chapter.subtitle}</p><div class="mission-grid">${cards}</div>`;
   }).join('');
   return `<div class="sheet"><h2>Mission Board</h2><p><b>${rank.name}</b> · ${career.money.toLocaleString('en-US')} cr · ${career.xp} XP${rank.next ? ` · ${rank.toNext} XP to ${rank.next}` : ''}</p>${chapters}
-  <div class="btn-row"><button class="btn" data-action="back">Back</button><button class="btn" data-action="hangar">Hangar</button><button class="btn" data-action="free">Free Flight</button></div></div>`;
+  <div class="btn-row"><button class="btn" data-action="back">Back</button><button class="btn" data-action="hangar">Hangar</button><button class="btn" data-action="challenges">Challenges</button><button class="btn" data-action="free">Free Flight</button></div></div>`;
 }

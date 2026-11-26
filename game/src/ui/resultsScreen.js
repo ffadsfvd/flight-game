@@ -46,11 +46,12 @@ export function resultsHtml(result, progress) {
   const rank = progress?.rank;
   const rankBar = rank ? `<div class="debrief-rank"><span>${rank.name}</span><span class="debrief-bar wide"><i class="tone-good" style="width:${Math.round(rank.fraction * 100)}%"></i></span><small>${rank.next ? `${rank.toNext} XP to ${rank.next}` : 'Top rank'}</small></div>` : '';
   const promoted = progress?.promoted ? `<p class="debrief-promoted">Promoted to ${rank.name}!</p>` : '';
+  const challenges = (progress?.challenges ?? []).map((ch) => `<p class="debrief-promoted">Challenge complete: ${ch.title} (+${ch.reward.money} cr, +${ch.reward.xp} XP)</p>`).join('');
   return `<div class="replay-tag">● REPLAY · ${result.severity === 'crash' ? 'the crash' : result.landing ? 'the touchdown' : 'the last seconds'}</div><div class="sheet debrief">
   <div class="debrief-head"><div><div class="result-banner ${tone}">${banner}</div><div class="debrief-title">${result.title}</div></div>${medalRow(result)}</div>
   <div class="result-cause"><b>What happened:</b> ${what}</div>
   <div class="debrief-columns"><div>${landingBreakdown(result.landing) || crashReport(result.impact, result.severity) || '<h3>Landing grade</h3><p class="debrief-none">No landing on this flight.</p>'}</div>
   <div><h3>Flight</h3><table class="result-table">${rows}</table>
-  <h3>Earned</h3><table class="result-table"><tr><td>Pay</td><td>+${result.money} cr</td></tr><tr><td>Repairs</td><td>−${result.repairs} cr</td></tr><tr><td>Experience</td><td>+${result.xp} XP</td></tr></table>${rankBar}${promoted}</div></div>
+  <h3>Earned</h3><table class="result-table"><tr><td>Pay</td><td>+${result.money} cr</td></tr><tr><td>Repairs</td><td>−${result.repairs} cr</td></tr><tr><td>Experience</td><td>+${result.xp} XP</td></tr></table>${rankBar}${promoted}${challenges}</div></div>
   <div class="btn-row"><button class="btn" data-action="retry">Retry <small>Enter</small></button><button class="btn" data-action="board">Mission board</button></div></div>`;
 }

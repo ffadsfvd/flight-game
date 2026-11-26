@@ -4,12 +4,13 @@ import { AIRCRAFT, UPGRADES, aircraftById } from '../aircraft/aircraftCatalog.js
 import { CHAPTERS, MISSIONS } from '../missions/missionCatalog.js';
 import { RANKS, rankIndexFor, rankProgress } from './pilotRanks.js';
 import { createLogbook, logFlight } from './pilotLogbook.js';
+import { claimChallenges } from './challengeBoard.js';
 
 export const DEFAULT_SETTINGS = { invertPitch: false, flightAssist: true, volume: 0.8, music: 0.5, mouseSensitivity: 1, birdStrikes: true, timeOfDay: 'golden', freeStart: 'marenza-27', quality: 'high' };
 
 /** A brand new career. */
 export function createCareer() {
-  return { version: 1, money: 600, xp: 0, owned: ['wren'], selected: 'wren', upgrades: { wren: [], heron: [], swiftlet: [] }, missions: {}, logbook: createLogbook(), settings: { ...DEFAULT_SETTINGS }, started: true };
+  return { version: 1, money: 600, xp: 0, owned: ['wren'], selected: 'wren', upgrades: { wren: [], heron: [], kestrel: [], pelican: [], swiftlet: [] }, missions: {}, challenges: {}, logbook: createLogbook(), settings: { ...DEFAULT_SETTINGS }, started: true };
 }
 
 export function careerRank(career) {
@@ -67,8 +68,9 @@ export function applyFlightResult(career, result, flight) {
   career.money = Math.max(0, career.money + result.money - result.repairs);
   career.xp += result.xp;
   logFlight(career.logbook, { ...flight, result, crashed: result.severity === 'crash' });
+  const challenges = claimChallenges(career);
   const after = rankIndexFor(career.xp);
-  return { promoted: after > before, rank: rankProgress(career.xp) };
+  return { promoted: after > before, rank: rankProgress(career.xp), challenges };
 }
 
 /** Counts for the title screen's feature line, computed from the real data. */

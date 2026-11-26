@@ -106,3 +106,13 @@ td.tone-good { color: #6be38a; } td.tone-warn { color: #ffc46a; } td.tone-bad { 
 .debrief-rank span:first-child { font-weight: 800; color: #ffc46a; }
 .debrief-promoted { color: #ffc46a; font-weight: 800; margin: 0.3em 0 0; }
 .debrief-none { color: var(--muted, #9aa4b2); font-size: 0.9em; }
+#screen-challenges .sheet { left: 50%; top: 50%; transform: translate(-50%, -50%); width: 56em; max-height: 92%; overflow: auto; }
+.challenge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6em; }
+.challenge-card { padding: 0.55em 0.7em; border-radius: 0.5em; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); }
+.challenge-card.is-done { border-color: rgba(107, 227, 138, 0.55); background: rgba(107, 227, 138, 0.08); }
+.challenge-head { display: flex; justify-content: space-between; gap: 0.5em; font-size: 0.95em; }
+.challenge-head span { color: #ffc46a; font-size: 0.85em; white-space: nowrap; }
+.challenge-text { font-size: 0.85em; color: var(--muted, #9aa4b2); margin: 0.15em 0 0.2em; }
+.challenge-progress { display: flex; align-items: center; gap: 0.5em; font-size: 0.8em; }
+.challenge-progress .debrief-bar { flex: 1; margin: 0; }
+.challenge-progress small { white-space: nowrap; }

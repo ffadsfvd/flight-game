@@ -3,12 +3,13 @@
 import { AIRFIELDS } from '../world/airfieldDirectory.js';
 import { ISLANDS } from '../world/archipelagoMap.js';
 import { featureCounts, careerRank } from '../career/careerProgress.js';
+import { CHALLENGES } from '../career/challengeBoard.js';
 
 /** HTML for the title screen. */
 export function titleScreenHtml(career, hasSave) {
   const c = featureCounts();
   const islands = ISLANDS.filter((i) => i.rx > 1000).length;
-  const features = `${c.missions} missions in ${c.chapters} chapters · ${c.aircraft} aircraft · ${AIRFIELDS.length} airfields · ${islands} islands · medals & logbook`;
+  const features = `${c.missions} missions in ${c.chapters} chapters · ${c.aircraft} aircraft · ${AIRFIELDS.length} airfields · ${islands} islands · ${CHALLENGES.length} challenges`;
   const rank = career ? careerRank(career) : null;
   const passed = career ? Object.values(career.missions).filter((m) => m.passed).length : 0;
   return `
@@ -23,6 +24,7 @@ export function titleScreenHtml(career, hasSave) {
     <button class="btn" data-action="free">Free Flight <small>any aircraft</small></button>
     <button class="btn" data-action="hangar">Hangar <small>aircraft &amp; upgrades</small></button>
     <button class="btn" data-action="logbook">Logbook</button>
+    <button class="btn" data-action="challenges">Challenges <small>goals &amp; rewards</small></button>
     <button class="btn" data-action="controls">Controls</button>
     <button class="btn" data-action="settings">Settings</button>
   </div>
