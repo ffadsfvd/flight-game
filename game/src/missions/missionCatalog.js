@@ -88,7 +88,7 @@ export const MISSIONS = [
   {
     id: 'firebreak', chapter: 2, title: 'Fire on Calvera', kind: 'Firefighting', giver: 'bruno', aircraft: 'heron',
     summary: 'A forest fire is spreading on Calvera. Drop water on the hot spots and scoop more from the sea.',
-    time: 'golden', wind: { from: 220, speed: 4, gust: 2, turbulence: 0.6 }, fuel: 0.6,
+    time: 'golden', wind: { from: 10, speed: 4, gust: 2, turbulence: 0.6 }, fuel: 0.6,
     start: { type: 'air', x: 3200, y: 230, z: -500, heading: 5, speed: 42, flaps: 1, throttle: 0.65, gearDown: false },
     briefing: [['bruno', 'Fire Base Calvera. Pine forest burning above San Calvo. Two hot spots, moving uphill.'], ['bruno', 'Your tank is full. Release low over the flames with Space, then skim the sea at speed to scoop more. Gear up on the water!']],
     stages: [

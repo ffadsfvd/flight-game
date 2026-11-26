@@ -111,7 +111,7 @@ export function createEffectsDirector(scene, worldEmitters) {
           if (random() < 0.3) sparks.emit(f.x + Math.cos(a) * r, f.y + 3, f.z + Math.sin(a) * r, (random() - 0.5) * 3, 4 + random() * 6, (random() - 0.5) * 3, { life: 0.7, size: 2.5, grow: 0, alpha: 0.9, color: [1, 0.7, 0.3], drag: 1, lift: 1 });
         }
         if (random() < dt * 12 * f.intensity) {
-          smoke.emit(f.x + (random() - 0.5) * f.radius, f.y + 10, f.z + (random() - 0.5) * f.radius, 0, 8 + random() * 4, 0, { life: 18, size: 12, grow: 8, alpha: 0.3, color: [0.46, 0.42, 0.38], drag: 0.25, lift: 0.4 });
+          smoke.emit(f.x + (random() - 0.5) * f.radius, f.y + 10, f.z + (random() - 0.5) * f.radius, 0, 8 + random() * 4, 0, { life: 16, size: 10, grow: 5, alpha: 0.34, color: [0.3, 0.28, 0.27], drag: 0.25, lift: 0.4 });
         }
       }
       for (const f of flares) {

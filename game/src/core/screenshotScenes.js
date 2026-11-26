@@ -57,18 +57,27 @@ export function stageScreenshot(name, game) {
     game.controls.mouse.state.lookY = 0.09;
     run(game, 1 / 60);
   } else if (name === 'firefight') {
+    // Second pass over the fire line on Calvera's south slope: the west flank is already out, the
+    // Heron banks along the slope with its water curtain falling on the east hot spot, the smoke
+    // drifting off to the side, San Calvo and the coast beyond.
     game.startMission(missionById('firebreak'));
-    const fire = { x: 3250, z: -1780 };
-    const ground = Math.max(0, game.world.terrain.heightAt(fire.x, fire.z));
     for (let i = 0; i < 420; i += 1) game.effects.update(STEP, 700, game.wind.state.current, null, game.camera, false);
-    const heading = 100;
-    const h = THREE.MathUtils.degToRad(heading);
-    const start = { x: fire.x - Math.sin(h) * 280, z: fire.z + Math.cos(h) * 280 };
-    session.simulation.start(session.spec, { x: start.x, y: ground + 58, z: start.z, heading, pitch: 2, speed: 41, flaps: 0, throttle: 0.85, gearDown: false }, { birds: false });
+    const passOver = (fire, heading, height, back, aside = 0) => {
+      const h = THREE.MathUtils.degToRad(heading);
+      const x = fire.x - Math.sin(h) * back - Math.cos(h) * aside;
+      const z = fire.z + Math.cos(h) * back - Math.sin(h) * aside;
+      return { x, y: Math.max(0, game.world.terrain.heightAt(x, z)) + height, z, heading };
+    };
+    session.simulation.start(session.spec, { ...passOver({ x: 3250, z: -1780 }, 100, 55, 130), pitch: 1, speed: 41, flaps: 0, throttle: 0.85, gearDown: false }, { birds: false });
     session.body.water = session.spec.waterCapacity;
     game.controls.controls.throttle = 0.85;
-    Object.assign(game.cameras.chaseFraming, { height: 1.55, distance: 1.2, lookAhead: 150, lookUp: -2 });
-    run(game, 2.4, { 105: ['action'] });
+    run(game, 5, { 2: ['action'] });
+    session.simulation.start(session.spec, { ...passOver({ x: 3600, z: -1730 }, 95, 50, 150, 35), pitch: 2, bank: 14, speed: 41, flaps: 0, throttle: 0.85, gearDown: false }, { birds: false });
+    session.body.water = session.spec.waterCapacity;
+    document.getElementById('toast-messages').replaceChildren();
+    Object.assign(game.cameras.chaseFraming, { height: 2.3, distance: 1.2, lookAhead: 6, lookUp: -7, yaw: -0.42 });
+    game.cameras.view = 'chase';
+    run(game, 1.9, { 62: ['action'] });
     game.hud.radio.say('bruno', 'Good drop on the west flank! Two hot spots left, come round again.', { priority: true });
     game.hud.radio.hold();
     run(game, 0.2);
