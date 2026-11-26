@@ -444,7 +444,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
       position: body.position,
       mission: runner.trackerInfo(),
       markers: runner.markers(),
-      others: [...runner.others(), ...traffic.flyers.map((f) => ({ x: f.rig.root.position.x, z: f.rig.root.position.z, color: '#d8e2ee' }))],
+      others: [...runner.others(), ...[...traffic.flyers, ...traffic.holding].map((f) => ({ x: f.rig.root.position.x, z: f.rig.root.position.z, color: '#d8e2ee' }))],
       guidance,
       targetKt: body.spec.vApproach * 1.944,
       career: { rank: rank.name, money: career.money, clock: light.clock, weather: light.label, aircraft: body.spec.name },
