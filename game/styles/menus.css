@@ -1,0 +1,78 @@
+/* Menu screens: title, mission board, hangar, logbook, controls, settings, briefing, pause, results. */
+.screen { position: fixed; inset: 0; display: none; pointer-events: auto; }
+.screen.is-open { display: block; }
+.screen .sheet {
+  position: absolute; background: rgba(8, 14, 27, 0.86); border: 1px solid var(--panel-edge);
+  border-radius: 0.7em; box-shadow: 0 0.5em 2.2em rgba(0, 0, 0, 0.5); padding: 1.2em 1.4em; box-sizing: border-box;
+}
+.screen h2 { margin: 0 0 0.6em; font-size: 1.6em; color: var(--accent); letter-spacing: 0.06em; }
+.screen h3 { margin: 0.8em 0 0.35em; font-size: 1.0em; color: var(--accent-2); letter-spacing: 0.1em; text-transform: uppercase; }
+.screen p { line-height: 1.4; margin: 0.35em 0; }
+.btn {
+  display: block; width: 100%; box-sizing: border-box; margin: 0.32em 0; padding: 0.55em 0.9em; text-align: left;
+  font: 700 1.05em var(--font); letter-spacing: 0.05em; color: var(--text); cursor: pointer;
+  background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 0.4em;
+}
+.btn:hover, .btn.is-focus { background: rgba(255, 196, 106, 0.22); border-color: var(--accent); color: #fff; }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.btn small { float: right; font-weight: 400; color: var(--muted); }
+.btn-row { display: flex; gap: 0.6em; margin-top: 0.8em; }
+.btn-row .btn { text-align: center; }
+
+#screen-title .brand { position: absolute; left: 4.5%; top: 9%; }
+#screen-title .brand h1 { margin: 0; font-size: 4.3em; letter-spacing: 0.04em; color: #fff4df; text-shadow: 0 0.06em 0.5em rgba(80, 30, 0, 0.6); line-height: 1; }
+#screen-title .brand h1 span { color: var(--accent); }
+#screen-title .brand .tagline { font-size: 1.25em; color: #ffe3bd; margin-top: 0.35em; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7); }
+#screen-title .brand .features { margin-top: 0.7em; display: inline-block; padding: 0.35em 0.8em; font-size: 1.0em; font-weight: 700; color: #0d1726; background: rgba(255, 196, 106, 0.92); border-radius: 0.35em; letter-spacing: 0.03em; }
+#screen-title .menu { left: 4.5%; top: 36%; width: 21em; }
+#screen-title .career-card { right: 3%; bottom: 5%; width: 21em; font-size: 0.95em; }
+#screen-title .career-card b { color: var(--accent); }
+#screen-title .hint { position: absolute; left: 4.5%; bottom: 3%; color: #ffe3bd; font-size: 0.9em; text-shadow: 0 1px 4px #000; }
+
+#screen-mission-board .sheet, #screen-hangar .sheet, #screen-logbook .sheet, #screen-controls-help .sheet, #screen-settings .sheet { left: 50%; top: 50%; transform: translate(-50%, -50%); width: 56em; max-height: 92%; overflow: auto; }
+.mission-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5em; }
+.mission-card { padding: 0.55em 0.7em; border-radius: 0.45em; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); cursor: pointer; }
+.mission-card:hover { border-color: var(--accent); background: rgba(255, 196, 106, 0.14); }
+.mission-card.is-locked { opacity: 0.45; cursor: default; }
+.mission-card .kind { font-size: 0.7em; color: var(--accent-2); letter-spacing: 0.12em; text-transform: uppercase; }
+.mission-card .name { font-weight: 700; font-size: 1.05em; }
+.mission-card .meta { font-size: 0.78em; color: var(--muted); margin-top: 0.15em; }
+.mission-card .medal { float: right; font-weight: 800; }
+.medal-gold { color: #ffd34d; } .medal-silver { color: #d9e2ec; } .medal-bronze { color: #e0a06a; } .medal-none { color: #6c7685; }
+
+.aircraft-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6em; }
+.aircraft-card { padding: 0.7em; border-radius: 0.5em; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); }
+.aircraft-card.is-selected { border-color: var(--accent); background: rgba(255, 196, 106, 0.14); }
+.aircraft-card h4 { margin: 0 0 0.2em; font-size: 1.15em; color: var(--accent); }
+.aircraft-card .role { font-size: 0.8em; color: var(--muted); }
+.aircraft-card dl { display: grid; grid-template-columns: auto 1fr; gap: 0.1em 0.6em; font-size: 0.82em; margin: 0.5em 0; }
+.aircraft-card dt { color: var(--muted); } .aircraft-card dd { margin: 0; }
+.upgrade { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; margin: 0.2em 0; }
+.upgrade button { font: 700 0.85em var(--font); padding: 0.2em 0.5em; border-radius: 0.3em; border: 1px solid var(--panel-edge); background: rgba(255, 255, 255, 0.08); color: var(--text); cursor: pointer; }
+.upgrade button:disabled { opacity: 0.4; cursor: default; }
+
+.keys { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 0.3em 0.8em; font-size: 0.92em; }
+.keys kbd { display: inline-block; min-width: 1.4em; padding: 0.05em 0.4em; border-radius: 0.25em; background: #f1e6d2; color: #1b1308; font: 700 0.9em var(--font); text-align: center; box-shadow: 0 0.12em 0 #9c8b6d; }
+.setting { display: flex; justify-content: space-between; align-items: center; padding: 0.4em 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.setting select, .setting input { font: 600 0.95em var(--font); }
+
+#screen-mission-briefing .sheet { left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40em; }
+.dialogue { display: flex; gap: 0.8em; margin: 0.5em 0; align-items: flex-start; }
+.dialogue canvas { width: 4.6em; height: 4.6em; border-radius: 0.4em; border: 1px solid var(--panel-edge); flex: none; }
+.dialogue .who { color: var(--accent); font-weight: 700; font-size: 0.85em; letter-spacing: 0.06em; text-transform: uppercase; }
+.brief-facts { display: flex; gap: 0.5em; margin: 0.6em 0; }
+.brief-facts div { flex: 1; background: rgba(255, 255, 255, 0.07); border-radius: 0.35em; padding: 0.3em 0.5em; font-size: 0.85em; }
+.brief-facts b { display: block; color: var(--accent-2); font-size: 1.05em; }
+
+#screen-pause-menu { background: rgba(5, 9, 18, 0.45); }
+#screen-pause-menu .sheet { left: 50%; top: 50%; transform: translate(-50%, -50%); width: 22em; }
+
+#screen-mission-results { background: rgba(5, 9, 18, 0.35); }
+#screen-mission-results .sheet { left: 50%; top: 50%; transform: translate(-50%, -50%); width: 34em; }
+.result-banner { font-size: 2.1em; font-weight: 800; letter-spacing: 0.05em; margin-bottom: 0.1em; }
+.result-banner.good { color: var(--good); } .result-banner.bad { color: var(--danger); }
+.result-cause { color: var(--text); font-size: 1.02em; margin-bottom: 0.6em; }
+.result-table { width: 100%; border-collapse: collapse; font-size: 0.92em; }
+.result-table td { padding: 0.22em 0.3em; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.result-table td:last-child { text-align: right; font-weight: 700; }
+.grade-badge { float: right; font-size: 2.6em; font-weight: 800; color: var(--accent); line-height: 1; }

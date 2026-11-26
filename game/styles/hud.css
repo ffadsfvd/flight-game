@@ -1,0 +1,98 @@
+/* In-flight HUD: every size is in em so the whole HUD scales with --ui (set from the window size). */
+:root {
+  --ui: 1;
+  --panel-bg: rgba(9, 16, 30, 0.74);
+  --panel-edge: rgba(255, 196, 120, 0.55);
+  --accent: #ffc46a;
+  --accent-2: #5fe3d0;
+  --text: #f4efe6;
+  --muted: #a9b4c4;
+  --warn: #ffb02e;
+  --danger: #ff4d3d;
+  --good: #6be38a;
+  --font: Bahnschrift, "DIN Alternate", "Segoe UI", system-ui, sans-serif;
+}
+
+html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1220; }
+body { font-family: var(--font); font-size: calc(16px * var(--ui)); color: var(--text); user-select: none; }
+#world-view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+#status-line { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.hud { position: fixed; inset: 0; pointer-events: none; }
+.hud.is-hidden, .is-hidden { display: none !important; }
+.panel {
+  position: absolute; background: var(--panel-bg); border: 1px solid var(--panel-edge);
+  border-radius: 0.45em; box-shadow: 0 0.2em 0.9em rgba(0, 0, 0, 0.35); box-sizing: border-box;
+}
+
+#hud-career-badge { left: 0.8em; top: 0.7em; padding: 0.35em 0.8em; display: flex; gap: 0.9em; align-items: center; font-size: 0.95em; }
+#hud-career-badge .rank { color: var(--accent); font-weight: 700; letter-spacing: 0.04em; }
+#hud-career-badge .money { color: var(--good); font-weight: 700; }
+#hud-career-badge .clock { color: var(--muted); }
+
+#hud-heading-tape { position: absolute; left: 50%; top: 0.55em; width: 27.5em; height: 3.6em; transform: translateX(-50%); }
+
+#hud-mission-tracker { left: 0.8em; top: 3.4em; width: 19.5em; padding: 0.55em 0.8em 0.6em; }
+#hud-mission-tracker .chapter { color: var(--muted); font-size: 0.72em; letter-spacing: 0.12em; text-transform: uppercase; }
+#hud-mission-tracker .title { color: var(--accent); font-size: 1.22em; font-weight: 700; margin: 0.05em 0 0.25em; }
+#hud-mission-tracker .stage { display: flex; justify-content: space-between; font-size: 0.86em; color: var(--accent-2); font-weight: 700; }
+#hud-mission-tracker .stage-bar { height: 0.32em; background: rgba(255, 255, 255, 0.12); border-radius: 0.2em; margin: 0.3em 0 0.45em; overflow: hidden; }
+#hud-mission-tracker .stage-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
+#hud-mission-tracker .objective { font-size: 1.0em; font-weight: 600; line-height: 1.25; }
+#hud-mission-tracker .next { font-size: 0.82em; color: var(--muted); margin-top: 0.25em; line-height: 1.25; }
+#hud-mission-tracker .stats { display: flex; gap: 0.5em; margin-top: 0.45em; }
+#hud-mission-tracker .stat { flex: 1; background: rgba(255, 255, 255, 0.07); border-radius: 0.3em; padding: 0.2em 0.4em; }
+#hud-mission-tracker .stat b { display: block; font-size: 1.15em; color: var(--text); }
+#hud-mission-tracker .stat span { font-size: 0.66em; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+
+#hud-minimap-frame { right: 0.8em; top: 0.7em; width: 15.5em; height: 15.5em; padding: 0.35em; border-radius: 50%; }
+#hud-minimap { width: 100%; height: 100%; display: block; border-radius: 50%; }
+
+#hud-radio-message { left: 0.8em; top: 21.2em; width: 19.5em; padding: 0.5em; display: flex; gap: 0.6em; align-items: flex-start; transition: opacity 0.4s; }
+#hud-radio-message canvas { width: 3.9em; height: 3.9em; border-radius: 0.35em; flex: none; border: 1px solid var(--panel-edge); }
+#hud-radio-message .who { color: var(--accent); font-size: 0.78em; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+#hud-radio-message .who em { color: var(--accent-2); font-style: normal; margin-left: 0.4em; }
+#hud-radio-message .line { font-size: 0.9em; line-height: 1.28; margin-top: 0.15em; }
+#hud-radio-message.is-faded { opacity: 0; }
+
+#hud-approach-guide { right: 0.8em; top: 17.2em; width: 15.5em; padding: 0.5em 0.65em; }
+#hud-approach-guide .head { display: flex; justify-content: space-between; font-size: 0.78em; color: var(--muted); letter-spacing: 0.08em; }
+#hud-approach-guide .head b { color: var(--accent-2); }
+#hud-approach-guide canvas { width: 100%; height: 7.2em; display: block; margin: 0.3em 0; }
+#hud-approach-guide .verdict { font-size: 0.95em; font-weight: 700; text-align: center; }
+
+#hud-airspeed-tape { position: absolute; left: calc(50% - 19.6em); top: calc(50% - 9.4em); width: 5.25em; height: 18.75em; }
+#hud-altitude-tape { position: absolute; left: calc(50% + 14.2em); top: calc(50% - 9.4em); width: 6.5em; height: 18.75em; }
+
+#hud-flight-warnings { position: absolute; left: 50%; top: 4.6em; transform: translateX(-50%); display: flex; gap: 0.5em; }
+#hud-flight-warnings span { padding: 0.2em 0.7em; border-radius: 0.3em; font-weight: 800; letter-spacing: 0.1em; font-size: 1.05em; }
+#hud-flight-warnings .warn { background: rgba(255, 176, 46, 0.9); color: #1d1200; }
+#hud-flight-warnings .danger { background: rgba(255, 60, 45, 0.92); color: #fff; animation: blink 0.5s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0.35; } }
+
+#hud-aircraft-systems { left: 0.8em; bottom: 0.7em; width: 13.5em; padding: 0.45em 0.6em; }
+#hud-fuel-and-damage { right: 0.8em; bottom: 0.7em; width: 13.5em; padding: 0.45em 0.6em; }
+.sys-row { display: flex; align-items: center; gap: 0.45em; margin: 0.16em 0; font-size: 0.84em; }
+.sys-row label { width: 4.6em; color: var(--muted); letter-spacing: 0.06em; font-size: 0.86em; }
+.sys-row .bar { flex: 1; height: 0.62em; background: rgba(255, 255, 255, 0.12); border-radius: 0.3em; overflow: hidden; }
+.sys-row .bar i { display: block; height: 100%; border-radius: 0.3em; }
+.sys-row b { min-width: 3.1em; text-align: right; }
+.sys-tags { display: flex; gap: 0.3em; margin-top: 0.3em; }
+.sys-tags span { flex: 1; text-align: center; font-size: 0.74em; font-weight: 700; padding: 0.15em 0; border-radius: 0.25em; background: rgba(255, 255, 255, 0.08); color: var(--muted); }
+.sys-tags span.on { background: rgba(107, 227, 138, 0.25); color: var(--good); }
+.sys-tags span.moving { background: rgba(255, 176, 46, 0.3); color: var(--warn); }
+.sys-tags span.bad { background: rgba(255, 77, 61, 0.3); color: var(--danger); }
+.panel-title { font-size: 0.7em; color: var(--accent); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 0.2em; font-weight: 700; }
+
+#hud-instrument-strip { position: absolute; left: 50%; bottom: 0.4em; width: 51.25em; height: 9.4em; transform: translateX(-50%); }
+#hud.is-cockpit #hud-instrument-strip, #hud.is-cockpit #hud-airspeed-tape, #hud.is-cockpit #hud-altitude-tape { display: none; }
+#hud.is-cockpit #hud-aircraft-systems, #hud.is-cockpit #hud-fuel-and-damage { bottom: 12.5em; }
+
+#hud-camera-label { position: absolute; left: 50%; bottom: 14.3em; transform: translateX(-50%); font-size: 0.72em; color: #e9e2d4; letter-spacing: 0.12em; text-shadow: 0 1px 3px #000; white-space: nowrap; }
+#hud.is-cockpit #hud-camera-label { bottom: 0.8em; }
+
+#toast-messages { position: fixed; left: 50%; top: 30%; transform: translateX(-50%); pointer-events: none; text-align: center; }
+#toast-messages div { font-size: 1.7em; font-weight: 800; color: #fff; text-shadow: 0 0.08em 0.4em rgba(0, 0, 0, 0.8); letter-spacing: 0.06em; animation: toast 2.4s ease-out forwards; }
+#toast-messages div.good { color: var(--good); }
+#toast-messages div.bad { color: var(--danger); }
+@keyframes toast { 0% { opacity: 0; transform: translateY(0.6em); } 12% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; } }
