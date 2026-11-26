@@ -59,9 +59,10 @@ export function computeGroundContact(s, world, controls, out) {
       forward.set(0, 0, -1).applyQuaternion(s.quaternion);
       forward.y = 0;
       forward.normalize();
-      if (kind === 'nose') {
+      if (kind === 'nose' || kind === 'tailwheel') {
+        // A steered tailwheel sits behind the mains, so it turns the opposite way to a nosewheel.
         const speed = Math.hypot(s.velocity.x, s.velocity.z);
-        const steer = -controls.yaw * THREE.MathUtils.degToRad(32) * THREE.MathUtils.clamp(1.4 - speed / 22, 0.15, 1);
+        const steer = (kind === 'nose' ? -1 : 1) * controls.yaw * THREE.MathUtils.degToRad(kind === 'nose' ? 32 : 24) * THREE.MathUtils.clamp(1.4 - speed / 22, 0.15, 1);
         forward.applyAxisAngle(THREE.Object3D.DEFAULT_UP, steer);
       }
       right.set(-forward.z, 0, forward.x);

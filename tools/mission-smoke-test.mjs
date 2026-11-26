@@ -130,15 +130,15 @@ const DRIVER = String.raw`(async (id) => {
       }
       step(10);
     } else if (kind === 'aerobatics') {
-      place({ x: -500, y: 1100, z: 5200, heading: 90, speed: 110, throttle: 0.9, gearDown: false });
+      place({ x: -500, y: 1100, z: 5200, heading: 90, speed: Math.min(110, s.spec.vne * 0.8), throttle: 0.9, gearDown: false });
       c.throttle = 0.95;
       c.pitch = 1; step(60 * 14); c.pitch = 0; step(60 * 2);
-      place({ x: -500, y: 1100, z: 5200, heading: 90, speed: 110, throttle: 0.9, gearDown: false });
+      place({ x: -500, y: 1100, z: 5200, heading: 90, speed: Math.min(110, s.spec.vne * 0.8), throttle: 0.9, gearDown: false });
       c.pitch = 0.15; step(20); c.pitch = 0; c.roll = 1; step(60 * 2.6); c.roll = 0; step(60);
-      place({ x: -500, y: 1100, z: 5200, heading: 90, speed: 110, throttle: 0.9, gearDown: false });
+      place({ x: -500, y: 1100, z: 5200, heading: 90, speed: Math.min(110, s.spec.vne * 0.8), throttle: 0.9, gearDown: false });
       for (let i = 0; i < 60 * 8; i += 1) { const bk = Math.abs(b().bank); c.roll = bk < 170 ? 1 : 0; c.pitch = bk > 150 ? -0.35 : 0; step(); }
       c.roll = 0; c.pitch = 0;
-      place({ x: -500, y: 1100, z: 5200, heading: 90, speed: 110, throttle: 0.9, gearDown: false });
+      place({ x: -500, y: 1100, z: 5200, heading: 90, speed: Math.min(110, s.spec.vne * 0.8), throttle: 0.9, gearDown: false });
       for (let i = 0; i < 60 * 14 && g.runner.objective === o; i += 1) { const body = b(); const turned = Math.abs(((body.heading - 90 + 540) % 360) - 180); if (turned < 150) { c.roll = Math.abs(body.bank) < 80 ? 1 : 0; c.pitch = 0.7; } else { c.roll = body.bank > 10 ? -1 : body.bank < -10 ? 1 : 0; c.pitch = 0; } step(); }
       c.roll = 0; c.pitch = 0;
       step(60);

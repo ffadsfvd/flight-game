@@ -1,4 +1,4 @@
-// The three aircraft of Solvane Aeroworks with their flight-model numbers: mass, wing, lift and
+// The four aircraft of Solvane Aeroworks with their flight-model numbers: mass, wing, lift and
 // drag curves, engine, control rates, stability, gear and damage limits, plus what each costs and
 // unlocks in the career. Speeds are m/s, masses kg, forces N.
 
@@ -40,6 +40,25 @@ export const AIRCRAFT = [
     crashPoints: [[0, -0.55, -3.15, 'prop'], [0, 0.0, -3.3, 'nose'], [-7.2, 1.25, 0.2, 'wingtip'], [7.2, 1.25, 0.2, 'wingtip'], [0, -0.2, 6.0, 'tail'], [0, -0.75, 0.4, 'belly'], [0, 1.9, 0.3, 'canopy'], [0, 2.3, 5.8, 'fin']],
     eye: [0, 0.85, -0.9], chaseDistance: 19, chaseHeight: 4.6,
     cargoCapacity: 450, waterCapacity: 900,
+  },
+  {
+    id: 'kestrel', name: 'Kestrel B2', role: 'Aerobatic biplane', maker: 'Solvane Aeroworks', registration: 'SV-327',
+    blurb: 'Two wings, one seat and a big round cowling: a barnstorming taildragger that rolls like a top, stalls honestly and lands slow.',
+    unlockRank: 2, price: 2600,
+    mass: 760, fuelCapacity: 90, fuelBurnFull: 0.07, fuelBurnIdle: 0.008,
+    wingArea: 18.5, span: 7.6, chord: 1.2, cl0: 0.2, clAlpha: 4.6, alphaStall: 0.26, cd0: 0.042, inducedK: 0.075,
+    flapCl: 0.25, flapCd: 0.03, flapDetents: [0, 0.4, 1], gearCd: 0.014, sideArea: 0.6,
+    engine: 'prop', thrustStatic: 3300, propSpeedLimit: 80, spool: 0.7, propWash: 0.7, heatRate: 1.05,
+    refSpeed: 44, pitchRate: 1.5, rollRate: 3.0, yawRate: 0.85, response: 5.0,
+    pitchStability: 6.5, yawStability: 5.0, dihedral: 1.2, alphaTrim: 0.03,
+    inertia: [1100, 1500, 800],
+    gLimit: 7, vne: 85, vFlapMax: 45, vGearMax: 999, vRotate: 25, vApproach: 30, gearRetracts: false,
+    gearLimitFpm: 600, gearCollapseFpm: 1100,
+    wheelRadius: 0.3, gear: [[-0.95, -1.35, -1.05, 'main'], [0.95, -1.35, -1.05, 'main'], [0, -0.46, 4.0, 'tailwheel']],
+    floats: null,
+    crashPoints: [[0, -0.95, -2.15, 'prop'], [0, 0.05, -2.2, 'nose'], [-3.85, 1.0, -0.85, 'wingtip'], [3.85, 1.0, -0.85, 'wingtip'], [-3.6, -0.3, -0.5, 'wingtip'], [3.6, -0.3, -0.5, 'wingtip'], [0, -0.45, 4.15, 'tail'], [0, -0.75, 0.3, 'belly'], [0, 0.95, 0.25, 'canopy'], [0, 1.3, 4.0, 'fin']],
+    eye: [0, 0.74, 0.25], chaseDistance: 13, chaseHeight: 3.2,
+    cargoCapacity: 0, waterCapacity: 0,
   },
   {
     id: 'swiftlet', name: 'Swiftlet S9', role: 'Aerobatic light jet', maker: 'Solvane Aeroworks', registration: 'SV-901',

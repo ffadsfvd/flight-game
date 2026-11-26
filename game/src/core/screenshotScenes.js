@@ -99,6 +99,12 @@ export function stageScreenshot(name, game) {
     game.controls.controls.throttle = 0.62;
     run(game, 1.5);
   }
+  if (name === 'kestrel') {
+    // Aircraft review scene (not in shots.json): the Kestrel biplane over the beach in a 3/4 view.
+    game.startMission(missionById('barnstormer'));
+    Object.assign(game.cameras.chaseFraming, { height: 1.1, distance: 0.9, lookAhead: 6, lookUp: -0.5, yaw: -0.7 });
+    run(game, 1.2);
+  }
   if (name === 'orsa' || name === 'nesta') {
     // Island character review scenes (not in shots.json): Orsa Cay's red mesas, alpine Nesta.
     game.startMission(null);

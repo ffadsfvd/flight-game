@@ -17,6 +17,7 @@ import { coralKeysDrop } from './career/rescueService/coralKeysDrop.js';
 import { medevacToMarenza } from './career/rescueService/medevacToMarenza.js';
 import { fireOnNesta } from './career/rescueService/fireOnNesta.js';
 import { skyBallet } from './career/racingAndAirshow/skyBallet.js';
+import { barnstormer } from './career/racingAndAirshow/barnstormer.js';
 import { wingOfTheLead } from './career/racingAndAirshow/wingOfTheLead.js';
 import { beachBannerRun } from './career/racingAndAirshow/beachBannerRun.js';
 import { ignaraRingRun } from './career/racingAndAirshow/ignaraRingRun.js';
@@ -42,7 +43,7 @@ export const MISSIONS = [
   firstSolo, corvoCanyon, highstripShortField, nightCircuits,
   mailRunToOrsa, lagoonTouchdown, postcardsFromSolvara, heritageSurvey, islandHopperCargo,
   flareOnGannetSkerry, fireOnCalvera, coralKeysDrop, medevacToMarenza, fireOnNesta,
-  skyBallet, wingOfTheLead, beachBannerRun, ignaraRingRun, mesaGrandPrix, archipelagoCup,
+  skyBallet, barnstormer, wingOfTheLead, beachBannerRun, ignaraRingRun, mesaGrandPrix, archipelagoCup,
   deadStick, stormFront, nightMail, orsaGale,
   snowsOfMonteNesta, grandTour,
 ];

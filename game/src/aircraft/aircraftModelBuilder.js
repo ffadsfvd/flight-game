@@ -126,6 +126,18 @@ export function buildAircraftModel(id) {
     }
   }
 
+  // Upper wing of a biplane: two fixed halves meeting over the fuselage, with cabane and
+  // interplane struts down to the fuselage and the lower wing.
+  if (design.upperWing) {
+    const u = design.upperWing;
+    for (const side of [1, -1]) {
+      const built = buildSurfaceSide(u.root, u.tip, {}, { skin, surface }, tipMaterial);
+      if (side < 0) built.group.scale.x = -1;
+      root.add(built.group);
+      for (const [a, b] of u.struts ?? []) root.add(strut([a[0] * side, a[1], a[2]], [b[0] * side, b[1], b[2]], 0.035, metal));
+    }
+  }
+
   // Tailplane.
   const st = design.stabilizer;
   for (const side of [1, -1]) {
