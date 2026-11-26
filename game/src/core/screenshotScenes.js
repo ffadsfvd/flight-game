@@ -53,6 +53,9 @@ export function stageScreenshot(name, game) {
     game.hud.radio.say('ines', 'Ring four. Keep your eyes outside, not on the walls.', { priority: true });
     game.hud.radio.hold();
     run(game, 0.3);
+    // Glance down a little so the stick, the throttle and the pilot's gloves are in the frame.
+    game.controls.mouse.state.lookY = 0.09;
+    run(game, 1 / 60);
   } else if (name === 'firefight') {
     game.startMission(missionById('firebreak'));
     const fire = { x: 3250, z: -1780 };

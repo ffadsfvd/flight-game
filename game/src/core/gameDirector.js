@@ -419,7 +419,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     });
     const cockpit = cockpitFor(session.rig);
     cockpit.visible = cameras.view === 'cockpit';
-    cockpit.update(readout, controls.controls, dt);
+    cockpit.update(readout, controls.controls, dt, { landingLights: body.landingLights, clock: light.clock });
     flightSounds.update(state === 'flying' && !ending, readout, hud.warnings, time);
   }
 

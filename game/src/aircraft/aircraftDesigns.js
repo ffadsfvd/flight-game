@@ -73,7 +73,7 @@ export const AIRCRAFT_DESIGNS = {
       ],
     },
     lights: { left: [-7.22, 1.38, -0.2], right: [7.22, 1.38, -0.2], tail: [0, 0.95, 6.27], landing: [-2.4, 1.2, -0.96] },
-    panel: { z: -1.82, y: 0.46, width: 1.2, tilt: 0.32 },
+    panel: { z: -1.82, y: 0.46, width: 1.2, tilt: 0.32, yoke: true },
   },
   swiftlet: {
     livery: { base: '#1f3f8a', stripe: '#f2b632', accent: '#ffffff', wing: '#1f3f8a', tip: '#f2b632', tail: '#f2b632', textAt: 0.6, nose: '#f4f2ec' },
