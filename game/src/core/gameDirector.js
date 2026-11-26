@@ -49,6 +49,7 @@ export function placementFor(start, spec, world) {
 export function createGameDirector({ view, world, shotMode = false }) {
   const canvas = view.renderer.domElement;
   let career = loadCareer() ?? createCareer();
+  if (new URLSearchParams(window.location.search).get('unlock') === 'all') career.xp = Math.max(career.xp, 5000);
   const settings = career.settings;
   const wind = createWindField();
   const cameras = createCameraDirector(view.camera);
@@ -281,6 +282,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
 
   function resume() {
     router.hideAll();
+    controls.keyboard.takePressed();
     state = 'flying';
   }
 
