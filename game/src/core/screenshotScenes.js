@@ -99,6 +99,14 @@ export function stageScreenshot(name, game) {
     game.controls.controls.throttle = 0.62;
     run(game, 1.5);
   }
+  if (name === 'orsa' || name === 'nesta') {
+    // Island character review scenes (not in shots.json): Orsa Cay's red mesas, alpine Nesta.
+    game.startMission(null);
+    const at = name === 'orsa' ? { x: -7000, y: 380, z: -1800, heading: 47 } : { x: -1700, y: 620, z: -4250, heading: 62 };
+    session.simulation.start(session.spec, { ...at, pitch: 0, speed: 60, flaps: 0, throttle: 0.62, gearDown: false }, { birds: false });
+    game.controls.controls.throttle = 0.62;
+    run(game, 1.5);
+  }
   if (game.state === 'flying') game.feedHud(0, true);
   game.render();
   return new Promise((resolve) => {

@@ -1,7 +1,7 @@
 // Where forests grow and where the ground stays open: one density function shared by the terrain
 // colours, the tree planter, the forest-fire mission and the tree-strike check.
 import { smoothstep } from '../core/gradientNoise.js';
-import { TOWNS } from './archipelagoMap.js';
+import { TOWNS, islandAt } from './archipelagoMap.js';
 import { AIRFIELDS, toRunwayFrame } from './airfieldDirectory.js';
 
 /** Ground kept clear of trees around airfields (metres beyond the runway ends and sides). */
@@ -22,8 +22,12 @@ export function forestDensity(terrain, x, z, height = terrain.heightAt(x, z)) {
   const n = terrain.noise.fbm(x * 0.0016 + 40.0, z * 0.0016 - 12.0, 4);
   const altitudeFade = 1 - smoothstep(420, 700, height);
   const shoreFade = smoothstep(6, 26, height);
-  return smoothstep(0.02, 0.32, n) * altitudeFade * shoreFade * smoothstep(0.78, 0.9, normalY);
+  const character = FOREST_BY_CHARACTER[islandAt(x, z).character] ?? 1;
+  return smoothstep(0.02, 0.32, n) * altitudeFade * shoreFade * smoothstep(0.78, 0.9, normalY) * character;
 }
+
+/** How much each island character grows trees: dry Orsa Cay hardly any, alpine Nesta the most. */
+const FOREST_BY_CHARACTER = { main: 1, volcanic: 0.9, green: 0.75, canyon: 0.2, alpine: 1.35, rock: 0.3, atoll: 0.5 };
 
 const scratch = { x: 0, y: 1, z: 0 };
 

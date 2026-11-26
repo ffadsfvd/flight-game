@@ -3,7 +3,7 @@
 // shader all read the same grid through the same triangle interpolation, so what you see is what
 // you hit.
 import { createNoise2D, smoothstep } from '../core/gradientNoise.js';
-import { CANYONS, ISLANDS, LAGOONS, PLAINS, RANGES, TOWNS, WORLD_HALF_SIZE } from './archipelagoMap.js';
+import { CANYONS, ISLANDS, LAGOONS, MESAS, PLAINS, RANGES, TOWNS, WORLD_HALF_SIZE } from './archipelagoMap.js';
 import { AIRFIELDS, runwayAxes } from './airfieldDirectory.js';
 
 const SEA_FLOOR = -60;
@@ -53,6 +53,8 @@ export function createIslandTerrain({ seed = 7, cells = 512 } = {}) {
       if (d < 1) {
         const t = 1 - d;
         e = island.peak * Math.pow(t, island.power) + 1.5;
+        // Alpine islands get ridges and gullies, sharper toward the summit.
+        if (island.character === 'alpine') e += island.peak * 0.24 * t * (noise.ridged(x * 0.0021 + 5.1, z * 0.0021 - 3.3, 4) - 0.45);
         if (island.volcano) {
           const vol = island.volcano;
           const dv = raw / vol.radius;
@@ -99,6 +101,14 @@ export function createIslandTerrain({ seed = 7, cells = 512 } = {}) {
         const k = smoothstep(canyon.halfWidth * 0.55, canyon.halfWidth + canyon.wall, best + wiggle);
         h = floor + (h - floor) * Math.pow(k, 0.85);
       }
+    }
+    for (const mesa of MESAS) {
+      const r = Math.hypot(x - mesa.x, z - mesa.z) / mesa.radius;
+      if (r > 1.35 || h <= 0) continue;
+      const edge = r + noise.noise(x * 0.018, z * 0.018) * 0.14;
+      const cliff = 1 - smoothstep(0.74, 0.98, edge);
+      const talus = (1 - smoothstep(0.98, 1.35, edge)) * 0.2;
+      h += mesa.height * Math.max(cliff, talus);
     }
     for (const lagoon of LAGOONS) {
       const dx = x - lagoon.x;

@@ -1,6 +1,7 @@
 // The archipelago's landmarks: the striped Faro Lumeno lighthouse with its turning beam, the lava
-// glow in Mount Ignara's crater, the sea arch Arco Solare and the Velo Falls waterfall. Each one
-// also gives a collider and, where it smokes or sprays, an emitter for the effects system.
+// glow in Mount Ignara's crater, the sea arch Arco Solare, the Velo Falls waterfall, the radio
+// mast on Monte Aurio, the Lumeno wind farm and the Rocca Celeste castle ruins. Each one also
+// gives a collider and, where it smokes or sprays, an emitter for the effects system.
 import * as THREE from 'three';
 import { mergeColoredParts } from '../core/geometryMerge.js';
 import { LANDMARKS } from './archipelagoMap.js';
@@ -139,6 +140,93 @@ function buildWaterfall(group, terrain, landmark) {
   return { texture, mist: bottom.clone() };
 }
 
+/** A guyed radio mast in red and white bands with a blinking red light at the top. */
+function buildRadioMast(group, colliders, lights, landmark, ground) {
+  const height = landmark.height;
+  const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 1.4, height, 6), new THREE.MeshLambertMaterial({ map: stripedTexture(['#e8e6e1', '#c42d1f'], 9) }));
+  mast.position.set(landmark.x, ground + height / 2, landmark.z);
+  mast.castShadow = true;
+  const hut = new THREE.Mesh(new THREE.BoxGeometry(8, 3.5, 6), new THREE.MeshLambertMaterial({ color: '#d9d2c3' }));
+  hut.position.set(landmark.x + 9, ground + 1.7, landmark.z + 4);
+  group.add(mast, hut);
+  const wire = new THREE.LineBasicMaterial({ color: '#59544e', transparent: true, opacity: 0.6 });
+  for (let i = 0; i < 3; i += 1) {
+    const a = (i / 3) * Math.PI * 2;
+    const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(landmark.x, ground + height * 0.8, landmark.z), new THREE.Vector3(landmark.x + Math.cos(a) * 45, ground, landmark.z + Math.sin(a) * 45)]);
+    group.add(new THREE.Line(geometry, wire));
+  }
+  lights.add(landmark.x, ground + height + 0.8, landmark.z, new THREE.Color('#ff3020'), 3.5);
+  colliders.push({ kind: 'cylinder', x: landmark.x, z: landmark.z, radius: 2.5, top: ground + height + 1, name: 'the Monte Aurio radio mast' });
+}
+
+/** A row of three-bladed wind turbines on a ridge; the rotors turn with the wind. */
+function buildWindFarm(group, colliders, terrain, landmark) {
+  const rotors = [];
+  const white = new THREE.MeshLambertMaterial({ color: '#f1f1ee' });
+  const yaw = THREE.MathUtils.degToRad(landmark.heading);
+  const blade = new THREE.BoxGeometry(1.6, 26, 0.5);
+  blade.translate(0, 13, 0);
+  for (let i = 0; i < landmark.count; i += 1) {
+    const offset = (i - (landmark.count - 1) / 2) * landmark.spacing;
+    const x = landmark.x + Math.sin(yaw) * offset;
+    const z = landmark.z - Math.cos(yaw) * offset;
+    const ground = Math.max(0, terrain.heightAt(x, z));
+    const tower = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 2, 60, 10), white);
+    tower.position.set(x, ground + 30, z);
+    const nacelle = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 7), white);
+    nacelle.position.set(x, ground + 61, z);
+    const rotor = new THREE.Group();
+    rotor.position.set(x, ground + 61, z - 0.2);
+    for (let b = 0; b < 3; b += 1) {
+      const m = new THREE.Mesh(blade, white);
+      m.rotation.z = (b / 3) * Math.PI * 2;
+      rotor.add(m);
+    }
+    const hub = new THREE.Mesh(new THREE.SphereGeometry(1.6, 10, 8), white);
+    rotor.add(hub);
+    tower.castShadow = true;
+    nacelle.castShadow = true;
+    group.add(tower, nacelle, rotor);
+    rotor.rotation.y = 0.9;
+    nacelle.rotation.y = 0.9;
+    rotors.push(rotor);
+    colliders.push({ kind: 'cylinder', x, z, radius: 3, top: ground + 64, name: 'a Lumeno wind turbine' });
+  }
+  return rotors;
+}
+
+/** Castle ruins on a hilltop: a broken curtain wall, two round towers and a square keep. */
+function buildCastle(group, colliders, landmark, ground) {
+  const stone = '#b8a68a';
+  const dark = '#9a8a72';
+  const parts = [];
+  const wall = (x, z, length, angle, height) => {
+    const g = new THREE.BoxGeometry(length, height, 2.4);
+    g.rotateY(angle);
+    g.translate(x, height / 2 - 1, z);
+    parts.push({ geometry: g, color: stone });
+  };
+  wall(0, -22, 38, 0, 9);
+  wall(-20, 0, 30, Math.PI / 2, 7);
+  wall(20, 4, 22, Math.PI / 2, 8);
+  wall(-6, 22, 20, 0, 5);
+  for (const [x, z, r, h] of [[-20, -22, 5, 16], [20, -22, 4.5, 13], [-20, 18, 4, 9]]) {
+    const tower = new THREE.CylinderGeometry(r, r * 1.1, h, 12);
+    tower.translate(x, h / 2 - 1, z);
+    parts.push({ geometry: tower, color: dark });
+  }
+  const keep = new THREE.BoxGeometry(12, 20, 12);
+  keep.translate(4, 9, -2);
+  parts.push({ geometry: keep, color: stone });
+  const mesh = new THREE.Mesh(mergeColoredParts(parts), new THREE.MeshLambertMaterial({ vertexColors: true }));
+  mesh.position.set(landmark.x, ground, landmark.z);
+  mesh.rotation.y = 0.4;
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  group.add(mesh);
+  colliders.push({ kind: 'cylinder', x: landmark.x, z: landmark.z, radius: 30, top: ground + 20, name: 'the Rocca Celeste ruins' });
+}
+
 /** Builds every landmark; returns the group, colliders, smoke/mist emitters and an animator. */
 export function buildLandmarks(terrain) {
   const group = new THREE.Group();
@@ -148,12 +236,22 @@ export function buildLandmarks(terrain) {
   const lights = createLightBatch();
   let lighthouse = null;
   let waterfall = null;
+  let rotors = [];
   for (const landmark of LANDMARKS) {
     const ground = Math.max(0, terrain.heightAt(landmark.x, landmark.z));
     landmark.y = ground;
     if (landmark.kind === 'lighthouse') {
       lighthouse = buildLighthouse(group, colliders, lights, landmark.x, landmark.z, ground);
       landmark.y = ground + 20;
+    } else if (landmark.kind === 'mast') {
+      buildRadioMast(group, colliders, lights, landmark, ground);
+      landmark.y = ground + 60;
+    } else if (landmark.kind === 'turbines') {
+      rotors = buildWindFarm(group, colliders, terrain, landmark);
+      landmark.y = ground + 50;
+    } else if (landmark.kind === 'castle') {
+      buildCastle(group, colliders, landmark, ground);
+      landmark.y = ground + 12;
     } else if (landmark.kind === 'arch') {
       buildArch(group, colliders, landmark);
       landmark.y = 30;
@@ -180,6 +278,9 @@ export function buildLandmarks(terrain) {
         lighthouse.beamMaterial.opacity = 0.05 + 0.16 * lightLevel;
       }
       if (waterfall) waterfall.texture.offset.y = (time * 0.9) % 1;
+      for (const [i, rotor] of rotors.entries()) rotor.children.forEach((blade, b) => {
+        blade.rotation.z = time * 1.4 + i * 0.7 + (b / 3) * Math.PI * 2;
+      });
     },
   };
 }
