@@ -17,7 +17,7 @@ export function createFirefightingObjective(stage) {
     score: 0,
     rows: [],
     begin(ctx) {
-      fires = stage.fires.map(([x, z, radius]) => ctx.effects.addFire(x, Math.max(0, ctx.world.terrain.heightAt(x, z)), z, radius));
+      fires = stage.fires.map(([x, z, radius]) => ctx.effects.addFire(x, Math.max(0, ctx.world.terrain.heightAt(x, z)), z, radius, ctx.world.terrain));
       if (stage.startFull) ctx.body.water = ctx.body.spec.waterCapacity;
       if (stage.say) ctx.radio(stage.say[0], stage.say[1]);
     },

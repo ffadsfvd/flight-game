@@ -4,6 +4,7 @@
 // storms, and the fireball and smoke of a crash.
 import * as THREE from 'three';
 import { createParticleSystem } from './particleSystem.js';
+import { buildWildfireScenery, flameTexture } from './wildfireScenery.js';
 
 const tmp = new THREE.Vector3();
 const tmp2 = new THREE.Vector3();
@@ -12,13 +13,18 @@ const tmp2 = new THREE.Vector3();
 export function createEffectsDirector(scene, worldEmitters) {
   const smoke = createParticleSystem(scene, { max: 3200, name: 'smoke' });
   const fire = createParticleSystem(scene, { max: 1600, name: 'fire' });
-  const sparks = createParticleSystem(scene, { max: 600, additive: true, name: 'sparks' });
+  const flames = createParticleSystem(scene, { max: 2600, additive: true, name: 'flames', texture: flameTexture() });
+  const sparks = createParticleSystem(scene, { max: 900, additive: true, name: 'sparks' });
   const water = createParticleSystem(scene, { max: 1800, name: 'water' });
   const fires = [];
   const flares = [];
   let crashFire = null;
   let rain = 0;
   let accumulator = 0;
+  let fireTerrain = null;
+  let scenery = null;
+  let sceneryDirty = false;
+  let clock = 0;
   const random = Math.random;
 
   function updateAircraft(body, dt, smokeOn) {
@@ -76,10 +82,12 @@ export function createEffectsDirector(scene, worldEmitters) {
         for (let i = 0; i < 18; i += 1) smoke.emit(p.x, p.y, p.z, velocity.x * 0.6 + (random() - 0.5) * 6, (random() - 0.5) * 6, velocity.z * 0.6 + (random() - 0.5) * 6, { life: 1.2, size: 0.6, grow: 1, alpha: 0.9, color: [0.95, 0.95, 0.92], drag: 3 });
       }
     },
-    /** A forest fire of `radius` m at (x, y, z); intensity 0..1 can be lowered by drops. */
-    addFire(x, y, z, radius) {
+    /** A forest fire of `radius` m at (x, y, z) on `terrain`; intensity 0..1 can be lowered by drops. */
+    addFire(x, y, z, radius, terrain = null) {
       const f = { x, y, z, radius, intensity: 1 };
       fires.push(f);
+      if (terrain) fireTerrain = terrain;
+      sceneryDirty = true;
       return f;
     },
     /** A rescue flare: red smoke column at (x, y, z). */
@@ -92,6 +100,7 @@ export function createEffectsDirector(scene, worldEmitters) {
       fires.length = 0;
       flares.length = 0;
       crashFire = null;
+      sceneryDirty = true;
     },
     setRain(amount) {
       rain = amount;
@@ -106,18 +115,37 @@ export function createEffectsDirector(scene, worldEmitters) {
           water.emit(e.x + (random() - 0.5) * 12, e.y + 2, e.z + (random() - 0.5) * 12, (random() - 0.5) * 2, 1 + random(), (random() - 0.5) * 2, { life: 4, size: 6, grow: 4, alpha: 0.35, color: [0.95, 0.98, 1], drag: 0.8, lift: 0.3 });
         }
       }
+      if (sceneryDirty) {
+        scenery?.dispose();
+        scenery = fireTerrain && fires.length ? buildWildfireScenery(scene, fireTerrain, fires) : null;
+        sceneryDirty = false;
+      }
+      clock += dt;
+      scenery?.update(clock);
+      const groundAt = (x, z, fallback) => (fireTerrain ? Math.max(0, fireTerrain.heightAt(x, z)) : fallback);
       for (const f of fires) {
         if (f.intensity <= 0.02) continue;
-        const n = dt * 75 * f.intensity;
+        // Flame tongues along the burning front and through the stand, on the slope itself.
+        const n = dt * 150 * f.intensity;
         for (let i = 0; i < n; i += 1) {
           const a = random() * Math.PI * 2;
-          const r = Math.sqrt(random()) * f.radius;
+          const r = f.radius * (0.25 + 0.75 * Math.sqrt(random()));
+          const x = f.x + Math.cos(a) * r;
+          const z = f.z + Math.sin(a) * r;
+          const size = 4 + random() * 7;
+          const y = groundAt(x, z, f.y) + size * 0.3;
           const hot = random();
-          fire.emit(f.x + Math.cos(a) * r, f.y + 2.5, f.z + Math.sin(a) * r, 0, 3.5 + random() * 6, 0, { life: 0.9 + random() * 0.9, size: 6 + random() * 8, grow: 3, alpha: 0.85, color: [1, 0.36 + hot * 0.34, 0.06 + hot * 0.08], drag: 0.6, lift: 2.5 });
-          if (random() < 0.3) sparks.emit(f.x + Math.cos(a) * r, f.y + 3, f.z + Math.sin(a) * r, (random() - 0.5) * 3, 4 + random() * 6, (random() - 0.5) * 3, { life: 0.7, size: 2.5, grow: 0, alpha: 0.9, color: [1, 0.7, 0.3], drag: 1, lift: 1 });
+          flames.emit(x, y, z, wind.x * 0.25, 2.5 + random() * 3, wind.z * 0.25, { life: 0.45 + random() * 0.5, size, grow: -size * 0.9, alpha: 0.95, color: [1, 0.5 + hot * 0.45, 0.2 + hot * 0.3], drag: 1.4, lift: 3 });
+          if (random() < 0.35) flames.emit(x, y + size * 0.4, z, wind.x * 0.3, 4 + random() * 3, wind.z * 0.3, { life: 0.35 + random() * 0.3, size: size * 0.6, grow: -size, alpha: 0.85, color: [1, 0.86, 0.55], drag: 1.2, lift: 3 });
+          // Embers that climb with the heat and drift off with the wind.
+          if (random() < 0.12) sparks.emit(x, y + 2, z, (random() - 0.5) * 4, 5 + random() * 7, (random() - 0.5) * 4, { life: 2.4 + random() * 2.2, size: 0.5 + random() * 0.4, grow: -0.08, alpha: 1, color: [1, 0.55 + random() * 0.25, 0.18], drag: 0.7, lift: 0.6 });
         }
-        if (random() < dt * 12 * f.intensity) {
-          smoke.emit(f.x + (random() - 0.5) * f.radius, f.y + 10, f.z + (random() - 0.5) * f.radius, 0, 8 + random() * 4, 0, { life: 16, size: 10, grow: 5, alpha: 0.34, color: [0.3, 0.28, 0.27], drag: 0.25, lift: 0.4 });
+        // Dark smoke rising off the flames and leaning away downwind.
+        if (random() < dt * 16 * f.intensity) {
+          const x = f.x + (random() - 0.5) * f.radius;
+          const z = f.z + (random() - 0.5) * f.radius;
+          const shade = 0.1 + random() * 0.1;
+          smoke.emit(x, groundAt(x, z, f.y) + 9, z, wind.x * 0.5, 7 + random() * 4, wind.z * 0.5, { life: 15, size: 9, grow: 5.5, alpha: 0.55, color: [shade, shade * 0.95, shade * 0.92], drag: 0.3, lift: 0.3 });
         }
       }
       for (const f of flares) {
@@ -140,6 +168,7 @@ export function createEffectsDirector(scene, worldEmitters) {
       updateAircraft(body, dt, smokeOn);
       smoke.update(dt, viewScale, wind);
       fire.update(dt, viewScale, wind);
+      flames.update(dt, viewScale, wind);
       sparks.update(dt, viewScale, wind);
       water.update(dt, viewScale, wind);
     },
