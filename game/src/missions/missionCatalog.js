@@ -1,7 +1,7 @@
 // The Solvara career: six chapters of missions, one small file per mission under career/, each
 // with its giver, aircraft, start, weather, briefing dialogue, stages and pay. Stage types:
-// takeoff, rings (with rivals: a race), land (water, short field, engine failure), reach,
-// supply-drop, firefighting, photo, aerobatics and formation.
+// takeoff, rings (with rivals: a race; engineOff: soaring), land (water, short field, engine
+// failure), reach, supply-drop, firefighting, photo, aerobatics, formation and search.
 import { firstSolo } from './career/flightSchool/firstSolo.js';
 import { corvoCanyon } from './career/flightSchool/corvoCanyon.js';
 import { highstripShortField } from './career/flightSchool/highstripShortField.js';
@@ -28,6 +28,7 @@ import { deadStick } from './career/nightAndStorm/deadStick.js';
 import { stormFront } from './career/nightAndStorm/stormFront.js';
 import { nightMail } from './career/nightAndStorm/nightMail.js';
 import { orsaGale } from './career/nightAndStorm/orsaGale.js';
+import { darkWater } from './career/nightAndStorm/darkWater.js';
 import { snowsOfMonteNesta } from './career/expedition/snowsOfMonteNesta.js';
 import { silentWings } from './career/expedition/silentWings.js';
 import { grandTour } from './career/expedition/grandTour.js';
@@ -46,7 +47,7 @@ export const MISSIONS = [
   mailRunToOrsa, lagoonTouchdown, postcardsFromSolvara, heritageSurvey, islandHopperCargo, marketDayShuttle,
   flareOnGannetSkerry, fireOnCalvera, coralKeysDrop, medevacToMarenza, fireOnNesta,
   skyBallet, barnstormer, wingOfTheLead, beachBannerRun, ignaraRingRun, mesaGrandPrix, archipelagoCup,
-  deadStick, stormFront, nightMail, orsaGale,
+  deadStick, stormFront, nightMail, orsaGale, darkWater,
   snowsOfMonteNesta, silentWings, grandTour,
 ];
 

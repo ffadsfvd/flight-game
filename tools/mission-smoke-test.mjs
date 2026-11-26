@@ -142,6 +142,14 @@ const DRIVER = String.raw`(async (id) => {
       for (let i = 0; i < 60 * 14 && g.runner.objective === o; i += 1) { const body = b(); const turned = Math.abs(((body.heading - 90 + 540) % 360) - 180); if (turned < 150) { c.roll = Math.abs(body.bank) < 80 ? 1 : 0; c.pitch = 0.7; } else { c.roll = body.bank > 10 ? -1 : body.bank < -10 ? 1 : 0; c.pitch = 0; } step(); }
       c.roll = 0; c.pitch = 0;
       step(60);
+    } else if (kind === 'search') {
+      for (let attempt = 0; attempt < 4 && g.runner.objective === o; attempt += 1) {
+        const t = o.__target();
+        place({ x: t.x, y: 70, z: t.z + 350, heading: 0, pitch: -4, speed: 40, throttle: 0.5, flaps: 1 });
+        s.body.landingLights = true;
+        c.pitch = 0; c.roll = 0; c.throttle = 0.5;
+        step(60 * 8);
+      }
     } else if (kind === 'formation') {
       step();
       for (let i = 0; i < 60 * 400 && g.runner.objective === o && g.state === 'flying'; i += 1) {
