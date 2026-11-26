@@ -63,7 +63,9 @@ const DRIVER = String.raw`(async (id) => {
       for (let i = 0; i < 60 * 120 && g.runner.objective === o && g.state === 'flying'; i += 1) {
         const body = b();
         const guide = window.__solvara.approach.approachGuidance(fieldId, end, body.position);
-        const vsTarget = body.agl > 6 ? -body.airspeed * Math.tan(3 * Math.PI / 180) - guide.glideDev * 3 : -0.7;
+        // Over a platform's approach the sea is 22 m below the deck: flare against the deck height.
+        const flareHeight = field.kind === 'platform' ? Math.min(body.agl, body.position.y - field.elevationResolved) : body.agl;
+        const vsTarget = flareHeight > 6 ? -body.airspeed * Math.tan(3 * Math.PI / 180) - guide.glideDev * 3 : -0.7;
         c.pitch = THREE.MathUtils.clamp((vsTarget - body.verticalSpeed) * 0.25 + 0.05, -0.6, 0.8);
         if (kind === 'dead-stick' && body.agl > 6) c.pitch = THREE.MathUtils.clamp((body.airspeed - spec.vApproach * 1.2) * 0.06, -0.5, 0.5);
         const hdgErr = ((guide.heading - body.heading + 540) % 360) - 180 - guide.lateral * 0.15;

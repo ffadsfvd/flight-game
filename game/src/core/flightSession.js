@@ -7,6 +7,7 @@ import { buildAircraftModel } from '../aircraft/aircraftModelBuilder.js';
 import { createAircraftAnimator } from '../aircraft/aircraftAnimator.js';
 import { createAircraftSimulation } from '../flight/aircraftSimulation.js';
 import { airfieldAt, airfieldById, fromRunwayFrame, landingDirection } from '../world/airfieldDirectory.js';
+import { crossingHeight } from '../world/approachGeometry.js';
 
 const REFUEL_RATE = 7;
 
@@ -28,7 +29,7 @@ export function approachPlacement(spec, fieldId, end, distance, { slope = 3, fla
   const along = -dir.sign * (field.length / 2 + distance);
   const p = fromRunwayFrame(field, along, offset);
   const ground = field.kind === 'water' ? 0 : field.elevationResolved;
-  const y = ground + 12 + Math.tan(THREE.MathUtils.degToRad(slope)) * distance + height;
+  const y = ground + crossingHeight(field) + Math.tan(THREE.MathUtils.degToRad(slope)) * distance + height;
   return { x: p.x, y, z: p.z, heading: dir.heading, pitch: -slope, speed: spec.vApproach * 1.05, gearDown: field.kind !== 'water', flaps, throttle: 0.36 };
 }
 

@@ -106,7 +106,7 @@ function fieldPatch(x, z, h, slope, rate = 1) {
 function airfieldGrass(x, z) {
   let best = 0;
   for (const field of AIRFIELDS) {
-    if (field.kind === 'water') continue;
+    if (field.kind === 'water' || field.kind === 'platform') continue;
     const p = toRunwayFrame(field, x, z);
     const ex = Math.max(0, Math.abs(p.along) - (field.length * 0.5 + 120));
     const ey = Math.max(0, Math.abs(p.across) - field.flatHalfWidth * 0.85);

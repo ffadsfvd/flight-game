@@ -12,6 +12,7 @@ import { postcardsFromSolvara } from './career/islandWork/postcardsFromSolvara.j
 import { heritageSurvey } from './career/islandWork/heritageSurvey.js';
 import { islandHopperCargo } from './career/islandWork/islandHopperCargo.js';
 import { marketDayShuttle } from './career/islandWork/marketDayShuttle.js';
+import { setteDeckLanding } from './career/islandWork/setteDeckLanding.js';
 import { flareOnGannetSkerry } from './career/rescueService/flareOnGannetSkerry.js';
 import { fireOnCalvera } from './career/rescueService/fireOnCalvera.js';
 import { coralKeysDrop } from './career/rescueService/coralKeysDrop.js';
@@ -44,7 +45,7 @@ export const CHAPTERS = [
 
 export const MISSIONS = [
   firstSolo, corvoCanyon, highstripShortField, nightCircuits,
-  mailRunToOrsa, lagoonTouchdown, postcardsFromSolvara, heritageSurvey, islandHopperCargo, marketDayShuttle,
+  mailRunToOrsa, lagoonTouchdown, postcardsFromSolvara, heritageSurvey, islandHopperCargo, marketDayShuttle, setteDeckLanding,
   flareOnGannetSkerry, fireOnCalvera, coralKeysDrop, medevacToMarenza, fireOnNesta,
   skyBallet, barnstormer, wingOfTheLead, beachBannerRun, ignaraRingRun, mesaGrandPrix, archipelagoCup,
   deadStick, stormFront, nightMail, orsaGale, darkWater,

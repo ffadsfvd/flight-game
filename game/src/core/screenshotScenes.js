@@ -99,11 +99,16 @@ export function stageScreenshot(name, game) {
     game.controls.controls.throttle = 0.62;
     run(game, 1.5);
   }
-  if (name === 'search') {
-    // Mission review scene (not in shots.json): the night search with the boat caught in the light.
-    game.startMission(missionById('dark-water'));
-    session.simulation.start(session.spec, { x: 150, y: 75, z: -3900 + 380, heading: 0, pitch: -3, speed: 40, flaps: 1, throttle: 0.5 }, { birds: false });
-    session.body.landingLights = true;
+  if (name === 'search' || name === 'platform') {
+    // Mission review scenes (not in shots.json): the night search with the boat caught in the
+    // light, and short final to the Sette offshore platform.
+    game.startMission(missionById(name === 'search' ? 'dark-water' : 'sette-deck'));
+    if (name === 'search') {
+      session.simulation.start(session.spec, { x: 150, y: 75, z: -3900 + 380, heading: 0, pitch: -3, speed: 40, flaps: 1, throttle: 0.5 }, { birds: false });
+      session.body.landingLights = true;
+    } else {
+      session.simulation.start(session.spec, { ...approachPlacement(session.spec, 'sette', 1, 520, { flaps: 2, offset: 6 }), bank: -6, throttle: 0.3 }, { birds: false });
+    }
     Object.assign(game.cameras.chaseFraming, { height: 1.3, distance: 1.0, lookAhead: 40, lookUp: -3, yaw: 0.35 });
     run(game, 2.5);
   }

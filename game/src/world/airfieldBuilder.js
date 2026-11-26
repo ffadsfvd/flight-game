@@ -166,6 +166,51 @@ function buildWindsock(group, field, along, across, y) {
   return { swivel, sock };
 }
 
+/** An offshore platform: a concrete deck with the painted runway on six braced legs, a crane, an
+ * accommodation block with a helideck and a flare boom, all standing in the open sea. */
+function buildPlatform(group, colliders, field, y) {
+  const steel = new THREE.MeshLambertMaterial({ color: '#d9b43a' });
+  const concrete = new THREE.MeshLambertMaterial({ color: '#77746e' });
+  const white = new THREE.MeshLambertMaterial({ color: '#ecebe6' });
+  const red = new THREE.MeshLambertMaterial({ color: '#c8321f' });
+  const deck = new THREE.Mesh(new THREE.BoxGeometry(field.deckWidth, 3.2, field.length + 12), concrete);
+  group.add(placeInFrame(deck, field, 0, 0, y - 1.5, 0));
+  const legGeometry = new THREE.CylinderGeometry(2.4, 3.0, y + 40, 14);
+  for (const along of [-field.length * 0.38, 0, field.length * 0.38]) {
+    for (const side of [-1, 1]) {
+      const leg = new THREE.Mesh(legGeometry, steel);
+      group.add(placeInFrame(leg, field, along, side * (field.deckWidth * 0.5 - 4), (y - 40) / 2 - 1.5, 0));
+      const band = new THREE.Mesh(new THREE.CylinderGeometry(3.1, 3.1, 3, 14), red);
+      group.add(placeInFrame(band, field, along, side * (field.deckWidth * 0.5 - 4), 1.2, 0));
+      const p = fromRunwayFrame(field, along, side * (field.deckWidth * 0.5 - 4));
+      colliders.push({ kind: 'cylinder', x: p.x, z: p.z, radius: 3.4, top: y - 3, name: `a leg of ${field.name}` });
+    }
+    const brace = new THREE.Mesh(new THREE.BoxGeometry(field.deckWidth - 8, 1.2, 1.2), steel);
+    group.add(placeInFrame(brace, field, along, 0, y * 0.45, 0));
+  }
+  for (const side of [-1, 1]) {
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.1, field.length + 12), white);
+    group.add(placeInFrame(rail, field, 0, side * (field.deckWidth * 0.5 - 0.2), y + 0.55, 0));
+  }
+  // Accommodation block hanging off the side, with a helideck on its roof.
+  const block = new THREE.Mesh(new THREE.BoxGeometry(18, 14, 26), white);
+  group.add(placeInFrame(block, field, field.length * 0.18, field.deckWidth * 0.5 + 9, y - 3, 0));
+  const windows = new THREE.Mesh(new THREE.BoxGeometry(18.2, 1.4, 24), new THREE.MeshLambertMaterial({ color: '#2a4a5e', emissive: '#3c6f80', emissiveIntensity: 0.4 }));
+  group.add(placeInFrame(windows, field, field.length * 0.18, field.deckWidth * 0.5 + 9, y - 1, 0));
+  const pad = new THREE.Mesh(new THREE.CylinderGeometry(10, 10, 0.6, 24), new THREE.MeshLambertMaterial({ color: '#3d6a4a' }));
+  group.add(placeInFrame(pad, field, field.length * 0.18, field.deckWidth * 0.5 + 9, y + 4.3, 0));
+  const blockAt = fromRunwayFrame(field, field.length * 0.18, field.deckWidth * 0.5 + 9);
+  colliders.push({ kind: 'cylinder', x: blockAt.x, z: blockAt.z, radius: 14, top: y + 5, name: `the ${field.name} accommodation block` });
+  // A lattice crane and a flare boom off the far end.
+  const crane = new THREE.Mesh(new THREE.BoxGeometry(1.6, 26, 1.6), red);
+  group.add(placeInFrame(crane, field, -field.length * 0.3, -(field.deckWidth * 0.5 + 3), y + 13, 0));
+  const jib = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 30), red);
+  jib.rotation.x = -0.5;
+  group.add(placeInFrame(jib, field, -field.length * 0.3 - 6, -(field.deckWidth * 0.5 + 9), y + 22, Math.PI / 2));
+  const craneAt = fromRunwayFrame(field, -field.length * 0.3, -(field.deckWidth * 0.5 + 3));
+  colliders.push({ kind: 'cylinder', x: craneAt.x, z: craneAt.z, radius: 3, top: y + 26, name: `the ${field.name} crane` });
+}
+
 /** Builds all airfields; returns the scene group, colliders and a per-frame update. */
 export function buildAirfields(terrain) {
   const group = new THREE.Group();
@@ -182,7 +227,17 @@ export function buildAirfields(terrain) {
   for (const field of AIRFIELDS) {
     const y = field.elevationResolved ?? field.elevation;
     const side = field.apronSide;
-    if (field.kind !== 'water') {
+    if (field.kind === 'platform') {
+      const { canvas } = paintRunwaySurface(field);
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = 16;
+      const runway = flatStrip(field, 0, 0, field.length, field.width, y + 0.12, new THREE.MeshLambertMaterial({ map: texture }));
+      runway.name = `runway-${field.id}`;
+      group.add(runway);
+      buildPlatform(group, colliders, field, y);
+      windsocks.push(buildWindsock(group, field, field.length * 0.3, field.deckWidth * 0.5 - 2, y));
+    } else if (field.kind !== 'water') {
       const { canvas } = paintRunwaySurface(field);
       const texture = new THREE.CanvasTexture(canvas);
       texture.colorSpace = THREE.SRGBColorSpace;

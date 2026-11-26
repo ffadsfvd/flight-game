@@ -1,5 +1,6 @@
-// The four airfields of the archipelago as data: where each runway lies, how long and wide it is,
-// what stands beside it, and the frame helpers every system uses to talk about a runway.
+// The airfields of the archipelago as data: where each runway lies, how long and wide it is,
+// what stands beside it, and the frame helpers every system uses to talk about a runway. Kinds:
+// paved, grass, water (a seaplane lane) and platform (a deck on legs out at sea).
 
 export const AIRFIELDS = [
   {
@@ -29,6 +30,13 @@ export const AIRFIELDS = [
     ends: ['07W', '25W'], edgeLights: false, approachLights: false, papi: false,
     tower: false, hangars: 1, terminal: false, fuel: true, apronSide: 1, apronOffset: 470, apronLength: 90, apronDepth: 40,
     flatHalfWidth: 0, frequency: '121.90',
+  },
+  {
+    id: 'sette', name: 'Sette Offshore Platform', code: 'SVSP', kind: 'platform', island: null,
+    x: -4300, z: 5000, heading: 90, length: 300, width: 24, elevation: 22, deckWidth: 40, crossingHeight: 4,
+    ends: ['09', '27'], edgeLights: true, approachLights: false, papi: false,
+    tower: false, hangars: 0, terminal: false, fuel: true, apronSide: 1, apronOffset: 0, apronLength: 0, apronDepth: 0,
+    flatHalfWidth: 0, frequency: '123.45',
   },
 ];
 

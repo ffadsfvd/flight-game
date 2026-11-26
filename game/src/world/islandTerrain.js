@@ -142,6 +142,7 @@ export function createIslandTerrain({ seed = 7, cells = 512 } = {}) {
   function shapedHeight(x, z) {
     let h = naturalHeight(x, z);
     for (const field of AIRFIELDS) {
+      if (field.kind === 'platform') continue;
       const { fx, fz, rx, rz } = runwayAxes(field);
       const dx = x - field.x;
       const dz = z - field.z;

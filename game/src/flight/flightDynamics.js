@@ -111,7 +111,7 @@ export function updateDerived(body, world) {
   body.verticalSpeed = body.velocity.y;
   body.altitude = body.position.y;
   if (world) {
-    const ground = Math.max(0, world.terrain.heightAt(body.position.x, body.position.z));
+    const ground = world.groundHeightAt ? world.groundHeightAt(body.position.x, body.position.z) : Math.max(0, world.terrain.heightAt(body.position.x, body.position.z));
     body.agl = body.position.y - ground;
   }
 }
@@ -142,7 +142,7 @@ export function stepAircraft(body, world, wind, controls, dt) {
   const u = tmp.up.copy(UP).applyQuaternion(body.quaternion);
   const r = tmp.right.copy(RIGHT).applyQuaternion(body.quaternion);
 
-  const groundBelow = Math.max(0, world.terrain.heightAt(body.position.x, body.position.z));
+  const groundBelow = world.groundHeightAt ? world.groundHeightAt(body.position.x, body.position.z) : Math.max(0, world.terrain.heightAt(body.position.x, body.position.z));
   const heightAbove = body.position.y - groundBelow;
   const groundEffect = THREE.MathUtils.clamp(1 - heightAbove / spec.span, 0, 1);
   const wingDamage = 1 - body.airframe;

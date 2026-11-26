@@ -6,6 +6,11 @@ import { airfieldById, landingDirection, toRunwayFrame } from './airfieldDirecto
 export const GLIDE_SLOPE_DEG = 3;
 export const THRESHOLD_CROSSING_M = 12;
 
+/** Height over the threshold on the glide path: 12 m, or a field's own (a short deck wants less). */
+export function crossingHeight(field) {
+  return field.crossingHeight ?? THRESHOLD_CROSSING_M;
+}
+
 /** Guidance from position p to runway `fieldId` end `end`. */
 export function approachGuidance(fieldId, end, p) {
   const field = airfieldById(fieldId);
@@ -15,9 +20,10 @@ export function approachGuidance(fieldId, end, p) {
   const lateral = frame.across * dir.sign;
   const elevation = field.kind === 'water' ? 0 : field.elevationResolved;
   const height = p.y - elevation;
-  const ideal = THRESHOLD_CROSSING_M + Math.tan((GLIDE_SLOPE_DEG * Math.PI) / 180) * Math.max(0, distance);
+  const crossing = crossingHeight(field);
+  const ideal = crossing + Math.tan((GLIDE_SLOPE_DEG * Math.PI) / 180) * Math.max(0, distance);
   const along = Math.max(30, distance);
-  const glideAngle = (Math.atan2(height - THRESHOLD_CROSSING_M, along) * 180) / Math.PI;
+  const glideAngle = (Math.atan2(height - crossing, along) * 180) / Math.PI;
   const glideDev = glideAngle - GLIDE_SLOPE_DEG;
   const locDev = (Math.atan2(lateral, along + field.length) * 180) / Math.PI;
   return { field, end, name: dir.name, heading: dir.heading, threshold: dir.threshold, distance, lateral, height, ideal, glideDev, locDev, elevation };

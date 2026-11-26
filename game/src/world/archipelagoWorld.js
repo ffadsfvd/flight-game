@@ -13,7 +13,7 @@ import { buildTowns } from './townBuilder.js';
 import { plantForests } from './forestPlanter.js';
 import { buildLandmarks } from './landmarkBuilder.js';
 import { buildRivers } from './riverBuilder.js';
-import { AIRFIELDS, isOnRunway } from './airfieldDirectory.js';
+import { AIRFIELDS, isOnRunway, toRunwayFrame } from './airfieldDirectory.js';
 import { canopyHeight, forestDensity } from './vegetationMap.js';
 import { updateLightPoints } from './lightPoints.js';
 
@@ -33,9 +33,21 @@ export function createArchipelagoWorld(scene) {
   scene.add(sky.mesh, terrainMesh, sea.mesh, clouds.group, airfields.group, towns.group, forests.group, landmarks.group, rivers);
   const colliders = [...airfields.colliders, ...landmarks.colliders];
   const local = new THREE.Vector3();
+  const decks = AIRFIELDS.filter((f) => f.kind === 'platform');
+
+  /** The platform deck under (x, z), or null. */
+  function deckAt(x, z) {
+    for (const deck of decks) {
+      const p = toRunwayFrame(deck, x, z);
+      if (Math.abs(p.along) <= deck.length * 0.5 + 6 && Math.abs(p.across) <= deck.deckWidth * 0.5) return deck;
+    }
+    return null;
+  }
 
   /** What lies under (x, z): ground height, water or not, and the runway if on one. */
   function surfaceAt(x, z) {
+    const deck = deckAt(x, z);
+    if (deck) return { height: deck.elevationResolved + 0.12, water: false, runway: isOnRunway(deck, x, z) ? deck : null, kind: 'asphalt' };
     const ground = terrain.heightAt(x, z);
     if (ground < 0) return { height: 0, water: true, runway: null, kind: 'water' };
     for (const field of AIRFIELDS) {
@@ -85,6 +97,11 @@ export function createArchipelagoWorld(scene) {
     landmarks,
     surfaceAt,
     obstacleAt,
+    /** Height of whatever the aircraft would land on at (x, z): terrain, sea level or a deck. */
+    groundHeightAt(x, z) {
+      const deck = deckAt(x, z);
+      return deck ? deck.elevationResolved + 0.12 : Math.max(0, terrain.heightAt(x, z));
+    },
     /** Sets the hour/weather preset for sun, sky, sea, clouds and fog. */
     setTimeOfDay(name, renderer) {
       const light = lighting.apply(name, renderer);

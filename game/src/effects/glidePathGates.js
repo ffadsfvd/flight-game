@@ -2,7 +2,7 @@
 // threshold, so the pilot flies through them on final. Frames ahead glow, the near ones fade.
 import * as THREE from 'three';
 import { airfieldById, fromRunwayFrame, landingDirection } from '../world/airfieldDirectory.js';
-import { GLIDE_SLOPE_DEG, THRESHOLD_CROSSING_M } from '../world/approachGeometry.js';
+import { GLIDE_SLOPE_DEG, crossingHeight } from '../world/approachGeometry.js';
 
 const GATE_SPACING = 260;
 const GATE_COUNT = 11;
@@ -54,7 +54,7 @@ export function createGlidePathGates(scene) {
       gates.forEach((gate, i) => {
         const distance = 180 + i * GATE_SPACING;
         const p = fromRunwayFrame(field, -dir.sign * (field.length / 2 + distance), 0);
-        const y = elevation + THRESHOLD_CROSSING_M + Math.tan(THREE.MathUtils.degToRad(GLIDE_SLOPE_DEG)) * distance + 6;
+        const y = elevation + crossingHeight(field) + Math.tan(THREE.MathUtils.degToRad(GLIDE_SLOPE_DEG)) * distance + 6;
         gate.mesh.position.set(p.x, y, p.z);
         gate.mesh.rotation.set(0, yaw, 0);
         gate.distance = distance;
