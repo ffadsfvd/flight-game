@@ -13,7 +13,7 @@ export function createFlightEventHandler({ effects, sfx, hud, radioFor }) {
           const td = e.touchdown;
           sfx.play(td.water ? 'splash' : 'touchdown', Math.min(1.5, 0.4 + td.fpm / 500));
           effects.burst(td.water ? 'splash' : 'touchdown', body.position, body.velocity);
-          if (td.fpm > FPM_LIMIT_CALL) hud.toast(`FIRM ${td.fpm} FPM`, 'bad');
+          if (td.fpm > FPM_LIMIT_CALL) hud.toast(`${td.fpm > body.spec.gearLimitFpm ? 'HARD' : 'FIRM'} ${td.fpm} FPM`, 'bad');
         } else if (e.kind === 'bounce') {
           hud.toast('BOUNCE', 'bad');
         } else if (e.kind === 'landed') {

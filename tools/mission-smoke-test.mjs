@@ -2,7 +2,9 @@
 // drives the simulation inside the page: for each stage it puts the aircraft where that stage
 // needs it (before each ring, on short final, over the flare or the fire, facing a landmark, in
 // the formation slot...) and flies the last part with simple control laws, then checks the
-// mission ends in success. Run `node serve.ts` first.
+// mission ends in success. --debrief saves each mission's debrief screen to tmp/debrief-<id>.jpg.
+// Run `node serve.ts` first.   node tools/mission-smoke-test.mjs [--only=<id>] [--debrief]
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { launchChrome, openPage, sleep } from './cdp.mjs';
 
 const DRIVER = String.raw`(async (id) => {
@@ -160,6 +162,11 @@ try {
     const r = await page.evaluate(`${DRIVER}(${JSON.stringify(id)})`);
     console.log(`${r.ok ? 'PASS' : 'FAIL'}  ${id}  ${r.why}`);
     if (!r.ok) failed += 1;
+    if (process.argv.includes('--debrief')) {
+      mkdirSync('tmp', { recursive: true });
+      await page.evaluate('window.__solvara.game.render(), 1');
+      writeFileSync(`tmp/debrief-${id}.jpg`, await page.screenshot({ quality: 82 }));
+    }
     const log = await page.evaluate('JSON.stringify(window.__fireLog || null)');
     if (log !== 'null' && only) console.log(log);
   }

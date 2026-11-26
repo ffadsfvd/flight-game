@@ -163,6 +163,7 @@ export function createMissionRunner(ctx) {
     const repairs = Math.round((1 - condition) * 500);
     const xp = success ? Math.round(reward.xp * ({ gold: 1.3, silver: 1.1, bronze: 1, none: 0.8 }[medal])) : Math.round(reward.xp * 0.1);
     const landing = objectives.map((o) => o.report).filter(Boolean).at(-1) ?? landings.at(-1) ?? null;
+    const impact = ending && ending.severity !== 'fail' ? { kt: Math.round(body.airspeed * 1.944), fpm: Math.max(0, Math.round(-body.verticalSpeed * 196.85)), pitch: Math.round(body.pitch), bank: Math.round(body.bank), flaps: body.flapSetting, gear: body.gearDown, engine: body.engine.running, fuelKg: Math.round(body.engine.fuel ?? 0) } : null;
     result = {
       success,
       missionId: mission?.id ?? null,
@@ -171,11 +172,13 @@ export function createMissionRunner(ctx) {
       cause: ending ? `${ending.cause}${ending.place ? ` ${ending.place}` : ''}.` : null,
       score,
       medal,
+      medals: mission ? { gold: 85, silver: 65, bronze: 40, ...(mission.medals ?? {}) } : null,
       money,
       repairs,
       xp,
       rows,
       landing,
+      impact,
       time: ctx.time,
       courseTime: objectives.find((o) => o.time)?.time ?? null,
     };

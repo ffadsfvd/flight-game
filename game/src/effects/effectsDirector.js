@@ -61,6 +61,12 @@ export function createEffectsDirector(scene, worldEmitters) {
       } else if (kind === 'crash') {
         for (let i = 0; i < 90; i += 1) fire.emit(p.x, p.y + 1, p.z, (random() - 0.5) * 22, random() * 16, (random() - 0.5) * 22, { life: 1 + random(), size: 4, grow: 7, alpha: 0.9, color: [1, 0.55 + random() * 0.3, 0.2], drag: 2, lift: 3 });
         for (let i = 0; i < 60; i += 1) smoke.emit(p.x, p.y + 2, p.z, (random() - 0.5) * 8, 3 + random() * 5, (random() - 0.5) * 8, { life: 6 + random() * 3, size: 6, grow: 6, alpha: 0.65, color: [0.16, 0.15, 0.15], drag: 0.8, lift: 1.5 });
+      // Debris: dark and painted fragments thrown out along the impact and falling back.
+      for (let i = 0; i < 70; i += 1) {
+        const painted = random() < 0.45;
+        const shade = painted ? 0.75 + random() * 0.2 : 0.1 + random() * 0.12;
+        smoke.emit(p.x + (random() - 0.5) * 3, p.y + 1, p.z + (random() - 0.5) * 3, velocity.x * 0.35 + (random() - 0.5) * 18, 4 + random() * 12, velocity.z * 0.35 + (random() - 0.5) * 18, { life: 1.6 + random() * 1.4, size: 0.5 + random() * 0.9, grow: 0, alpha: 1, color: [shade, shade * 0.97, shade * 0.93], drag: 0.35, lift: -9.8 });
+      }
         crashFire = { x: p.x, y: p.y, z: p.z, time: 0 };
       } else if (kind === 'drop-water') {
         for (let i = 0; i < 26; i += 1) water.emit(p.x + (random() - 0.5) * 3, p.y - 1, p.z + (random() - 0.5) * 3, velocity.x * 0.85 + (random() - 0.5) * 3, velocity.y - random() * 3, velocity.z * 0.85 + (random() - 0.5) * 3, { life: 3.2, size: 2.2, grow: 5.5, alpha: 0.75, color: [0.86, 0.94, 1], drag: 0.7, lift: -9.8 });

@@ -77,3 +77,32 @@
 .result-table td:last-child { text-align: right; font-weight: 700; }
 .grade-badge { float: right; font-size: 2.6em; font-weight: 800; color: var(--accent); line-height: 1; }
 .replay-tag { position: absolute; left: 50%; top: 2.5%; transform: translateX(-50%); padding: 0.3em 0.9em; border-radius: 0.3em; background: rgba(8, 14, 27, 0.7); color: #ff6a5a; font-weight: 800; letter-spacing: 0.12em; font-size: 0.95em; }
+#screen-mission-results .sheet.debrief { width: 50em; top: 54%; }
+.debrief-head { display: flex; justify-content: space-between; align-items: center; gap: 1em; }
+.debrief-title { color: var(--accent); font-weight: 700; font-size: 1.1em; }
+.debrief-medals { display: flex; gap: 0.45em; align-items: center; }
+.debrief-medal { display: flex; flex-direction: column; align-items: center; width: 4.2em; opacity: 0.32; filter: grayscale(0.7); }
+.debrief-medal.is-earned { opacity: 1; filter: none; }
+.debrief-medal i { width: 2.1em; height: 2.1em; border-radius: 50%; border: 0.18em solid rgba(255, 255, 255, 0.55); box-shadow: inset 0 -0.3em 0.5em rgba(0, 0, 0, 0.35), 0 0 0.6em rgba(255, 210, 120, 0.25); }
+.debrief-medal.medal-gold i { background: radial-gradient(circle at 35% 30%, #fff3b0, #ffcc33 45%, #b8860b); }
+.debrief-medal.medal-silver i { background: radial-gradient(circle at 35% 30%, #ffffff, #c9d3de 45%, #7f8b99); }
+.debrief-medal.medal-bronze i { background: radial-gradient(circle at 35% 30%, #ffe0c0, #d08a4e 45%, #7a4a22); }
+.debrief-medal b { font-size: 0.72em; letter-spacing: 0.08em; margin-top: 0.2em; }
+.debrief-medal small { font-size: 0.7em; color: var(--muted, #9aa4b2); }
+.debrief-score { display: flex; flex-direction: column; align-items: center; margin-left: 0.4em; }
+.debrief-score b { font-size: 2.2em; line-height: 1; color: var(--accent); }
+.debrief-score small { font-size: 0.72em; color: var(--muted, #9aa4b2); }
+.debrief-columns { display: grid; grid-template-columns: 1.25fr 1fr; gap: 1.2em; }
+.debrief-columns h3 { margin: 0.5em 0 0.25em; }
+.debrief-grade { color: var(--accent); font-size: 1.25em; margin-left: 0.2em; }
+.debrief-table td { white-space: nowrap; }
+.debrief-table td:nth-child(3) { font-weight: 700; }
+.debrief-bar { display: inline-block; width: 3.6em; height: 0.5em; margin-right: 0.4em; border-radius: 0.25em; background: rgba(255, 255, 255, 0.1); overflow: hidden; vertical-align: middle; }
+.debrief-bar.wide { width: 100%; margin: 0.3em 0; }
+.debrief-bar i { display: block; height: 100%; }
+.debrief-bar i.tone-good { background: #6be38a; } .debrief-bar i.tone-warn { background: #ffb02e; } .debrief-bar i.tone-bad { background: #ff5a4a; }
+td.tone-good { color: #6be38a; } td.tone-warn { color: #ffc46a; } td.tone-bad { color: #ff6a5a; }
+.debrief-rank { margin-top: 0.5em; font-size: 0.88em; }
+.debrief-rank span:first-child { font-weight: 800; color: #ffc46a; }
+.debrief-promoted { color: #ffc46a; font-weight: 800; margin: 0.3em 0 0; }
+.debrief-none { color: var(--muted, #9aa4b2); font-size: 0.9em; }

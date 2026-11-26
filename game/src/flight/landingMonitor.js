@@ -25,57 +25,51 @@ function findRunway(x, z, heading) {
   return best;
 }
 
-/** Grades the recorded touchdown; returns { score, grade, remarks, ... } */
+/**
+ * Grades the recorded touchdown out of 100: sink rate (30), centreline (20), touchdown zone (20),
+ * alignment (10), bounces (10) and flare (10). Returns { score, grade, remarks, breakdown } where
+ * each breakdown row is { item, value, verdict, points, max } for the debrief screen.
+ */
 export function gradeLanding(touchdown, bounces, spec) {
   const remarks = [];
-  let score = 0;
+  const breakdown = [];
+  const add = (item, value, verdict, points, max) => breakdown.push({ item, value, verdict, points, max });
   const fpm = touchdown.fpm;
-  if (fpm <= 120) {
-    score += 35;
-    remarks.push(`Butter: ${fpm} fpm`);
-  } else if (fpm <= 250) {
-    score += 30;
-    remarks.push(`Smooth: ${fpm} fpm`);
-  } else if (fpm <= 400) {
-    score += 22;
-    remarks.push(`Firm: ${fpm} fpm`);
-  } else if (fpm <= spec.gearLimitFpm) {
-    score += 12;
-    remarks.push(`Hard: ${fpm} fpm`);
-  } else {
-    remarks.push(`Gear-bending: ${fpm} fpm`);
-  }
+  const sink = fpm <= 120 ? ['Butter', 30] : fpm <= 250 ? ['Smooth', 26] : fpm <= 400 ? ['Firm', 18] : fpm <= spec.gearLimitFpm ? ['Hard', 9] : ['Gear-bending', 0];
+  remarks.push(`${sink[0]}: ${fpm} fpm`);
+  add('Touchdown sink rate', `${fpm} fpm`, sink[0], sink[1], 30);
   if (!touchdown.runway) {
     remarks.push('Off-field landing');
+    add('Centreline', 'no runway', 'Off-field', 0, 20);
+    add('Touchdown zone', 'no runway', 'Off-field', 0, 20);
+    add('Alignment', '-', 'Off-field', 0, 10);
   } else {
     const off = touchdown.centreline;
-    if (off <= 2) score += 20;
-    else if (off <= 5) score += 15;
-    else if (off <= 10) score += 8;
+    const line = off <= 2 ? ['On the line', 20] : off <= 5 ? ['Close', 15] : off <= 10 ? ['Wide', 8] : ['Off the side', 2];
     remarks.push(off <= 2 ? 'On the centreline' : `${off.toFixed(1)} m ${touchdown.side} of centreline`);
+    add('Centreline', off <= 0.5 ? 'dead centre' : `${off.toFixed(1)} m ${touchdown.side}`, line[0], line[1], 20);
     const d = touchdown.distance;
-    if (d < 0) remarks.push(`Landed ${Math.round(-d)} m short of the threshold`);
-    else if (d < 100) {
-      score += 8;
-      remarks.push(`Touched down early, ${Math.round(d)} m past the threshold`);
-    } else if (d <= 450) {
-      score += 20;
-      remarks.push(`In the touchdown zone, ${Math.round(d)} m past the threshold`);
-    } else if (d <= 700) {
-      score += 12;
-      remarks.push(`Long: ${Math.round(d)} m past the threshold`);
-    } else {
-      score += 4;
-      remarks.push(`Very long: ${Math.round(d)} m past the threshold`);
-    }
+    let zone;
+    if (d < 0) zone = [`Landed ${Math.round(-d)} m short of the threshold`, 'Short', 0];
+    else if (d < 100) zone = [`Touched down early, ${Math.round(d)} m past the threshold`, 'Early', 8];
+    else if (d <= 450) zone = [`In the touchdown zone, ${Math.round(d)} m past the threshold`, 'In the zone', 20];
+    else if (d <= 700) zone = [`Long: ${Math.round(d)} m past the threshold`, 'Long', 12];
+    else zone = [`Very long: ${Math.round(d)} m past the threshold`, 'Very long', 4];
+    remarks.push(zone[0]);
+    add('Touchdown zone', d < 0 ? `${Math.round(-d)} m short` : `${Math.round(d)} m in`, zone[1], zone[2], 20);
     const err = Math.abs(touchdown.headingError);
-    score += err <= 3 ? 10 : err <= 8 ? 6 : 2;
     if (err > 8) remarks.push(`Crabbed ${Math.round(err)}° off the runway heading`);
+    add('Alignment', `${Math.round(err)}° off heading`, err <= 3 ? 'Straight' : err <= 8 ? 'Slight crab' : 'Crabbed', err <= 3 ? 10 : err <= 8 ? 6 : 2, 10);
   }
-  score += bounces === 0 ? 15 : bounces === 1 ? 7 : 0;
   if (bounces > 0) remarks.push(bounces === 1 ? 'One bounce' : `${bounces} bounces`);
+  add('Bounce', bounces === 0 ? 'none' : `${bounces}`, bounces === 0 ? 'Stuck it' : bounces === 1 ? 'One bounce' : 'Kangaroo', bounces === 0 ? 10 : bounces === 1 ? 5 : 0, 10);
+  const pitch = touchdown.pitch ?? 0;
+  const flare = touchdown.water ? (pitch >= 1 && pitch <= 9 ? ['Nose up on the step', 10] : ['Flat on the water', 4]) : pitch < 0 ? ['Flat, nosewheel first', 0] : pitch < 2 ? ['Little flare', 5] : pitch <= 10 ? ['Good flare', 10] : ['Over-flared', 5];
+  if (flare[1] < 10) remarks.push(flare[0]);
+  add('Flare', `${pitch.toFixed(0)}° nose ${pitch >= 0 ? 'up' : 'down'}`, flare[0], flare[1], 10);
+  const score = breakdown.reduce((s, r) => s + r.points, 0);
   const grade = score >= 92 ? 'A+' : score >= 82 ? 'A' : score >= 70 ? 'B' : score >= 55 ? 'C' : score >= 40 ? 'D' : 'F';
-  return { score, grade, remarks };
+  return { score, grade, remarks, breakdown };
 }
 
 /** Advances the monitor; returns an array of events. */

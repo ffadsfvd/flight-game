@@ -43,6 +43,19 @@ function createFlightRecorder() {
   };
 }
 
+/** Puts what led to a crash in front of the impact: a stall in the last seconds or a dead engine. */
+function explainCrash(cause, body, history) {
+  const tail = cause.charAt(0).toLowerCase() + cause.slice(1);
+  const stall = history.stall;
+  if (stall && body.time - stall.time < 9) {
+    const flaps = ['flaps up', 'flaps 15°', 'full flaps'][stall.flaps] ?? 'flaps up';
+    return `Stalled at ${stall.aglFt} ft and ${stall.kt} kt with ${flaps}${body.spec.gearRetracts && !body.gearDown ? ' and the gear up' : ''}, then ${tail}`;
+  }
+  const out = history.engineOut;
+  if (out && !body.engine.running) return `Engine out at ${out.aglFt} ft (${out.cause ?? 'failure'}), then ${tail}`;
+  return cause;
+}
+
 /** Creates the simulation for a world and wind field. */
 export function createAircraftSimulation(world, wind) {
   const sim = {
@@ -54,6 +67,7 @@ export function createAircraftSimulation(world, wind) {
     accumulator: 0,
     flightTime: 0,
     distance: 0,
+    history: { stall: null, engineOut: null },
   };
 
   /** Starts a flight in `spec` at `placement` (see placeAircraft). */
@@ -67,6 +81,7 @@ export function createAircraftSimulation(world, wind) {
     sim.accumulator = 0;
     sim.flightTime = 0;
     sim.distance = 0;
+    sim.history = { stall: null, engineOut: null };
     if (placement.speed < 1) {
       for (let i = 0; i < 240; i += 1) stepOnce({ pitch: 0, roll: 0, yaw: 0, throttle: 0, brakes: 1 }, []);
       sim.body.time = 0;
@@ -78,14 +93,20 @@ export function createAircraftSimulation(world, wind) {
     const before = body.position.clone();
     const wasRunning = body.engine.running;
     stepAircraft(body, world, wind, controls, PHYSICS_STEP);
-    if (wasRunning && !body.engine.running) events.push({ kind: 'engine-out', cause: body.engine.failureCause });
+    if (wasRunning && !body.engine.running) {
+      events.push({ kind: 'engine-out', cause: body.engine.failureCause });
+      sim.history.engineOut = { time: body.time, aglFt: Math.round(body.agl * 3.281), cause: body.engine.failureCause };
+    }
+    if (!body.onGround && body.stall > 0.55 && (!sim.history.stall || body.time - sim.history.stall.time > 9)) {
+      sim.history.stall = { time: body.time, aglFt: Math.round(body.agl * 3.281), kt: Math.round(body.airspeed * 1.944), flaps: body.flapSetting };
+    }
     sim.distance += before.distanceTo(body.position);
     if (!body.onGround) sim.flightTime += PHYSICS_STEP;
     for (const e of stepDamage(body, sim.damage, PHYSICS_STEP)) events.push(e);
     for (const e of stepLandingMonitor(sim.landing, body, world, PHYSICS_STEP)) {
       if (e.kind === 'touchdown' && !e.touchdown.water) {
         if (e.touchdown.fpm > body.spec.gearCollapseFpm) {
-          sim.ended = { severity: 'crash', cause: `The gear collapsed on a ${e.touchdown.fpm} fpm touchdown`, place: e.touchdown.place };
+          sim.ended = { severity: 'crash', cause: explainCrash(`The gear collapsed on a ${e.touchdown.fpm} fpm touchdown`, body, sim.history), place: e.touchdown.place };
         } else {
           const hurt = applyTouchdownDamage(body, sim.damage, e.touchdown.fpm);
           if (hurt) events.push(hurt);
@@ -93,7 +114,10 @@ export function createAircraftSimulation(world, wind) {
       }
       events.push(e);
     }
-    if (!sim.ended) sim.ended = detectCrash(body, world);
+    if (!sim.ended) {
+      sim.ended = detectCrash(body, world);
+      if (sim.ended?.severity === 'crash') sim.ended.cause = explainCrash(sim.ended.cause, body, sim.history);
+    }
     if (sim.ended) events.push({ kind: 'ended', result: sim.ended });
     sim.recorder.record(body, PHYSICS_STEP);
   }
