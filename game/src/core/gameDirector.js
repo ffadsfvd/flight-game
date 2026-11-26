@@ -171,6 +171,9 @@ export function createGameDirector({ view, world, shotMode = false }) {
   function showBoard() {
     state = 'menu';
     dropBanner();
+    // The menus always sit over the golden-hour archipelago, whatever the last sortie's weather.
+    effects.setRain(0);
+    light = world.setTimeOfDay('golden', view.renderer);
     if (audio.ready) music.start();
     router.show('screen-mission-board', missionBoardHtml(career), {
       brief: (id) => showBriefing(missionById(id)),

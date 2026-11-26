@@ -44,7 +44,7 @@ export const CHAPTERS = [
   { id: 2, name: 'Island Work', subtitle: 'Freight, mail and survey flying for Brightwater and the Gazette', rank: 1 },
   { id: 3, name: 'Rescue Service', subtitle: 'Supply drops, a medevac and fire duty with Rescue Control and Fire Base Calvera', rank: 1 },
   { id: 4, name: 'Racing and Airshow', subtitle: 'Display flying, formation, banners and the races of the summer season', rank: 2 },
-  { id: 5, name: 'Night and Storm', subtitle: 'Engine failure, squall lines, gales and the night mail', rank: 2 },
+  { id: 5, name: 'Night and Storm', subtitle: 'Engine failure, squall lines, gales, the night mail and night work at sea', rank: 2 },
   { id: 6, name: 'The Expedition', subtitle: 'Mountain flying and icing over Nesta and Aurio, and the grand tour of the archipelago', rank: 3 },
 ];
 
