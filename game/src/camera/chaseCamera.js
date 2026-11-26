@@ -22,7 +22,7 @@ export function createChaseCamera() {
   const rig = new THREE.Quaternion();
   const up = new THREE.Vector3(0, 1, 0);
   let initialised = false;
-  const framing = { height: 1.35, distance: 1, lookAhead: 34, lookUp: 0.6 };
+  const framing = { height: 1.35, distance: 1, lookAhead: 34, lookUp: 0.6, yaw: 0 };
   return {
     framing,
     reset() {
@@ -53,6 +53,7 @@ export function createChaseCamera() {
       }
       const distance = spec.chaseDistance * framing.distance * (1 + Math.min(0.25, body.airspeed / 400));
       offset.set(0, spec.chaseHeight * framing.height, distance);
+      if (framing.yaw) offset.applyAxisAngle(UP, framing.yaw);
       if (look.x || look.y) {
         offset.applyAxisAngle(UP, -look.x);
         side.set(1, 0, 0);

@@ -18,7 +18,7 @@ export const MISSIONS = [
     stages: [
       { type: 'takeoff', altitudeFt: 500, say: ['dario', 'SV-102, cleared for take-off runway 09. Good luck.'] },
       { type: 'rings', radius: 34, par: 210, label: 'Fly the circuit through the rings', hint: 'Gentle 20° banks, hold about 750 ft and 80 kt',
-        course: [[-700, 2480, 150], [-150, 3150, 200], [-1300, 3680, 230], [-3000, 3640, 230], [-4250, 3200, 190], [-4100, 2480, 73, true]],
+        course: [[-700, 2950, 150], [-100, 3560, 200], [-1300, 4100, 230], [-3000, 4100, 230], [-4300, 3620, 190], [-4100, 2950, 71, true]],
         say: ['ines', 'Nice climb. Turn right onto the crosswind leg and pick up the rings.'] },
       { type: 'land', field: 'marenza', end: 0, say: ['dario', 'SV-102, number one, runway 09, cleared to land.'] },
     ],
@@ -174,7 +174,7 @@ export const MISSIONS = [
     briefing: [['mags', 'Last bags of the day. Marenza has the runway lights on for you.'], ['mags', 'At night the approach lights and the PAPI are your best friends. Trust the instruments.']],
     stages: [
       { type: 'takeoff', altitudeFt: 400 },
-      { type: 'reach', name: 'Marenza approach', x: 1200, z: 2500, radius: 1600, label: 'Fly south-east to the Marenza approach', hint: 'Follow the bug; the runway lights are visible from far out', startDistance: 9000 },
+      { type: 'reach', name: 'Marenza approach', x: 1200, z: 2950, radius: 1600, label: 'Fly south-east to the Marenza approach', hint: 'Follow the bug; the runway lights are visible from far out', startDistance: 9000 },
       { type: 'land', field: 'marenza', end: 1, say: ['dario', 'Night mail, Marenza Tower, runway 27, lights are up, cleared to land.'] },
     ],
     reward: { money: 600, xp: 260 },
@@ -189,7 +189,7 @@ export const MISSIONS = [
     stages: [
       { type: 'rings', radius: 34, par: 170, penalty: 6,
         rivals: [{ name: 'Teo Ranieri', aircraft: 'swiftlet', speed: 112, color: '#4f8cff' }, { name: 'Sara Moll', aircraft: 'swiftlet', speed: 104, color: '#ff6a4a', delay: 0.6 }, { name: 'Pip Calder', aircraft: 'swiftlet', speed: 98, color: '#6be38a', delay: 1.1 }],
-        course: [[1850, -1650, 28, true, 40], [1300, -3700, 230, true], [2600, -5900, 300, true], [5200, -5600, 300, true], [6300, -800, 120, true], [6200, 2600, 110, true], [3600, 4400, 90, true], [1200, 3600, 120, true], [-400, 2480, 100, true]],
+        course: [[1850, -1650, 28, true, 40], [1300, -3700, 230, true], [2600, -5900, 300, true], [5200, -5600, 300, true], [6300, -800, 120, true], [6200, 2600, 110, true], [3600, 4400, 90, true], [1200, 3600, 120, true], [-400, 2950, 100, true]],
         say: ['teo', 'Three, two, one, go!'] },
     ],
     reward: { money: 900, xp: 360 },

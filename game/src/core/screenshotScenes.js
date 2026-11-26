@@ -23,15 +23,16 @@ export function stageScreenshot(name, game) {
   const session = game.session;
   if (name === 'title') {
     game.showTitle();
+    game.backdrop.setAngle(80);
     for (let i = 0; i < 240; i += 1) game.frame(STEP);
   } else if (name === 'cover') {
     game.startMission(missionById('first-solo'));
     game.runner.skipTo(2);
     const spec = session.spec;
-    session.simulation.start(spec, { ...approachPlacement(spec, 'marenza', 0, 980, { flaps: 2, offset: 0, height: 2 }), throttle: 0.3 }, { birds: false });
+    session.simulation.start(spec, { ...approachPlacement(spec, 'marenza', 0, 760, { flaps: 2, offset: 0, height: 2 }), throttle: 0.3 }, { birds: false });
     session.body.landingLights = true;
     game.controls.controls.throttle = 0.3;
-    Object.assign(game.cameras.chaseFraming, { height: 1.75, distance: 1.3, lookAhead: 110, lookUp: -2 });
+    Object.assign(game.cameras.chaseFraming, { height: 1.65, distance: 1.12, lookAhead: 120, lookUp: -3, yaw: 0 });
     run(game, 2.6);
     game.hud.radio.say('dario', 'SV-102, Marenza Tower, runway 09, wind 075 at 6, cleared to land.', { priority: true });
     game.hud.radio.hold();

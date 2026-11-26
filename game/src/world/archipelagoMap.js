@@ -42,13 +42,13 @@ export const LAGOONS = [
 
 /** Low coastal plains where the land is pressed flat: Marenza's south shore holds the airport and Porto Celeste. */
 export const PLAINS = [
-  { id: 'celeste-plain', name: 'Celeste plain', x: -700, z: 2650, rx: 3600, rz: 900, rot: 0.04, height: 7, keep: 0.1 },
+  { id: 'celeste-plain', name: 'Celeste plain', x: -900, z: 3000, rx: 3500, rz: 700, rot: 0.04, height: 6, keep: 0.16 },
 ];
 
 /** Towns: centre, radius and building count. Buildings avoid runways, water and steep ground. */
 export const TOWNS = [
-  { id: 'porto-celeste', name: 'Porto Celeste', island: 'marenza', x: -1250, z: 3400, radius: 560, buildings: 280, flatten: 6 },
-  { id: 'san-telmo', name: 'San Telmo', island: 'marenza', x: 900, z: 3080, radius: 380, buildings: 110, flatten: 4 },
+  { id: 'porto-celeste', name: 'Porto Celeste', island: 'marenza', x: -350, z: 3450, radius: 480, buildings: 380, flatten: 6 },
+  { id: 'san-telmo', name: 'San Telmo', island: 'marenza', x: 1150, z: 3000, radius: 360, buildings: 150, flatten: 4 },
   { id: 'nordelle', name: 'Nordelle', island: 'marenza', x: -2000, z: -1250, radius: 380, buildings: 90, flatten: 0 },
   { id: 'ventara', name: 'Ventara', island: 'lumeno', x: 4350, z: 3950, radius: 330, buildings: 80, flatten: 0 },
   { id: 'orsa-harbour', name: 'Orsa Harbour', island: 'orsa', x: -4900, z: -2500, radius: 220, buildings: 36, flatten: 0 },
@@ -66,9 +66,9 @@ export const LANDMARKS = [
 
 /** Roads as polylines of [x, z]; they follow the ground and connect towns and airfields. */
 export const ROADS = [
-  [[-2050, 2780], [-1700, 3050], [-1250, 3400]],
-  [[-1250, 3400], [-600, 3300], [200, 3150], [900, 3080]],
-  [[900, 3080], [500, 2300], [-150, 1750]],
+  [[-2050, 3250], [-1200, 3380], [-350, 3450]],
+  [[-350, 3450], [400, 3250], [1150, 3000]],
+  [[1150, 3000], [600, 2300], [-150, 1750]],
   [[-2000, -1250], [-1400, -1350], [-880, -1500]],
   [[4350, 3950], [4000, 3600], [3600, 3420]],
   [[-4900, -2500], [-5300, -2850]],

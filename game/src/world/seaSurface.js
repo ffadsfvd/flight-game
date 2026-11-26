@@ -40,9 +40,11 @@ vec3 seaNormal(vec2 p, float t, float dist) {
   float px = max(0.05, length(fwidth(p)));
   float storm = 1.0 + uStorm * 1.8;
   vec2 g = vec2(0.0);
-  g += waveSlope(p, t, normalize(vec2(1.0, 0.35)), 46.0, 0.42 * storm) * clamp(1.0 - px * 2.5 / 46.0, 0.0, 1.0);
-  g += waveSlope(p, t, normalize(vec2(-0.45, 1.0)), 23.0, 0.22 * storm) * clamp(1.0 - px * 2.5 / 23.0, 0.0, 1.0);
-  g += waveSlope(p, t, normalize(vec2(0.7, -0.75)), 9.5, 0.075 * storm) * clamp(1.0 - px * 2.5 / 9.5, 0.0, 1.0);
+  g += waveSlope(p, t, normalize(vec2(1.0, 0.35)), 46.0, 0.24 * storm) * clamp(1.0 - px * 2.5 / 46.0, 0.0, 1.0);
+  g += waveSlope(p, t, normalize(vec2(0.62, 0.9)), 31.0, 0.16 * storm) * clamp(1.0 - px * 2.5 / 31.0, 0.0, 1.0);
+  g += waveSlope(p, t, normalize(vec2(-0.45, 1.0)), 23.0, 0.15 * storm) * clamp(1.0 - px * 2.5 / 23.0, 0.0, 1.0);
+  g += waveSlope(p, t, normalize(vec2(0.96, -0.3)), 14.0, 0.08 * storm) * clamp(1.0 - px * 2.5 / 14.0, 0.0, 1.0);
+  g += waveSlope(p, t, normalize(vec2(0.7, -0.75)), 9.5, 0.06 * storm) * clamp(1.0 - px * 2.5 / 9.5, 0.0, 1.0);
   g += waveSlope(p, t, normalize(vec2(-0.95, -0.25)), 4.1, 0.03 * storm) * clamp(1.0 - px * 2.5 / 4.1, 0.0, 1.0);
   g += waveSlope(p, t, normalize(vec2(0.15, 0.98)), 1.9, 0.012 * storm) * clamp(1.0 - px * 2.5 / 1.9, 0.0, 1.0);
   return normalize(vec3(-g.x, 1.0, -g.y));

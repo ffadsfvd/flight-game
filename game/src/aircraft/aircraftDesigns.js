@@ -33,7 +33,7 @@ export const AIRCRAFT_DESIGNS = {
       ],
     },
     lights: { left: [-4.92, -0.02, -0.1], right: [4.92, -0.02, -0.1], tail: [0, 0.36, 4.82], landing: [-1.9, -0.33, -0.76] },
-    panel: { z: -1.02, y: 0.22, width: 1.02, tilt: 0.34 },
+    panel: { z: -1.02, y: 0.17, width: 0.98, tilt: 0.36 },
   },
   heron: {
     livery: { base: '#f7f4ee', stripe: '#e8641e', accent: '#1e3a5f', wing: '#f7f4ee', tip: '#e8641e', tail: '#e8641e', textAt: 0.62 },

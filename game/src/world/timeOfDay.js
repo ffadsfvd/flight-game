@@ -5,8 +5,8 @@ import * as THREE from 'three';
 
 const PRESETS = {
   golden: {
-    label: 'Golden hour', clock: '18:42', sunAzimuth: 236, sunElevation: 12.5, sunColor: '#ffb36e', sunIntensity: 3.3,
-    hemiSky: '#a9c3e6', hemiGround: '#7d6142', hemiIntensity: 1.25, fogColor: '#e8b58f', fogDensity: 0.000062,
+    label: 'Golden hour', clock: '18:42', sunAzimuth: 236, sunElevation: 13.5, sunColor: '#ffae68', sunIntensity: 3.8,
+    hemiSky: '#a9c3e6', hemiGround: '#7d6142', hemiIntensity: 1.05, fogColor: '#e9b48c', fogDensity: 0.00006,
     skyZenith: '#3d6db4', skyHorizon: '#ffc48c', skySunGlow: 1.0, seaDeep: '#0f4a70', seaShallow: '#3cc6bd',
     exposure: 1.0, night: 0, storm: 0, lightsOn: 0.6,
   },

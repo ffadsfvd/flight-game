@@ -61,7 +61,7 @@ export function buildTowns(terrain) {
     const gridAngle = random() * Math.PI;
     let placed = 0;
     for (let attempt = 0; attempt < town.buildings * 6 && placed < town.buildings; attempt += 1) {
-      const r = town.radius * Math.pow(random(), 0.75);
+      const r = town.radius * Math.pow(random(), 1.05);
       const a = random() * Math.PI * 2;
       const x = town.x + Math.cos(a) * r;
       const z = town.z + Math.sin(a) * r;

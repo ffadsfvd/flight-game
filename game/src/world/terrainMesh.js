@@ -3,6 +3,7 @@
 // airfields. A tiled detail texture breaks up the colour close to the ground.
 import * as THREE from 'three';
 import { smoothstep } from '../core/gradientNoise.js';
+import { hash2 } from '../core/seededRandom.js';
 import { ISLANDS, TOWNS } from './archipelagoMap.js';
 import { AIRFIELDS, toRunwayFrame } from './airfieldDirectory.js';
 import { forestDensity } from './vegetationMap.js';
@@ -11,8 +12,8 @@ const PALETTE = {
   seabed: new THREE.Color('#b59c6e'),
   wetSand: new THREE.Color('#d8c08e'),
   sand: new THREE.Color('#efdcab'),
-  grass: new THREE.Color('#86a24a'),
-  dryGrass: new THREE.Color('#bba65e'),
+  grass: new THREE.Color('#8ea64a'),
+  dryGrass: new THREE.Color('#c6aa5c'),
   lush: new THREE.Color('#5f8c39'),
   forestFloor: new THREE.Color('#3f6128'),
   rock: new THREE.Color('#8e7b67'),
@@ -70,6 +71,19 @@ function createDetailTexture() {
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 8;
   return texture;
+}
+
+const CROPS = [new THREE.Color('#e0bb5a'), new THREE.Color('#86ad45'), new THREE.Color('#b48553'), new THREE.Color('#a9ad58'), new THREE.Color('#d8c27f'), new THREE.Color('#6f9a40'), new THREE.Color('#c99b4e')];
+
+/** Farmland patchwork on gentle lowland: 0..1, zero on slopes, beaches, hills and in towns. */
+function fieldPatch(x, z, h, slope) {
+  if (h < 4 || h > 90 || slope > 0.12) return 0;
+  const u = (x * 0.95 + z * 0.31) / 170;
+  const v = (-x * 0.31 + z * 0.95) / 120;
+  if (hash2(Math.floor(u), Math.floor(v), 33) > 0.8) return 0;
+  for (const town of TOWNS) if (Math.hypot(x - town.x, z - town.z) < town.radius * 1.1) return 0;
+  const edge = Math.min(u - Math.floor(u), Math.ceil(u) - u, v - Math.floor(v), Math.ceil(v) - v);
+  return smoothstep(4, 9, h) * smoothstep(90, 50, h) * smoothstep(0.12, 0.05, slope) * smoothstep(0.0, 0.12, edge);
 }
 
 /** How strongly (x, z) belongs to an airfield's mown zone, 0..1. */
@@ -134,6 +148,9 @@ export function createTerrainMesh(terrain) {
         color.lerp(PALETTE.lush, smoothstep(0.55, 0.2, n1) * smoothstep(240, 40, h) * 0.6);
         color.lerp(PALETTE.sand, smoothstep(beach + 4, beach, h) * 0.65);
         const forest = h < 720 ? forestDensity(terrain, x, z, h) : 0;
+        const mownNear = airfieldGrass(x, z);
+        const fields = fieldPatch(x, z, h, slope) * (1 - forest) * (1 - mownNear);
+        if (fields > 0) color.lerp(CROPS[Math.floor(hash2(Math.floor((x * 0.95 + z * 0.31) / 170), Math.floor((-x * 0.31 + z * 0.95) / 120), 21) * CROPS.length)], fields * 0.82);
         color.lerp(PALETTE.forestFloor, forest * 0.85);
         color.lerp(tmp.copy(PALETTE.rock).lerp(PALETTE.cliff, n2), smoothstep(0.16, 0.42, slope));
         color.lerp(PALETTE.highRock, smoothstep(430, 680, h) * 0.75);

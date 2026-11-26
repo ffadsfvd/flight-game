@@ -17,7 +17,7 @@ export function createCockpitCamera() {
       camera.position.copy(scratch.eye);
       const yawAngle = lookBack ? Math.PI * 0.85 : -look.x * 1.4;
       scratch.yaw.setFromAxisAngle(UP, yawAngle);
-      scratch.pitch.setFromAxisAngle(RIGHT, THREE.MathUtils.clamp(-look.y * 1.2 - 0.06, -1.2, 1.0));
+      scratch.pitch.setFromAxisAngle(RIGHT, THREE.MathUtils.clamp(-look.y * 1.2 - 0.03, -1.2, 1.0));
       camera.quaternion.copy(body.quaternion).multiply(scratch.yaw).multiply(scratch.pitch);
       camera.up.set(0, 1, 0).applyQuaternion(body.quaternion);
     },

@@ -63,7 +63,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
   const hud = createHudController(world.terrain, { onRadio: () => sfx.play('radio') });
   const router = createScreenRouter(SCREENS, () => sfx.play('click'));
   const flightEvents = createFlightEventHandler({ effects, sfx, hud, radioFor: () => 'dario' });
-  const backdrop = createTitleBackdrop(session, cameras);
+  const backdrop = createTitleBackdrop(session, cameras, view.camera);
   const readout = createReadout();
   const cockpits = new Map();
   let light = world.setTimeOfDay(settings.timeOfDay ?? 'golden', view.renderer);
@@ -435,7 +435,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     } else if (state === 'menu') {
       controls.update(dt, false);
       focus = backdrop.update(dt, time, career.selected);
-      cameras.view = 'orbit';
+      cameras.view = 'manual';
       cameras.update(dt, null, null, world, controls.mouse.state, false);
       flightSounds.update(false, readout, [], time);
     } else if (state === 'flying') {
@@ -464,6 +464,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     frameFixed: (dt, actions) => frame(dt, actions),
     render: () => view.render(),
     runnerContext: ctx,
+    backdrop,
     camera: view.camera,
     startMission,
     showTitle,
