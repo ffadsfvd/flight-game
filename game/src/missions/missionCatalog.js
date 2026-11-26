@@ -92,7 +92,7 @@ export const MISSIONS = [
     start: { type: 'air', x: 3200, y: 230, z: -500, heading: 5, speed: 42, flaps: 1, throttle: 0.65, gearDown: false },
     briefing: [['bruno', 'Fire Base Calvera. Pine forest burning above San Calvo. Two hot spots, moving uphill.'], ['bruno', 'Your tank is full. Release low over the flames with Space, then skim the sea at speed to scoop more. Gear up on the water!']],
     stages: [
-      { type: 'firefighting', startFull: true, fires: [[3250, -2050, 55], [3600, -2000, 50], [3420, -2250, 45]], say: ['bruno', 'Smoke is in sight dead ahead. Hit the downwind edge first.'] },
+      { type: 'firefighting', startFull: true, fires: [[3250, -1780, 55], [3600, -1730, 50], [3430, -1930, 45]], say: ['bruno', 'Smoke is in sight dead ahead. Hit the downwind edge first.'] },
     ],
     reward: { money: 650, xp: 260 },
   },
@@ -161,7 +161,7 @@ export const MISSIONS = [
     briefing: [['teo', 'The Ignara run: round the volcano, under the smoke, and home through the arch. Even a bush plane can do it.'], ['teo', 'Watch the hot air near the crater, it bumps.']],
     stages: [
       { type: 'rings', radius: 30, par: 230,
-        course: [[1700, -3800, 260, true], [2300, -5100, 330, true], [3500, -5900, 380, true], [4900, -5400, 380, true], [5900, -4100, 330, true], [5800, -2700, 280, true], [4900, -1500, 220, true], [3600, -1050, 160, true], [2600, -1350, 90, true], [1850, -1650, 26, true, 34]],
+        course: [[1700, -3800, 260, true], [2300, -5100, 330, true], [3500, -5900, 380, true], [4900, -5400, 380, true], [5900, -4100, 330, true], [5800, -2700, 280, true], [4900, -1500, 220, true], [3600, -1250, 160, true], [2850, -2050, 110, true], [2050, -2300, 60, true], [1850, -1650, 26, true, 34]],
         say: ['teo', 'Clock is running.'] },
     ],
     reward: { money: 650, xp: 300 },

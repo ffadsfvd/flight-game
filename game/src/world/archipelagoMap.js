@@ -16,7 +16,6 @@ export const ISLANDS = [
   { id: 'gannet', name: 'Gannet Skerry', x: -6600, z: 2600, rx: 520, rz: 380, rot: 0.4, peak: 70, power: 1.5, coastNoise: 0.25, seed: 6 },
   { id: 'nesta', name: 'Nesta', x: 700, z: -5600, rx: 900, rz: 620, rot: -0.5, peak: 150, power: 1.2, coastNoise: 0.2, seed: 7 },
   { id: 'coral', name: 'Coral Keys', x: -3000, z: -5700, rx: 420, rz: 300, rot: 0.2, peak: 18, power: 0.7, coastNoise: 0.3, seed: 8 },
-  { id: 'arco', name: 'Arco Islet', x: 1850, z: -1650, rx: 150, rz: 110, rot: 0.5, peak: 34, power: 1.2, coastNoise: 0.2, seed: 9 },
 ];
 
 /** Mountain ranges: a ridge line between two points, with height and half-width. */
@@ -59,7 +58,7 @@ export const TOWNS = [
 export const LANDMARKS = [
   { id: 'lighthouse', name: 'Faro Lumeno lighthouse', x: 5980, z: 3480, kind: 'lighthouse' },
   { id: 'volcano', name: 'Mount Ignara', x: 3700, z: -3600, kind: 'volcano' },
-  { id: 'arch', name: 'Arco Solare', x: 1850, z: -1650, kind: 'arch', heading: 35 },
+  { id: 'arch', name: 'Arco Solare', x: 1850, z: -1650, kind: 'arch', heading: 15 },
   { id: 'falls', name: 'Velo Falls', x: -2350, z: 230, kind: 'waterfall' },
   { id: 'aurio', name: 'Monte Aurio summit', x: -1800, z: 80, kind: 'peak' },
 ];

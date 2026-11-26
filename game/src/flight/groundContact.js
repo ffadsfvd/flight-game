@@ -84,10 +84,10 @@ export function computeGroundContact(s, world, controls, out) {
     }
   }
 
-  // The tail skid: an over-rotation scrapes the tail instead of digging it into the runway.
+  // Tail and wingtip skids: an over-rotation or a wing-low touchdown scrapes instead of digging in.
   s.tailScrape = false;
   for (const [tx, ty, tz, kind] of spec.crashPoints) {
-    if (kind !== 'tail') continue;
+    if (kind !== 'tail' && kind !== 'wingtip') continue;
     arm.set(tx, ty, tz).applyQuaternion(s.quaternion);
     point.copy(s.position).add(arm);
     const surface = world.surfaceAt(point.x, point.z);

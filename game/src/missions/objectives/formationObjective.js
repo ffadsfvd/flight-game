@@ -55,6 +55,10 @@ export function createFormationObjective(stage) {
     markers: () => (leader ? [{ x: slot.x, z: slot.z, kind: 'target', active: true, label: 'SLOT' }] : []),
     others: () => (leader ? [{ x: leader.position.x, z: leader.position.z, color: '#ffd34d' }] : []),
     guidance: () => null,
+    /** The slot's pose (for the logic smoke test). */
+    __slot() {
+      return leader ? { position: slot.clone(), velocity: leader.velocity.clone(), quaternion: leader.quaternion.clone() } : null;
+    },
     bearing(ctx) {
       const p = ctx.body.position;
       return (THREE.MathUtils.radToDeg(Math.atan2(slot.x - p.x, -(slot.z - p.z))) + 360) % 360;

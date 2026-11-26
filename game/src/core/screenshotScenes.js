@@ -53,7 +53,7 @@ export function stageScreenshot(name, game) {
     run(game, 0.3);
   } else if (name === 'firefight') {
     game.startMission(missionById('firebreak'));
-    const fire = { x: 3250, z: -2050 };
+    const fire = { x: 3250, z: -1780 };
     const ground = Math.max(0, game.world.terrain.heightAt(fire.x, fire.z));
     for (let i = 0; i < 420; i += 1) game.effects.update(STEP, 700, game.wind.state.current, null, game.camera, false);
     const heading = 25;

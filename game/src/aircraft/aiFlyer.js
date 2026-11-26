@@ -15,6 +15,7 @@ export function createAiFlyer(scene, { aircraft = 'swiftlet', path, speed = 60, 
   let lastHeading = null;
   let bank = 0;
   const position = new THREE.Vector3().copy(points[0]);
+  const velocity = new THREE.Vector3();
   const tangent = new THREE.Vector3();
   const right = new THREE.Vector3();
   const matrix = new THREE.Matrix4();
@@ -25,6 +26,7 @@ export function createAiFlyer(scene, { aircraft = 'swiftlet', path, speed = 60, 
     color,
     rig,
     position,
+    velocity,
     quaternion,
     finished: false,
     progress: 0,
@@ -36,6 +38,7 @@ export function createAiFlyer(scene, { aircraft = 'swiftlet', path, speed = 60, 
       if (u >= 1) flyer.finished = true;
       curve.getPointAt(u, position);
       curve.getTangentAt(u, tangent);
+      velocity.copy(tangent).multiplyScalar(speed);
       if (u >= 1) position.addScaledVector(tangent, distance - length);
       right.crossVectors(tangent, UP).normalize();
       position.addScaledVector(right, lateral);

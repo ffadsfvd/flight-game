@@ -169,6 +169,7 @@ export function stepAircraft(body, world, wind, controls, dt) {
 
   const contact = computeGroundContact(body, world, controls, body.contact);
   force.add(contact.force);
+  if (body.tailScrape) body.airframe = Math.max(0.05, body.airframe - 0.06 * dt);
   body.onGround = contact.wheelsDown > 0 || contact.floatsWet > 0 || body.skidding;
   body.onWater = contact.floatsWet > 0;
   body.skidding = false;

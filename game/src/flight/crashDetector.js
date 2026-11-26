@@ -40,7 +40,10 @@ export function detectCrash(body, world) {
     if (kind === 'belly' && gentle && body.gearPosition < 0.5) {
       return { severity: 'belly', cause: `Belly landing at ${kt} kt: the gear was still up`, place };
     }
-    if (kind === 'wingtip') return { severity: 'crash', cause: `Caught a wingtip at ${kt} kt in a ${Math.round(Math.abs(body.bank))}° bank`, place };
+    if (kind === 'wingtip') {
+      if (body.verticalSpeed > -2.5 && Math.abs(body.bank) < 28 && point.y > surface.height - 0.6) continue;
+      return { severity: 'crash', cause: `Caught a wingtip at ${kt} kt in a ${Math.round(Math.abs(body.bank))}° bank`, place };
+    }
     if (kind === 'tail') {
       if (body.verticalSpeed > -3 && body.airspeed < body.spec.vRotate * 1.6) continue;
       return { severity: 'crash', cause: `Tail strike: slammed the tail down at ${Math.round(body.pitch)}° nose up, ${kt} kt`, place };

@@ -18,6 +18,12 @@ import { createGameDirector } from './core/gameDirector.js';
 import { createGameRenderer } from './core/gameRenderer.js';
 import { stageScreenshot } from './core/screenshotScenes.js';
 import { startMainLoop } from './core/mainLoop.js';
+import { missionById } from './missions/missionCatalog.js';
+import { airfieldById } from './world/airfieldDirectory.js';
+import { approachPlacement } from './core/flightSession.js';
+import { approachGuidance } from './world/approachGeometry.js';
+import { LANDMARKS } from './world/archipelagoMap.js';
+import * as THREE from 'three';
 
 const params = new URLSearchParams(window.location.search);
 const shot = params.get('shot');
@@ -28,10 +34,17 @@ const view = createGameRenderer(document.getElementById('world-view'));
 const world = createArchipelagoWorld(view.scene);
 const game = createGameDirector({ view, world, shotMode: Boolean(shot) });
 
-// A handle for the input tests and the perf tool to read state (never to drive the game).
+// A handle for the input tests and the perf tool to read state, and for the mission logic smoke
+// test to place the aircraft.
 window.__solvara = {
   game,
   systems: { createMissionRunner, createCareer, buildAircraftModel, stepAircraft, createAircraftSimulation, createHudController },
+  missions: { MISSIONS, missionById },
+  airfields: { airfieldById },
+  placements: { approachPlacement },
+  approach: { approachGuidance },
+  landmarks: LANDMARKS,
+  three: THREE,
   stats: null,
 };
 
