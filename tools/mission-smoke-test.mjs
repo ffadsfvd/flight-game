@@ -31,13 +31,17 @@ const DRIVER = String.raw`(async (id) => {
     if (kind === 'takeoff') {
       c.throttle = 1;
       if (s.body.flapSetting > 1) s.body.flapSetting = 1;
+      const runwayHeading = s.body.heading;
       for (let i = 0; i < 60 * 60 && g.runner.objective === o && g.state === 'flying'; i += 1) {
         const v = b().airspeed;
         const vr = b().spec.vRotate;
-        c.pitch = v > vr ? (v < vr * 1.2 ? 0.3 : b().agl < 30 ? 0.45 : 0.22) : 0;
-        c.roll = 0;
+        const hdgErr = ((runwayHeading - b().heading + 540) % 360) - 180;
+        c.yaw = b().onGround ? THREE.MathUtils.clamp(hdgErr * 0.12, -1, 1) : 0;
+        c.pitch = b().onGround ? (v > vr ? 0.3 : 0) : THREE.MathUtils.clamp((v - vr * 1.35) * 0.08, -0.25, 0.3);
+        c.roll = THREE.MathUtils.clamp(-b().bank * 0.03, -0.4, 0.4);
         step();
       }
+      c.yaw = 0;
     } else if (kind === 'rings' || kind === 'race') {
       const rings = o.rings;
       for (let r = 0; r < rings.length && g.runner.objective === o; r += 1) {

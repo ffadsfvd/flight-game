@@ -8,8 +8,13 @@ export const FREE_STARTS = [
   { id: 'marenza-09', label: 'Marenza International, runway 09', start: { type: 'runway', field: 'marenza', end: 0 } },
   { id: 'orsa-22', label: 'Orsa Cay Field, runway 22', start: { type: 'runway', field: 'orsa', end: 1 } },
   { id: 'calvera-35', label: 'Calvera Highstrip, runway 35', start: { type: 'runway', field: 'calvera', end: 1 } },
+  { id: 'nesta-09', label: 'Nesta Mountain Strip, runway 09', start: { type: 'runway', field: 'nesta', end: 0 } },
+  { id: 'coral-08', label: 'Coral Keys Strip, runway 08', start: { type: 'runway', field: 'coral', end: 0 } },
+  { id: 'sette-27', label: 'Sette Offshore Platform deck, runway 27', start: { type: 'runway', field: 'sette', end: 1 } },
   { id: 'air-marenza', label: 'In the air over Porto Celeste', start: { type: 'air', x: 1200, y: 450, z: 4600, heading: 300, speed: 55, throttle: 0.7 } },
+  { id: 'air-orsa-thermals', label: 'Soaring over the Orsa mesas', start: { type: 'air', x: -6200, y: 520, z: -3300, heading: 70, speed: 30, throttle: 0.5 } },
   { id: 'final-marenza', label: 'On final for Marenza 09', start: { type: 'approach', field: 'marenza', end: 0, distance: 2400, flaps: 1 } },
+  { id: 'final-sette', label: 'On final for the Sette platform', start: { type: 'approach', field: 'sette', end: 1, distance: 2200, flaps: 1 } },
 ];
 
 export function settingsHtml(settings) {

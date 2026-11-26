@@ -2,7 +2,7 @@
 export const medevacToMarenza = {
   id: 'medevac', chapter: 3, title: 'Medevac to Marenza', kind: 'Medical evacuation', giver: 'lena', aircraft: 'wren',
   summary: 'Fly an injured fisherman from Orsa Cay to Marenza International as fast as the gates allow, then land gently.',
-  time: 'golden', wind: { from: 250, speed: 5, gust: 2, turbulence: 0.5 }, fuel: 0.5, payload: 90,
+  time: 'golden', wind: { from: 40, speed: 5, gust: 2, turbulence: 0.5 }, fuel: 0.5, payload: 90,
   start: { type: 'runway', field: 'orsa', end: 0 },
   briefing: [['lena', 'A fisherman with a broken leg at Orsa Cay. The ambulance meets you on the Marenza apron.'], ['lena', 'Fly the route gates fast, but the landing must be soft: your patient feels every bump.']],
   stages: [
