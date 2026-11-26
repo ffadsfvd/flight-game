@@ -257,6 +257,19 @@ export function buildAirfields(terrain) {
         group.add(line);
       }
       const buildingRow = side * (field.apronOffset + field.apronDepth + 24);
+      if (field.parallelTaxiway) {
+        // A parallel taxiway with an entry at each end, painted centre line and hold-short bars.
+        const taxiAcross = side * (field.width / 2 + 56);
+        group.add(flatStrip(field, 0, taxiAcross, field.length - 40, 16, y + 0.1, materials.taxi));
+        group.add(flatStrip(field, 0, taxiAcross, field.length - 40, 0.5, y + 0.13, materials.taxiLine));
+        for (const end of [-1, 1]) {
+          const along = end * (field.length / 2 - 38);
+          const stubAcross = side * (field.width / 2 + 30);
+          group.add(flatStrip(field, along, stubAcross, 18, 64, y + 0.1, materials.taxi));
+          group.add(flatStrip(field, along, stubAcross, 0.5, 64, y + 0.13, materials.taxiLine));
+          for (const bar of [18, 19.4, 21.4, 22.8]) group.add(flatStrip(field, along, side * (field.width / 2 + bar), 16, 0.5, y + 0.135, materials.taxiLine));
+        }
+      }
       for (let h = 0; h < field.hangars; h += 1) {
         buildHangar(group, colliders, field, field.apronLength * 0.32 - h * 44, buildingRow, y, -side);
       }

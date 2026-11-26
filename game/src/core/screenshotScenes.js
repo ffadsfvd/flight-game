@@ -37,6 +37,8 @@ export function stageScreenshot(name, game) {
     session.body.landingLights = true;
     game.controls.controls.throttle = 0.32;
     Object.assign(game.cameras.chaseFraming, { height: 2.6, distance: 3.4, lookAhead: 750, lookUp: -52, yaw: -0.1, fov: 24 });
+    // The club Wren ahead has just gone round over the far end; the Pelican holds short of 09.
+    game.traffic.place('Marenza circuit', 0.16);
     run(game, 1.6);
     // The 3D glide-path frames would stand between the camera and the runway: hide them here.
     game.runnerContext.scene.getObjectByName('glide-path-gates').visible = false;
@@ -103,6 +105,18 @@ export function stageScreenshot(name, game) {
     game.controls.controls.throttle = 0.6;
     Object.assign(game.cameras.chaseFraming, { height: 1.4, distance: 1.2, lookAhead: 60, lookUp: -10, yaw: 0.45 });
     run(game, 1.2);
+  }
+  if (name === 'duster' || name === 'seaplane') {
+    // Traffic review scenes (not in shots.json): the crop duster spraying north of Marenza, and
+    // the Heron seaplane touching down on Lumeno Lagoon.
+    game.startMission(null);
+    const duster = name === 'duster';
+    game.traffic.place(duster ? 'Crop duster' : 'Lagoon seaplane', duster ? 0.06 : 0.16);
+    const at = duster ? { x: -2750, y: 70, z: 2330, heading: 80 } : { x: 2600, y: 110, z: 2900, heading: 70 };
+    session.simulation.start(session.spec, { ...at, pitch: 0, speed: 45, flaps: 0, throttle: 0.55, gearDown: false }, { birds: false });
+    game.controls.controls.throttle = 0.55;
+    Object.assign(game.cameras.chaseFraming, { height: 1.4, distance: 1.1, lookAhead: 80, lookUp: -14, yaw: 0.3, fov: 50 });
+    run(game, 1.0);
   }
   if (name === 'coast-high' || name === 'coast-low') {
     // Shoreline review scenes (not in shots.json): a shallow look along Marenza's south coast,

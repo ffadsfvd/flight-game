@@ -68,11 +68,11 @@ export function deflect(surface, angle) {
   surface.holder.quaternion.copy(surface.align).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), angle));
 }
 
-/** Builds the model for an aircraft id. */
-export function buildAircraftModel(id) {
+/** Builds the model for an aircraft id; `paint` can swap the livery and registration (AI traffic). */
+export function buildAircraftModel(id, paint = {}) {
   const design = AIRCRAFT_DESIGNS[id];
-  const spec = aircraftById(id);
-  const livery = design.livery;
+  const spec = { ...aircraftById(id), registration: paint.registration ?? aircraftById(id).registration };
+  const livery = paint.livery ? { ...design.livery, ...paint.livery } : design.livery;
   const root = new THREE.Group();
   root.name = `aircraft-${id}`;
   const exterior = new THREE.Group();

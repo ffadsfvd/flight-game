@@ -27,7 +27,8 @@ export function createAtcRadio({ say, wind, traffic }) {
     const near = traffic.flyers.filter((f) => Math.hypot(f.rig.root.position.x - field.x, f.rig.root.position.z - field.z) < 3500);
     if (!near.length) return '';
     const f = near[0];
-    return ` Traffic: ${f.route.callsign}, a ${f.route.aircraft === 'pelican' ? 'Pelican twin' : 'Wren'}, in the circuit.`;
+    const kind = { pelican: 'Pelican twin', heron: 'Heron seaplane', kestrel: 'Kestrel sprayer', swiftlet: 'Swiftlet jet' }[f.route.aircraft] ?? 'Wren';
+    return ` Traffic: ${f.route.callsign}, a ${kind}, ${f.route.activity ?? 'in the circuit'}.`;
   }
 
   function speak(field, text) {

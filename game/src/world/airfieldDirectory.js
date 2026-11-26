@@ -7,7 +7,7 @@ export const AIRFIELDS = [
     id: 'marenza', name: 'Marenza International', code: 'SVMZ', kind: 'paved', island: 'marenza',
     x: -2300, z: 2950, heading: 90, length: 1800, width: 45, elevation: 12,
     ends: ['09', '27'], edgeLights: true, approachLights: true, papi: true,
-    tower: true, hangars: 3, terminal: true, fuel: true, apronSide: 1, apronOffset: 150, apronLength: 620, apronDepth: 120,
+    tower: true, hangars: 3, terminal: true, fuel: true, apronSide: 1, apronOffset: 150, apronLength: 620, apronDepth: 120, parallelTaxiway: true,
     flatHalfWidth: 330, frequency: '118.40',
   },
   {

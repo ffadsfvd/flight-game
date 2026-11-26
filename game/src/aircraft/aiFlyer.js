@@ -1,12 +1,15 @@
 // AI aircraft that fly a smooth path at a set speed, banking into the turns: race rivals and the
-// formation leader. Their position along the path is their race progress.
+// formation leader, each painted in its own colour. Their position along the path is their race
+// progress.
 import * as THREE from 'three';
 import { buildAircraftModel } from './aircraftModelBuilder.js';
+import { liveryFromColor } from './trafficLiveries.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 
-export function createAiFlyer(scene, { aircraft = 'swiftlet', path, speed = 60, startDelay = 0, lateral = 0, start, name = 'Rival', color = '#ff6a4a', seed = Math.random() * 10 }) {
-  const rig = buildAircraftModel(aircraft);
+export function createAiFlyer(scene, { aircraft = 'swiftlet', path, speed = 60, startDelay = 0, lateral = 0, start, name = 'Rival', color = '#ff6a4a', seed = Math.random() * 10, registration }) {
+  const tail = registration ?? `SV-${700 + Math.floor(seed * 29) % 290}`;
+  const rig = buildAircraftModel(aircraft, { livery: liveryFromColor(color), registration: tail });
   rig.root.traverse((o) => {
     if (o.isLight) o.visible = false;
   });

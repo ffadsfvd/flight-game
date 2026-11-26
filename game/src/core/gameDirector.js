@@ -64,7 +64,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
   const effects = createEffectsDirector(view.scene, world.landmarks.emitters);
   const gates = createGlidePathGates(view.scene);
   parkDisplayAircraft(view.scene);
-  const traffic = createAirTraffic(view.scene);
+  const traffic = createAirTraffic(view.scene, world.terrain);
   const atc = createAtcRadio({ say: (who, text) => hud.radio.say(who, text), wind, traffic });
   const audio = createAudioEngine();
   const flightSounds = createFlightSounds(audio);
@@ -519,6 +519,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     render: () => view.render(),
     runnerContext: ctx,
     backdrop,
+    traffic,
     camera: view.camera,
     startMission,
     showTitle,
