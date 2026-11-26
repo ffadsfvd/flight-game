@@ -354,7 +354,7 @@ export function createCockpitPanel(rig) {
 
   // Throttle quadrant on the left of the panel: a slotted box and a lever with a black knob.
   const quadrant = new THREE.Group();
-  quadrant.position.set(-halfCabin + 0.1, -0.06, 0.14);
+  quadrant.position.set(-halfCabin + 0.065, -0.1, 0.15);
   const box = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.07, 0.26), materials.fascia);
   quadrant.add(box);
   const throttleLever = new THREE.Group();
@@ -394,7 +394,8 @@ export function createCockpitPanel(rig) {
     }
     gripLocal.set(0.17, 0.05, 0);
   } else {
-    stickPivot.position.set(0.07, eye.y - 0.86, eye.z - 0.42);
+    // Low between the knees, so the grip and the glove on it stay below the panel's readout row.
+    stickPivot.position.set(0.07, eye.y - 0.97, eye.z - 0.4);
     const boot = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.12, 12, 1, true), materials.black);
     boot.position.y = 0.06;
     const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.019, 0.48, 10), materials.metal);
