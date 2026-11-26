@@ -57,15 +57,16 @@ export const PLAINS = [
   { id: 'celeste-plain', name: 'Celeste plain', x: -900, z: 3000, rx: 3500, rz: 700, rot: 0.04, height: 6, keep: 0.16 },
 ];
 
-/** Towns: centre, radius and building count. Buildings avoid runways, water and steep ground. */
+/** Towns: centre, radius and most buildings. Buildings avoid runways, water and steep ground;
+ *  a city grows taller blocks in its centre, a harbour town a mole with boats and a light. */
 export const TOWNS = [
-  { id: 'porto-celeste', name: 'Porto Celeste', island: 'marenza', x: -350, z: 3450, radius: 480, buildings: 380, flatten: 6 },
-  { id: 'san-telmo', name: 'San Telmo', island: 'marenza', x: 1150, z: 3000, radius: 360, buildings: 150, flatten: 4 },
-  { id: 'marina-sabbia', name: 'Marina Sabbia', island: 'marenza', x: -3180, z: 3370, radius: 250, buildings: 110, flatten: 0 },
-  { id: 'nordelle', name: 'Nordelle', island: 'marenza', x: -2000, z: -1250, radius: 380, buildings: 90, flatten: 0 },
-  { id: 'ventara', name: 'Ventara', island: 'lumeno', x: 4350, z: 3950, radius: 330, buildings: 80, flatten: 0 },
-  { id: 'orsa-harbour', name: 'Orsa Harbour', island: 'orsa', x: -4900, z: -2500, radius: 220, buildings: 36, flatten: 0 },
-  { id: 'calvera-town', name: 'San Calvo', island: 'calvera', x: 4900, z: -2000, radius: 300, buildings: 60, flatten: 0 },
+  { id: 'porto-celeste', name: 'Porto Celeste', island: 'marenza', x: -350, z: 3450, radius: 480, buildings: 900, flatten: 6, city: true, harbour: true },
+  { id: 'san-telmo', name: 'San Telmo', island: 'marenza', x: 1150, z: 3000, radius: 360, buildings: 360, flatten: 4, harbour: true },
+  { id: 'marina-sabbia', name: 'Marina Sabbia', island: 'marenza', x: -3180, z: 3370, radius: 250, buildings: 220, flatten: 0, harbour: true },
+  { id: 'nordelle', name: 'Nordelle', island: 'marenza', x: -2000, z: -1250, radius: 380, buildings: 260, flatten: 0, stone: 0.45, slate: 0.35 },
+  { id: 'ventara', name: 'Ventara', island: 'lumeno', x: 4350, z: 3950, radius: 330, buildings: 220, flatten: 0, harbour: true },
+  { id: 'orsa-harbour', name: 'Orsa Harbour', island: 'orsa', x: -4900, z: -2500, radius: 220, buildings: 110, flatten: 0, harbour: true, stone: 0.5 },
+  { id: 'calvera-town', name: 'San Calvo', island: 'calvera', x: 4900, z: -2000, radius: 300, buildings: 170, flatten: 0, harbour: true, stone: 0.4, slate: 0.25 },
 ];
 
 /** Landmarks the photo mission, the ring courses and the radio talk refer to. */

@@ -94,6 +94,16 @@ export function stageScreenshot(name, game) {
     game.controls.controls.throttle = 0.32;
     run(game, 3);
   }
+  if (name === 'town' || name === 'harbour' || name === 'town-low') {
+    // Town review scenes (not in shots.json): Porto Celeste from about 250 ft and from low over
+    // its streets, and its harbour seen from over the sea.
+    game.startMission(null);
+    const at = { town: { x: -1150, y: 80, z: 3250, heading: 80 }, 'town-low': { x: -760, y: 42, z: 3330, heading: 75 }, harbour: { x: -250, y: 70, z: 4450, heading: 345 } }[name];
+    session.simulation.start(session.spec, { ...at, pitch: 0, speed: 50, flaps: 0, throttle: 0.6, gearDown: false }, { birds: false });
+    game.controls.controls.throttle = 0.6;
+    Object.assign(game.cameras.chaseFraming, { height: 1.4, distance: 1.2, lookAhead: 60, lookUp: -10, yaw: 0.45 });
+    run(game, 1.2);
+  }
   if (name === 'coast-high' || name === 'coast-low') {
     // Shoreline review scenes (not in shots.json): a shallow look along Marenza's south coast,
     // from 1100 m and from 120 m, where land and sea used to flicker through each other.
