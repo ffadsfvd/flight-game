@@ -307,7 +307,8 @@ export function aircraftLights({ leftTip, rightTip, tail, landing, landingDirect
       landingGlow.visible = landingOn;
       landingGlow.scale.setScalar(1.1 + lightLevel * 1.6);
       beam.visible = landingOn;
-      beamMaterial.opacity = 0.07 + lightLevel * 0.13;
+      // A beam only shows in the air once the light has gone; by day the glow at the lamp is enough.
+      beamMaterial.opacity = Math.max(0, (lightLevel - 0.65) / 0.35) * 0.2;
       spot.intensity = landingOn ? 40 + lightLevel * 260 : 0;
       red.visible = green.visible = white.visible = true;
     },
