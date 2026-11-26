@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { createRingMarkers, ringCrossing } from '../../effects/ringMarkers.js';
 import { createAiFlyer } from '../../aircraft/aiFlyer.js';
+import { failEngine } from '../../flight/engineModel.js';
 
 /** Turns a course [[x, z, height, absolute?]] into rings facing along the course. */
 export function buildCourseRings(course, terrain, radius = 26) {
@@ -35,6 +36,8 @@ export function createRingCourseObjective(stage) {
       markers = createRingMarkers(ctx.scene, rings);
       last.copy(ctx.body.position);
       start = ctx.time;
+      // Soaring courses are flown with the motor stopped: climb in thermals and ridge lift.
+      if (stage.engineOff) failEngine(ctx.body.engine, 'motor stopped for soaring');
       if (stage.say) ctx.radio(stage.say[0], stage.say[1]);
       if (stage.rivals) {
         const path = rings.map((r) => r.position.clone());

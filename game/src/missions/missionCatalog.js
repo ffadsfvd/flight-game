@@ -29,6 +29,7 @@ import { stormFront } from './career/nightAndStorm/stormFront.js';
 import { nightMail } from './career/nightAndStorm/nightMail.js';
 import { orsaGale } from './career/nightAndStorm/orsaGale.js';
 import { snowsOfMonteNesta } from './career/expedition/snowsOfMonteNesta.js';
+import { silentWings } from './career/expedition/silentWings.js';
 import { grandTour } from './career/expedition/grandTour.js';
 
 export const CHAPTERS = [
@@ -46,7 +47,7 @@ export const MISSIONS = [
   flareOnGannetSkerry, fireOnCalvera, coralKeysDrop, medevacToMarenza, fireOnNesta,
   skyBallet, barnstormer, wingOfTheLead, beachBannerRun, ignaraRingRun, mesaGrandPrix, archipelagoCup,
   deadStick, stormFront, nightMail, orsaGale,
-  snowsOfMonteNesta, grandTour,
+  snowsOfMonteNesta, silentWings, grandTour,
 ];
 
 /** The mission with this id. */

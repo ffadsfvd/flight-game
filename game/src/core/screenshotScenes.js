@@ -99,9 +99,9 @@ export function stageScreenshot(name, game) {
     game.controls.controls.throttle = 0.62;
     run(game, 1.5);
   }
-  if (name === 'kestrel' || name === 'pelican') {
+  if (name === 'kestrel' || name === 'pelican' || name === 'swallow') {
     // Aircraft review scenes (not in shots.json): the new aircraft in flight in a 3/4 view.
-    game.startMission(missionById(name === 'kestrel' ? 'barnstormer' : 'market-shuttle'));
+    game.startMission(missionById({ kestrel: 'barnstormer', pelican: 'market-shuttle', swallow: 'silent-wings' }[name]));
     if (name === 'pelican') session.simulation.start(session.spec, { x: -3600, y: 260, z: 3300, heading: 300, pitch: 0, speed: 50, flaps: 0, throttle: 0.7 }, { birds: false });
     Object.assign(game.cameras.chaseFraming, { height: 1.1, distance: 0.9, lookAhead: 6, lookUp: -0.5, yaw: -0.7 });
     run(game, 1.2);

@@ -30,9 +30,10 @@ export function createFlightEventHandler({ effects, sfx, hud, radioFor }) {
         } else if (e.kind === 'refuel-full') {
           hud.toast('TANKS FULL', 'good');
         } else if (e.kind === 'engine-out') {
-          sfx.play('engine-fail');
-          hud.toast('ENGINE FAILURE', 'bad');
-          if (e.cause !== 'a broken crankshaft') hud.radio.say(radioFor('warn'), `Engine failure: ${e.cause}. Best glide speed, pick the nearest field and commit.`, { priority: true });
+          const planned = e.cause === 'a broken crankshaft' || e.cause === 'motor stopped for soaring';
+          sfx.play(planned && e.cause !== 'a broken crankshaft' ? 'click' : 'engine-fail');
+          hud.toast(e.cause === 'motor stopped for soaring' ? 'MOTOR OFF · SOARING' : 'ENGINE FAILURE', e.cause === 'motor stopped for soaring' ? 'good' : 'bad');
+          if (!planned) hud.radio.say(radioFor('warn'), `Engine failure: ${e.cause}. Best glide speed, pick the nearest field and commit.`, { priority: true });
         } else if (e.kind === 'ended') {
           if (e.result.severity === 'crash') {
             effects.burst('crash', body.position);

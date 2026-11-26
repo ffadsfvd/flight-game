@@ -57,6 +57,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
   if (new URLSearchParams(window.location.search).get('unlock') === 'all') career.xp = Math.max(career.xp, 5000);
   const settings = career.settings;
   const wind = createWindField();
+  wind.attachTerrain(world.terrain);
   const cameras = createCameraDirector(view.camera);
   const controls = createFlightControls(canvas, settings);
   const session = createFlightSession({ scene: view.scene, world, wind, director: cameras, controls });

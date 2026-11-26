@@ -150,6 +150,37 @@ export const AIRCRAFT_DESIGNS = {
     lights: { left: [-8.25, 0.95, -0.2], right: [8.25, 0.95, -0.2], tail: [0, 0.7, 5.8], landing: [-2.6, 0.25, -2.45] },
     panel: { z: -2.15, y: 0.3, width: 1.2, tilt: 0.32, yoke: true },
   },
+  swallow: {
+    livery: { base: '#fbfbf8', stripe: '#d8262a', accent: '#202838', wing: '#fbfbf8', tip: '#d8262a', tail: '#fbfbf8', textAt: 0.55 },
+    fuselage: {
+      squareness: 2.0,
+      sections: [
+        { z: -3.1, w: 0.06, h: 0.06, y: 0.0 }, { z: -2.9, w: 0.36, h: 0.4, y: 0.02 }, { z: -2.3, w: 0.6, h: 0.72, y: 0.06 },
+        { z: -1.3, w: 0.66, h: 0.8, y: 0.1 }, { z: -0.2, w: 0.6, h: 0.72, y: 0.12 }, { z: 0.8, w: 0.34, h: 0.42, y: 0.16 },
+        { z: 2.2, w: 0.2, h: 0.26, y: 0.2 }, { z: 3.8, w: 0.14, h: 0.2, y: 0.24 }, { z: 4.4, w: 0.03, h: 0.05, y: 0.26 },
+      ],
+    },
+    canopy: { w: 0.5, h: 0.42, length: 1.4, y: 0.42, z: -1.7 },
+    pilot: { y: 0.08, z: -1.6 },
+    wing: {
+      root: { x: 0.32, le: -0.75, chord: 1.0, y: 0.32, t: 0.13 },
+      tip: { x: 8.6, le: -0.5, chord: 0.42, y: 0.75, t: 0.1 },
+      flap: [0.6, 3.6, 0.22], aileron: [5.0, 8.2, 0.24],
+    },
+    stabilizer: { root: { x: 0.08, le: 3.72, chord: 0.62, y: 1.55, t: 0.08 }, tip: { x: 1.5, le: 3.86, chord: 0.38, y: 1.55, t: 0.07 }, elevator: 0.4 },
+    fins: [{ x: 0, cant: 0, root: { x: 0.2, le: 3.3, chord: 1.0, y: 0, t: 0.1 }, tip: { x: 1.6, le: 3.72, chord: 0.62, y: 0, t: 0.08 }, rudder: 0.4 }],
+    propeller: { z: -3.12, y: 0.0, radius: 0.5, blades: 2, spinner: 0.1, spinnerLength: 0.2 },
+    gear: {
+      retracts: false,
+      legs: [
+        { attach: [0, -0.3, -2.3], wheel: [0, -0.58, -2.3] },
+        { attach: [-0.25, -0.28, 0.2], wheel: [-0.9, -0.62, 0.25] },
+        { attach: [0.25, -0.28, 0.2], wheel: [0.9, -0.62, 0.25] },
+      ],
+    },
+    lights: { left: [-8.62, 0.75, -0.3], right: [8.62, 0.75, -0.3], tail: [0, 1.6, 4.0], landing: [0, -0.2, -2.6] },
+    panel: { z: -2.2, y: 0.25, width: 0.62, tilt: 0.4 },
+  },
   swiftlet: {
     livery: { base: '#1f3f8a', stripe: '#f2b632', accent: '#ffffff', wing: '#1f3f8a', tip: '#f2b632', tail: '#f2b632', textAt: 0.6, nose: '#f4f2ec' },
     fuselage: {

@@ -92,6 +92,19 @@ export const ROADS = [
   [[4900, -2000], [4300, -2350], [3400, -2500], [2350, -2950]],
 ];
 
+/** Rising air for soaring: thermal columns over hot ground, centre, radius and core lift (m/s). */
+export const THERMALS = [
+  { id: 'mesa-north', x: -5920, z: -3650, radius: 180, lift: 5.6, top: 1100 },
+  { id: 'mesa-east', x: -4790, z: -3290, radius: 170, lift: 5.0, top: 1000 },
+  { id: 'orsa-plain', x: -5300, z: -2900, radius: 210, lift: 4.3, top: 950 },
+  { id: 'lava-fields', x: 3000, z: -3000, radius: 260, lift: 5.5, top: 1300 },
+  { id: 'celeste-fields', x: -1600, z: 2500, radius: 220, lift: 3.6, top: 900 },
+  { id: 'lumeno-farms', x: 4700, z: 3700, radius: 200, lift: 3.4, top: 850 },
+];
+
+/** How gusty and bumpy the air is over each island character (1 = the main island). */
+export const WIND_CHARACTER = { main: 1, volcanic: 1.5, green: 0.9, canyon: 1.25, alpine: 1.8, rock: 1.3, atoll: 0.8 };
+
 /** World boundary: past this radius from the centre the radio turns the pilot back. */
 export const BOUNDARY_RADIUS = 7600;
 
