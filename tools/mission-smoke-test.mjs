@@ -62,6 +62,8 @@ const DRIVER = String.raw`(async (id) => {
       const field = window.__solvara.airfields.airfieldById(fieldId);
       const water = field.kind === 'water';
       const ap = window.__solvara.placements.approachPlacement(spec, fieldId, end, kind === 'dead-stick' ? 900 : 700, { flaps: kind === 'dead-stick' ? 1 : 2, height: kind === 'dead-stick' ? 70 : 0 });
+      // In strong gusts fly the approach faster, as the briefings say: add most of the gust.
+      const gustMargin = (def.wind?.gust ?? 0) >= 3 ? def.wind.gust * 0.9 : 0;
       place({ ...ap, gearDown: !water, throttle: kind === 'dead-stick' ? 0 : 0.3 });
       if (kind === 'dead-stick') s.body.engine.running = false;
       for (let i = 0; i < 60 * 120 && g.runner.objective === o && g.state === 'flying'; i += 1) {
@@ -75,7 +77,7 @@ const DRIVER = String.raw`(async (id) => {
         const hdgErr = ((guide.heading - body.heading + 540) % 360) - 180 - guide.lateral * 0.15;
         c.roll = THREE.MathUtils.clamp((THREE.MathUtils.clamp(hdgErr * 1.5, -15, 15) - body.bank) * 0.08, -0.6, 0.6);
         c.yaw = body.onGround ? THREE.MathUtils.clamp(hdgErr * 0.1, -1, 1) : 0;
-        c.throttle = body.onGround || body.agl < 5 ? 0 : kind === 'dead-stick' ? 0 : THREE.MathUtils.clamp(0.3 + (spec.vApproach - body.airspeed) * 0.08, 0.05, 0.9);
+        c.throttle = body.onGround || body.agl < 5 ? 0 : kind === 'dead-stick' ? 0 : THREE.MathUtils.clamp(0.3 + (spec.vApproach + gustMargin - body.airspeed) * 0.08, 0.05, 0.9);
         c.brakes = body.onGround ? 1 : 0;
         step();
       }

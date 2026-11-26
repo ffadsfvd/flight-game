@@ -322,7 +322,8 @@ export function createGameDirector({ view, world, shotMode = false }) {
     freeAircraft = def ? freeAircraft : id;
     const upgrades = career.upgrades[id] ?? [];
     light = world.setTimeOfDay(def ? def.time : settings.timeOfDay, view.renderer);
-    wind.set({ from: 250, speed: 4, gust: 1.5, turbulence: 0.35, ...(def?.wind ?? {}) });
+    // The gust cycle restarts with every flight, so a mission's air is the same on every attempt.
+    wind.set({ from: 250, speed: 4, gust: 1.5, turbulence: 0.35, ...(def?.wind ?? {}), time: 0 });
     effects.clearMissionEffects();
     effects.setRain(light.storm ? 1 : 0);
     const spec = tunedSpec(id, upgrades);

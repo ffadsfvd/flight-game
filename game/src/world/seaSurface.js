@@ -38,17 +38,53 @@ vec2 waveSlope(vec2 p, float t, vec2 d, float wavelength, float amplitude) {
   return d * (amplitude * k * cos(phase));
 }
 
+// Smooth value noise for the slow, large-scale variation that keeps the wave sum from tiling.
+float seaHash(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+float seaNoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(seaHash(i), seaHash(i + vec2(1.0, 0.0)), u.x), mix(seaHash(i + vec2(0.0, 1.0)), seaHash(i + vec2(1.0, 1.0)), u.x), u.y);
+}
+
+// Slope of one drifting octave of value-noise chop (rotated so the noise grid never lines up):
+// short-crested water with no repeat, unlike a sum of a few plane waves.
+vec2 chopSlope(vec2 p, float t, float wavelength, float amplitude, float angle, vec2 drift) {
+  float c = cos(angle);
+  float s = sin(angle);
+  float scale = 1.0 / wavelength;
+  vec2 rp = vec2(c * p.x - s * p.y, s * p.x + c * p.y) * scale + drift * t * scale;
+  vec2 i = floor(rp);
+  vec2 f = fract(rp);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  vec2 du = 6.0 * f * (1.0 - f);
+  float a = seaHash(i);
+  float b = seaHash(i + vec2(1.0, 0.0));
+  float cc = seaHash(i + vec2(0.0, 1.0));
+  float d = seaHash(i + vec2(1.0, 1.0));
+  vec2 dn = du * vec2(b - a + (a - b - cc + d) * u.y, cc - a + (a - b - cc + d) * u.x) * scale * amplitude;
+  return vec2(c * dn.x + s * dn.y, -s * dn.x + c * dn.y);
+}
+
 vec3 seaNormal(vec2 p, float t, float dist) {
   float px = max(0.05, length(fwidth(p)));
   float storm = 1.0 + uStorm * 1.8;
+  // Bend the wave fronts and vary the roughness in patches a few hundred metres across, so the
+  // sea reads as wind-driven water rather than a repeating pattern from altitude.
+  vec2 warp = vec2(seaNoise(p * 0.0042), seaNoise(p * 0.0042 + 17.3)) * 2.0 - 1.0;
+  vec2 q = p + warp * 21.0;
+  float swell = 0.5 + 1.0 * seaNoise(p * 0.0021 + 5.1);
+  float chop = 0.45 + 1.1 * seaNoise(p * 0.0057 - 3.7);
   vec2 g = vec2(0.0);
-  g += waveSlope(p, t, normalize(vec2(1.0, 0.35)), 46.0, 0.24 * storm) * clamp(1.0 - px * 2.5 / 46.0, 0.0, 1.0);
-  g += waveSlope(p, t, normalize(vec2(0.62, 0.9)), 31.0, 0.16 * storm) * clamp(1.0 - px * 2.5 / 31.0, 0.0, 1.0);
-  g += waveSlope(p, t, normalize(vec2(-0.45, 1.0)), 23.0, 0.15 * storm) * clamp(1.0 - px * 2.5 / 23.0, 0.0, 1.0);
-  g += waveSlope(p, t, normalize(vec2(0.96, -0.3)), 14.0, 0.08 * storm) * clamp(1.0 - px * 2.5 / 14.0, 0.0, 1.0);
-  g += waveSlope(p, t, normalize(vec2(0.7, -0.75)), 9.5, 0.06 * storm) * clamp(1.0 - px * 2.5 / 9.5, 0.0, 1.0);
-  g += waveSlope(p, t, normalize(vec2(-0.95, -0.25)), 4.1, 0.03 * storm) * clamp(1.0 - px * 2.5 / 4.1, 0.0, 1.0);
-  g += waveSlope(p, t, normalize(vec2(0.15, 0.98)), 1.9, 0.012 * storm) * clamp(1.0 - px * 2.5 / 1.9, 0.0, 1.0);
+  // Long swell as bent plane waves, then four octaves of drifting chop on top.
+  g += waveSlope(q, t, normalize(vec2(1.0, 0.35)), 46.0, 0.24 * storm * swell) * clamp(1.0 - px * 2.5 / 46.0, 0.0, 1.0);
+  g += waveSlope(q, t, normalize(vec2(0.62, 0.9)), 31.0, 0.14 * storm * swell) * clamp(1.0 - px * 2.5 / 31.0, 0.0, 1.0);
+  g += chopSlope(p, t, 17.0, 0.62 * storm * chop, 0.4, vec2(3.1, 1.6)) * clamp(1.0 - px * 2.5 / 17.0, 0.0, 1.0);
+  g += chopSlope(p, t, 7.5, 0.3 * storm * chop, 1.3, vec2(-1.2, 2.4)) * clamp(1.0 - px * 2.5 / 7.5, 0.0, 1.0);
+  g += chopSlope(p, t, 3.3, 0.13 * storm * swell, 2.2, vec2(1.9, -0.8)) * clamp(1.0 - px * 2.5 / 3.3, 0.0, 1.0);
+  g += chopSlope(p, t, 1.5, 0.055 * storm, 2.9, vec2(-0.9, -1.4)) * clamp(1.0 - px * 2.5 / 1.5, 0.0, 1.0);
   return normalize(vec3(-g.x, 1.0, -g.y));
 }
 
