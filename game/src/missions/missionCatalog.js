@@ -18,6 +18,7 @@ import { fireOnCalvera } from './career/rescueService/fireOnCalvera.js';
 import { coralKeysDrop } from './career/rescueService/coralKeysDrop.js';
 import { medevacToMarenza } from './career/rescueService/medevacToMarenza.js';
 import { fireOnNesta } from './career/rescueService/fireOnNesta.js';
+import { reefDoctor } from './career/rescueService/reefDoctor.js';
 import { skyBallet } from './career/racingAndAirshow/skyBallet.js';
 import { barnstormer } from './career/racingAndAirshow/barnstormer.js';
 import { wingOfTheLead } from './career/racingAndAirshow/wingOfTheLead.js';
@@ -32,6 +33,7 @@ import { orsaGale } from './career/nightAndStorm/orsaGale.js';
 import { darkWater } from './career/nightAndStorm/darkWater.js';
 import { snowsOfMonteNesta } from './career/expedition/snowsOfMonteNesta.js';
 import { silentWings } from './career/expedition/silentWings.js';
+import { nestaHutSupply } from './career/expedition/nestaHutSupply.js';
 import { grandTour } from './career/expedition/grandTour.js';
 
 export const CHAPTERS = [
@@ -46,10 +48,10 @@ export const CHAPTERS = [
 export const MISSIONS = [
   firstSolo, corvoCanyon, highstripShortField, nightCircuits,
   mailRunToOrsa, lagoonTouchdown, postcardsFromSolvara, heritageSurvey, islandHopperCargo, marketDayShuttle, setteDeckLanding,
-  flareOnGannetSkerry, fireOnCalvera, coralKeysDrop, medevacToMarenza, fireOnNesta,
+  flareOnGannetSkerry, fireOnCalvera, coralKeysDrop, medevacToMarenza, fireOnNesta, reefDoctor,
   skyBallet, barnstormer, wingOfTheLead, beachBannerRun, ignaraRingRun, mesaGrandPrix, archipelagoCup,
   deadStick, stormFront, nightMail, orsaGale, darkWater,
-  snowsOfMonteNesta, silentWings, grandTour,
+  snowsOfMonteNesta, silentWings, nestaHutSupply, grandTour,
 ];
 
 /** The mission with this id. */

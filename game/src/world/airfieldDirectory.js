@@ -38,6 +38,20 @@ export const AIRFIELDS = [
     tower: false, hangars: 0, terminal: false, fuel: true, apronSide: 1, apronOffset: 0, apronLength: 0, apronDepth: 0,
     flatHalfWidth: 0, frequency: '123.45',
   },
+  {
+    id: 'nesta', name: 'Nesta Mountain Strip', code: 'SVNM', kind: 'grass', island: 'nesta',
+    x: 260, z: -4935, heading: 92, length: 520, width: 22, elevation: 'auto',
+    ends: ['09', '27'], edgeLights: false, approachLights: false, papi: false,
+    tower: false, hangars: 1, terminal: false, fuel: false, apronSide: 1, apronOffset: 45, apronLength: 90, apronDepth: 35,
+    flatHalfWidth: 70, frequency: '122.30',
+  },
+  {
+    id: 'coral', name: 'Coral Keys Strip', code: 'SVCK', kind: 'grass', island: 'coral',
+    x: -3000, z: -5690, heading: 84, length: 380, width: 20, elevation: 'auto',
+    ends: ['08', '26'], edgeLights: false, approachLights: false, papi: false,
+    tower: false, hangars: 0, terminal: false, fuel: false, apronSide: -1, apronOffset: 35, apronLength: 50, apronDepth: 25,
+    flatHalfWidth: 55, frequency: '122.30',
+  },
 ];
 
 /** The airfield with this id (throws on a typo, so a mission can never point at nothing). */

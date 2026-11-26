@@ -9,7 +9,7 @@ const medals = (career, kind) => Object.values(career.missions).filter((m) => m.
 const passedIn = (career, chapter) => MISSIONS.filter((m) => m.chapter === chapter && career.missions[m.id]?.passed).length;
 
 export const CHALLENGES = [
-  { id: 'all-fields', title: 'Every Field', describe: 'Land at all four airfields of the archipelago', goal: AIRFIELDS.length, progress: (c) => Object.keys(c.logbook.fieldsLanded ?? {}).length, reward: { money: 600, xp: 200 } },
+  { id: 'all-fields', title: 'Every Field', describe: `Land at all ${AIRFIELDS.length} airfields of the archipelago`, goal: AIRFIELDS.length, progress: (c) => Object.keys(c.logbook.fieldsLanded ?? {}).length, reward: { money: 600, xp: 200 } },
   { id: 'gold-10', title: 'Gold Collector', describe: 'Win 10 gold medals', goal: 10, progress: (c) => medals(c, 'gold'), reward: { money: 1200, xp: 400 } },
   { id: 'all-aircraft', title: 'Full Hangar', describe: `Fly all ${AIRCRAFT.length} aircraft`, goal: AIRCRAFT.length, progress: (c) => Object.keys(c.logbook.aircraftFlown ?? {}).length, reward: { money: 800, xp: 250 } },
   { id: 'greaser-5', title: 'Greaser', describe: 'Make 5 landings softer than 150 fpm', goal: 5, progress: (c) => c.logbook.greasers, reward: { money: 400, xp: 150 } },
