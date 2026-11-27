@@ -9,16 +9,18 @@ export function paintFlightRecorder(canvas, record, { font = 'Bahnschrift, "Sego
   const H = canvas.height;
   ctx.clearRect(0, 0, W, H);
   const samples = record?.samples ?? [];
-  const pad = { left: 58, right: 54, top: 40, bottom: 26 };
+  // Sizes grow with the canvas, so a tall debrief chart has labels and lines that read when shrunk.
+  const k = Math.max(1, H / 200);
+  const pad = { left: 58 * k, right: 54 * k, top: 40 * k, bottom: 26 * k };
   const plotW = W - pad.left - pad.right;
   const plotH = H - pad.top - pad.bottom;
   ctx.fillStyle = 'rgba(4, 9, 18, 0.72)';
   ctx.beginPath();
-  ctx.roundRect(0, 0, W, H, 10);
+  ctx.roundRect(0, 0, W, H, 10 * k);
   ctx.fill();
   if (samples.length < 2) {
     ctx.fillStyle = '#a9b4c4';
-    ctx.font = `600 18px ${font}`;
+    ctx.font = `600 ${18 * k}px ${font}`;
     ctx.fillText('No flight recorded', pad.left, H / 2);
     return;
   }
@@ -31,7 +33,7 @@ export function paintFlightRecorder(canvas, record, { font = 'Bahnschrift, "Sego
   const yKt = (k) => pad.top + plotH - (k / maxKt) * plotH;
 
   // Grid and axes: altitude feet on the left, knots on the right, minutes along the bottom.
-  ctx.font = `600 13px ${font}`;
+  ctx.font = `600 ${13 * k}px ${font}`;
   ctx.lineWidth = 1;
   const altStep = niceStep(maxAlt - minAlt, 4);
   ctx.textAlign = 'right';
@@ -43,28 +45,28 @@ export function paintFlightRecorder(canvas, record, { font = 'Bahnschrift, "Sego
     ctx.lineTo(W - pad.right, yAlt(a));
     ctx.stroke();
     ctx.fillStyle = '#ffc46a';
-    ctx.fillText(`${Math.round(a)}`, pad.left - 8, yAlt(a));
+    ctx.fillText(`${Math.round(a)}`, pad.left - 8 * k, yAlt(a));
   }
   ctx.textAlign = 'left';
   const ktStep = niceStep(maxKt, 4);
-  for (let k = ktStep; k <= maxKt; k += ktStep) {
+  for (let kt = ktStep; kt <= maxKt; kt += ktStep) {
     ctx.fillStyle = '#5fe3d0';
-    ctx.fillText(`${Math.round(k)}`, W - pad.right + 8, yKt(k));
+    ctx.fillText(`${Math.round(kt)}`, W - pad.right + 8 * k, yKt(kt));
   }
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   const tStep = niceStep(duration, 6);
   for (let t = 0; t <= duration + 0.1; t += tStep) {
     ctx.fillStyle = '#a9b4c4';
-    ctx.fillText(clock(t), x(t), H - pad.bottom + 6);
+    ctx.fillText(clock(t), x(t), H - pad.bottom + 6 * k);
   }
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = '#ffc46a';
   ctx.textAlign = 'left';
-  ctx.fillText('ALT FT', 8, pad.top - 10);
+  ctx.fillText('ALT FT', 8 * k, pad.top - 10 * k);
   ctx.fillStyle = '#5fe3d0';
   ctx.textAlign = 'right';
-  ctx.fillText('KT', W - 8, pad.top - 10);
+  ctx.fillText('KT', W - 8 * k, pad.top - 10 * k);
 
   // Altitude profile, filled.
   const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
@@ -80,7 +82,7 @@ export function paintFlightRecorder(canvas, record, { font = 'Bahnschrift, "Sego
   ctx.beginPath();
   samples.forEach((s, i) => (i ? ctx.lineTo(x(s.t), yAlt(s.altFt)) : ctx.moveTo(x(s.t), yAlt(s.altFt))));
   ctx.strokeStyle = '#ffc46a';
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 4 * k;
   ctx.stroke();
 
   // Airspeed line, lightly smoothed (five samples) so gust ripples do not hide the profile.
@@ -91,23 +93,23 @@ export function paintFlightRecorder(canvas, record, { font = 'Bahnschrift, "Sego
   ctx.beginPath();
   samples.forEach((s, i) => (i ? ctx.lineTo(x(s.t), yKt(smooth[i])) : ctx.moveTo(x(s.t), yKt(smooth[i]))));
   ctx.strokeStyle = '#5fe3d0';
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 4 * k;
   ctx.stroke();
 
   // Event marks: a line down the plot, the icon on the profile, the label in one of two rows.
   const marks = (record.marks ?? []).filter((m) => m.t <= duration + 1);
   const rowEnds = [-Infinity, -Infinity];
-  ctx.font = `700 12px ${font}`;
+  ctx.font = `700 ${12 * k}px ${font}`;
   for (const m of marks) {
     const style = MARK_STYLE[m.kind] ?? MARK_STYLE.ring;
     const mx = x(m.t);
     const near = samples.reduce((best, s) => (Math.abs(s.t - m.t) < Math.abs(best.t - m.t) ? s : best), samples[0]);
     ctx.strokeStyle = style.color;
     ctx.globalAlpha = m.kind === 'ring' ? 0.45 : 0.8;
-    ctx.lineWidth = m.kind === 'ring' ? 1.5 : 2.5;
-    ctx.setLineDash(m.kind === 'ring' ? [2, 3] : [4, 3]);
+    ctx.lineWidth = (m.kind === 'ring' ? 1.5 : 2.5) * k;
+    ctx.setLineDash(m.kind === 'ring' ? [2 * k, 3 * k] : [4 * k, 3 * k]);
     ctx.beginPath();
-    ctx.moveTo(mx, pad.top - 4);
+    ctx.moveTo(mx, pad.top - 4 * k);
     ctx.lineTo(mx, pad.top + plotH);
     ctx.stroke();
     ctx.setLineDash([]);
@@ -115,17 +117,17 @@ export function paintFlightRecorder(canvas, record, { font = 'Bahnschrift, "Sego
     ctx.fillStyle = style.color;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = `700 ${m.kind === 'ring' ? 11 : 14}px ${font}`;
+    ctx.font = `700 ${(m.kind === 'ring' ? 11 : 14) * k}px ${font}`;
     ctx.fillText(style.icon, mx, yAlt(near.altFt));
     const label = m.kind === 'ring' ? m.label : m.label;
-    ctx.font = `700 ${m.kind === 'ring' ? 11 : 12}px ${font}`;
-    const w = ctx.measureText(label).width + 8;
+    ctx.font = `700 ${(m.kind === 'ring' ? 11 : 12) * k}px ${font}`;
+    const w = ctx.measureText(label).width + 8 * k;
     let row = rowEnds[0] <= mx - w / 2 ? 0 : rowEnds[1] <= mx - w / 2 ? 1 : rowEnds[0] < rowEnds[1] ? 0 : 1;
     if (m.kind === 'ring') row = rowEnds[1] <= mx - w / 2 ? 1 : row;
     rowEnds[row] = mx + w / 2;
-    const ly = 10 + row * 15;
+    const ly = (10 + row * 15) * k;
     ctx.fillStyle = 'rgba(4,9,18,0.85)';
-    ctx.fillRect(mx - w / 2, ly - 7, w, 14);
+    ctx.fillRect(mx - w / 2, ly - 7 * k, w, 14 * k);
     ctx.fillStyle = style.color;
     ctx.fillText(label, mx, ly);
   }

@@ -12,12 +12,13 @@ const angleDiff = (a, b) => ((a - b + 540) % 360) - 180;
 const bearingTo = (from, to) => (THREE.MathUtils.radToDeg(Math.atan2(to.x - from.x, -(to.z - from.z))) + 360) % 360;
 
 /** Creates the pilot over the game director. */
-export function createScenePilot(game) {
+export function createScenePilot(game, { answerCommit = true } = {}) {
   const c = game.controls.controls;
   const queue = [];
   let throttleTarget = c.throttle;
   let runwayHeading = null;
   let bingoSeen = 0;
+  let commitSeen = 0;
   let lastObjective = null;
   let stageStart = null;
 
@@ -167,6 +168,11 @@ export function createScenePilot(game) {
         bingoSeen += 1;
         // A pilot reads the panel for a few seconds, then answers with the key.
         if (bingoSeen === 200) queue.push(onBingo === 'divert' ? 'divert' : 'pressOn');
+      }
+      // The short-final call: read it, then commit to the landing with K.
+      if (game.runner.commit?.pending) {
+        commitSeen += 1;
+        if (commitSeen === 240 && answerCommit) queue.push('pressOn');
       }
       c.throttle += clamp(throttleTarget - c.throttle, -0.5 * STEP, 0.5 * STEP);
       const unique = [...new Set(queue.splice(0))];

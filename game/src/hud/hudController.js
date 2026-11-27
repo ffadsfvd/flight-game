@@ -11,11 +11,18 @@ import { createAircraftSystemsPanel } from './aircraftSystemsPanel.js';
 import { createFuelDamagePanel } from './fuelDamagePanel.js';
 import { createBingoDecisionPanel } from './bingoDecisionPanel.js';
 import { createDisciplinePopup } from './disciplinePopup.js';
+import { createMissionCallout } from './missionCallout.js';
 import { activeWarnings, createWarningPanel } from './flightWarnings.js';
 import { createCareerBadge } from './careerBadge.js';
 import { VIEW_NAMES } from '../camera/cameraDirector.js';
 
 const $ = (id) => document.getElementById(id);
+
+/** The one-line key legend along the bottom of the flight HUD. */
+const KEY_LEGEND = [
+  [['W', 'S'], 'pitch'], [['A', 'D'], 'roll'], [['Q', 'E'], 'rudder'], [['Shift', 'Ctrl'], 'throttle'], [['F'], 'flaps'], [['G'], 'gear'],
+  [['B'], 'brakes'], [['Space'], 'drop · photo'], [['C'], 'camera'], [['M'], 'map'], [['J', 'K'], 'decide'], [['Esc'], 'pause'],
+].map(([keys, what]) => `<span>${keys.map((k) => `<kbd>${k}</kbd>`).join('')} ${what}</span>`).join('');
 
 /** Creates the HUD over the page's containers. */
 export function createHudController(terrain, { onRadio } = {}) {
@@ -32,6 +39,7 @@ export function createHudController(terrain, { onRadio } = {}) {
   const fuel = createFuelDamagePanel($('hud-fuel-and-damage'));
   const decision = createBingoDecisionPanel($('hud-bingo-decision'));
   const popup = createDisciplinePopup($('hud-discipline-popup'));
+  const callout = createMissionCallout($('hud-mission-callout'));
   const warnings = createWarningPanel($('hud-flight-warnings'));
   const badge = createCareerBadge($('hud-career-badge'));
   const cameraLabel = $('hud-camera-label');
@@ -39,6 +47,7 @@ export function createHudController(terrain, { onRadio } = {}) {
   const stickDot = stick.querySelector('i');
   const toasts = $('toast-messages');
   let textTimer = 0;
+  let legendView = null;
   let currentWarnings = [];
 
   return {
@@ -78,10 +87,14 @@ export function createHudController(terrain, { onRadio } = {}) {
         systems.update(d);
         fuel.update(d, s.load, s.fuelPlan, s.damage ?? []);
         decision.update(s.decision ?? null);
+        callout.update(s.decision ? null : s.callout ?? null);
         warnings.update(currentWarnings);
         tracker.update(s.mission);
         badge.update(s.career);
-        cameraLabel.textContent = `${VIEW_NAMES[s.view] ?? ''}  ·  C CAMERA  ·  CLICK MOUSE STICK  ·  ESC PAUSE  ·  H HELP`;
+        if (s.view !== legendView) {
+          legendView = s.view;
+          cameraLabel.innerHTML = `<b>${VIEW_NAMES[s.view] ?? ''}</b>${KEY_LEGEND}`;
+        }
       }
       if (s.stick) {
         stick.classList.toggle('is-active', s.stick.active);

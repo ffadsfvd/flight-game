@@ -4,7 +4,7 @@
 // mission board and briefing, take-off, climb, turn, a ring, pause and resume, crash and retry,
 // a water landing flown by a keyboard autopilot, save and continue after a reload, every mission
 // starting, and the console staying free of errors. Run `node serve.ts` first.
-import { launchChrome, openPage, sleep } from './cdp.mjs';
+import { launchChrome, openPage, sleep, testsRunHeadless } from './cdp.mjs';
 
 const results = [];
 function check(name, ok, detail = '') {
@@ -37,6 +37,17 @@ async function clickAction(page, action, arg = null) {
 
 function angleDiff(a, b) {
   return ((a - b + 540) % 360) - 180;
+}
+
+/** Resizes the page's viewport (the game re-fits its HUD and menus on the resize event). */
+async function setViewport(page, width, height) {
+  await page.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
+  await sleep(450);
+}
+
+/** Where a button is if it is wholly inside the window and on top at its centre (no scrolling), else null. */
+async function reachable(page, action) {
+  return page.evaluate(`(() => { const e = [...document.querySelectorAll('[data-action="${action}"]')].find((x) => x.offsetParent !== null); if (!e) return null; const r = e.getBoundingClientRect(); const x = r.x + r.width / 2; const y = r.y + r.height / 2; const inside = r.top >= 0 && r.left >= 0 && r.bottom <= innerHeight && r.right <= innerWidth; const hit = document.elementFromPoint(x, y); return inside && hit && (hit === e || e.contains(hit)) ? { x, y } : null; })()`);
 }
 
 /** One step of a keyboard autopilot: holds keys toward a heading, vertical speed and airspeed. */
@@ -73,18 +84,30 @@ async function pilotStep(page, s, { heading, vs, kt, maxBank = 22, gentle = fals
   for (const [code] of keys) if (!released.has(code)) await page.keyUp(code);
 }
 
-const chrome = await launchChrome({ port: 9337 });
+const chrome = await launchChrome({ port: 9337, headless: testsRunHeadless() });
 try {
   const page = await openPage(chrome.port, 'http://localhost:8080/');
   await page.waitFor('window.__solvara && window.__solvara.game.state === "title"', 30000);
   check('title screen shows', (await read(page)).state === 'title');
+  // The title menu fits a 1024x600 window: every menu button on screen and clickable.
+  await setViewport(page, 1024, 600);
+  const titleCut = await page.evaluate(`[...document.querySelectorAll('#screen-title [data-action]')].filter((e) => { const r = e.getBoundingClientRect(); const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return !(r.bottom <= innerHeight && r.top >= 0 && hit && (hit === e || e.contains(hit))); }).map((e) => e.dataset.action)`);
+  check('the title menu fits a 1024x600 window', titleCut.length === 0, titleCut.length ? `cut off: ${titleCut.join(', ')}` : 'all buttons in view');
+  await setViewport(page, 1280, 800);
 
   // New career, mission board, briefing, fly.
   await clickAction(page, 'new');
   check('new career opens the mission board', await page.evaluate('document.getElementById("screen-mission-board").classList.contains("is-open")'));
   await clickAction(page, 'brief', 'first-solo');
   check('briefing opens for First Solo', await page.evaluate('document.getElementById("screen-mission-briefing").classList.contains("is-open")'));
-  await clickAction(page, 'fly', 'first-solo');
+  // The briefing fits a 1024x600 window with Fly in view; a real click on it starts the mission.
+  await setViewport(page, 1024, 600);
+  const flyButton = await reachable(page, 'fly');
+  check('the briefing fits a 1024x600 window with Fly in view', Boolean(flyButton));
+  if (flyButton) await page.click(flyButton.x, flyButton.y);
+  else await clickAction(page, 'fly', 'first-solo');
+  await sleep(300);
+  await setViewport(page, 1280, 800);
   let s = await read(page);
   check('mission starts flying', s.state === 'flying' && s.mission === 'first-solo', s.state);
   await page.click(640, 300);
@@ -154,10 +177,21 @@ try {
   const debrief = await page.evaluate('JSON.stringify({ banner: document.querySelector("#screen-mission-results .result-banner")?.textContent, cause: document.querySelector("#screen-mission-results .result-cause")?.textContent, chart: Boolean(document.querySelector("#screen-mission-results canvas.debrief-chart")), report: document.querySelector("#screen-mission-results h3")?.textContent })');
   const db = JSON.parse(debrief);
   check('the crash debrief names the cause, with the crash report and the flight recorder', db.banner === 'CRASHED' && /Flew into|Crashed into|Caught a wingtip|Tail strike|Flipped|Prop strike|broke up|Stalled|collapsed|Clipped|flipped/.test(db.cause ?? '') && db.chart && /Crash report/.test(db.report ?? ''), `${db.banner}: ${db.cause}`);
-  await page.press('Enter');
+  // The debrief fits every window from 1024x600 up: Retry and Continue on screen and clickable
+  // without scrolling; then R retries.
+  const fits = [];
+  for (const [w, h] of [[1920, 1080], [1366, 768], [1280, 600], [1024, 600]]) {
+    await setViewport(page, w, h);
+    const retry = await reachable(page, 'retry');
+    const cont = await reachable(page, 'board');
+    if (!retry || !cont) fits.push(`${w}x${h}`);
+  }
+  check('the debrief fits 1920x1080 down to 1024x600 with Retry and Continue in view', fits.length === 0, fits.length ? `cut off at ${fits.join(', ')}` : '4 window sizes');
+  await page.press('KeyR');
   await sleep(600);
   s = await read(page);
-  check('Enter retries the mission', s.state === 'flying' && s.mission === 'first-solo');
+  check('R retries the mission (in a 1024x600 window)', s.state === 'flying' && s.mission === 'first-solo');
+  await setViewport(page, 1280, 800);
 
   // Save and continue after a reload (the ?unlock=all flag also opens every chapter for the rest).
   await page.press('Escape');
@@ -203,13 +237,21 @@ try {
     s = await read(page);
   }
   check('water landing completes the lagoon mission', s.state === 'results' && s.result && s.result.success, s.result ? `${s.result.success ? 'success' : 'fail'}: ${s.result.cause ?? s.result.score}` : s.state);
-  // The turnaround on the debrief: buy a fuel top-up for the next sortie with a real click.
+  // The turnaround on the debrief: buy a fuel top-up for the next sortie with a real click, in a
+  // small 1024x600 window, without scrolling; then Enter continues to the mission board.
+  await setViewport(page, 1024, 600);
   const fleetBefore = await page.evaluate('JSON.stringify({ money: window.__solvara.game.career.money, topUp: (window.__solvara.game.career.fleet?.heron?.topUp ?? 0) })');
-  await clickAction(page, 'top-up');
+  const topUpButton = await reachable(page, 'top-up');
+  if (topUpButton) await page.click(topUpButton.x, topUpButton.y);
+  await sleep(350);
   const fleetAfter = await page.evaluate('JSON.stringify({ money: window.__solvara.game.career.money, topUp: (window.__solvara.game.career.fleet?.heron?.topUp ?? 0) })');
   const [b0, a0] = [JSON.parse(fleetBefore), JSON.parse(fleetAfter)];
   check('the debrief turnaround sells a fuel top-up for the next sortie', a0.topUp > 0 && a0.money < b0.money, `${b0.money} -> ${a0.money} cr, top-up ${a0.topUp}`);
-  await clickAction(page, 'board');
+  const continueButton = await reachable(page, 'board');
+  await page.press('Enter');
+  await sleep(400);
+  check('Enter continues to the mission board (Continue in view at 1024x600)', Boolean(continueButton) && await page.evaluate('document.getElementById("screen-mission-board").classList.contains("is-open")'));
+  await setViewport(page, 1280, 800);
 
   // Every mission starts.
   const ids = [];

@@ -10,7 +10,7 @@ function row(label, id) {
 
 /** Creates the systems panel in its container. */
 export function createAircraftSystemsPanel(element) {
-  element.innerHTML = `<div class="panel-title">Power &amp; configuration</div>${row('THROTTLE', 'thr')}${row('RPM', 'rpm')}<div class="sys-tags"><span data-id="flaps"></span><span data-id="gear"></span><span data-id="brakes">BRK</span></div><div class="sys-tags"><span data-id="lights">LDG LT</span><span data-id="assist">ASSIST</span><span data-id="smoke">SMOKE</span></div>`;
+  element.innerHTML = `<div class="panel-title">Power &amp; config</div>${row('THROTTLE', 'thr')}${row('RPM', 'rpm')}<div class="sys-tags"><span data-id="flaps"></span><span data-id="gear"></span><span data-id="brakes">BRK</span></div><div class="sys-tags"><span data-id="lights">LDG LT</span><span data-id="assist">ASSIST</span><span data-id="smoke">SMOKE</span></div>`;
   const q = (id) => element.querySelector(`[data-id="${id}"]`);
   const el = { thr: q('thr'), thrV: q('thr-v'), rpm: q('rpm'), rpmV: q('rpm-v'), flaps: q('flaps'), gear: q('gear'), brakes: q('brakes'), lights: q('lights'), assist: q('assist'), smoke: q('smoke') };
   return {

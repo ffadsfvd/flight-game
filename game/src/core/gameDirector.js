@@ -20,7 +20,7 @@ import { hangarHtml } from '../ui/hangarScreen.js';
 import { logbookHtml } from '../ui/logbookScreen.js';
 import { challengesHtml } from '../ui/challengesScreen.js';
 import { controlsHelpHtml } from '../ui/controlsHelp.js';
-import { settingsHtml, FREE_STARTS } from '../ui/settingsScreen.js';
+import { settingsHtml, FREE_STARTS, HUD_SIZES, applyHudScale } from '../ui/settingsScreen.js';
 import { pauseMenuHtml } from '../ui/pauseMenu.js';
 import { debriefHtml, paintDebriefCharts } from '../ui/debriefScreen.js';
 import { applyCarriedCondition, buyTopUp, repairAircraft, storeAircraftCondition, suggestedUpgrade } from '../career/aircraftTurnaround.js';
@@ -33,6 +33,7 @@ import { createSoundEffects } from '../audio/soundEffects.js';
 import { createMusicLoop } from '../audio/musicLoop.js';
 import { createEffectsDirector } from '../effects/effectsDirector.js';
 import { createGlidePathGates } from '../effects/glidePathGates.js';
+import { createGullFlocks } from '../effects/gullFlocks.js';
 import { createTowBanner } from '../effects/towBanner.js';
 import { hasSavedCareer, loadCareer, saveCareer, clearCareer } from '../save/saveStore.js';
 import { approachPlacement, createFlightSession, runwayPlacement } from './flightSession.js';
@@ -59,6 +60,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
   let career = loadCareer() ?? createCareer();
   if (new URLSearchParams(window.location.search).get('unlock') === 'all') career.xp = Math.max(career.xp, 5000);
   const settings = career.settings;
+  applyHudScale(settings.hudScale);
   const wind = createWindField();
   wind.attachTerrain(world.terrain);
   const cameras = createCameraDirector(view.camera);
@@ -66,6 +68,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
   const session = createFlightSession({ scene: view.scene, world, wind, director: cameras, controls });
   const effects = createEffectsDirector(view.scene, world.landmarks.emitters);
   const gates = createGlidePathGates(view.scene);
+  const gulls = createGullFlocks(view.scene, world.terrain);
   parkDisplayAircraft(view.scene);
   const traffic = createAirTraffic(view.scene, world.terrain);
   const atc = createAtcRadio({ say: (who, text) => hud.radio.say(who, text), wind, traffic });
@@ -296,6 +299,13 @@ export function createGameDirector({ view, world, shotMode = false }) {
         settings[key] = clamp(settings[key] - 0.1);
         apply();
       },
+      'hud-size': () => {
+        const i = HUD_SIZES.findIndex((s) => s.scale === (settings.hudScale ?? 1));
+        settings.hudScale = HUD_SIZES[(i + 1) % HUD_SIZES.length].scale;
+        applyHudScale(settings.hudScale);
+        save();
+        refresh();
+      },
       more: (key) => {
         settings[key] = clamp(settings[key] + 0.1);
         apply();
@@ -382,6 +392,8 @@ export function createGameDirector({ view, world, shotMode = false }) {
     hud.popup.clear();
     hud.show(true);
     router.hideAll();
+    // Keys pressed on the menus (R to retry, Enter to fly) must not reach the new flight as actions.
+    controls.keyboard.takePressed();
     cameras.view = 'chase';
     cameras.replay.stop();
     gates.set(null);
@@ -417,6 +429,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     };
     const handlers = {
       retry: () => startMission(mission, freeAircraft),
+      'key:KeyR': () => startMission(mission, freeAircraft),
       board: () => {
         runner.stop();
         hud.show(false);
@@ -427,7 +440,12 @@ export function createGameDirector({ view, world, shotMode = false }) {
         hud.show(false);
         showBoard();
       },
-      confirm: () => startMission(mission, freeAircraft),
+      // Enter = Continue: on to the mission board with the next mission.
+      confirm: () => {
+        runner.stop();
+        hud.show(false);
+        showBoard();
+      },
       repair: turnaround(() => repairAircraft(career, spec.id)),
       'top-up': turnaround(() => buyTopUp(career, spec.id)),
       upgrade: turnaround((uid) => buyUpgrade(career, spec.id, uid)),
@@ -455,6 +473,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
         return;
       }
       if (a === 'radio') hud.radio.clear();
+      if (a === 'map') hud.toast(`MAP ${(hud.minimap.zoom() / 1852).toFixed(1)} NM`);
     }
     if (ending) {
       ending.timer -= dt;
@@ -505,6 +524,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
       fuelPlan: runner.fuelPlan,
       damage: damageEffects(body),
       decision: runner.decisionPanel(),
+      callout: runner.callout(),
       stick: { active: controls.mouse.state.locked || controls.mouse.state.dragging, x: controls.mouse.state.x, y: controls.mouse.state.y },
       dt,
       force,
@@ -527,7 +547,11 @@ export function createGameDirector({ view, world, shotMode = false }) {
   window.addEventListener('keydown', (event) => {
     if (state === 'flying') return;
     if (event.code === 'Escape') router.back();
-    if (event.code === 'Enter') router.confirm();
+    // Enter is the screen's main action (Fly, Continue); preventDefault keeps a focused button from
+    // also taking the key as a click.
+    else if (event.code === 'Enter') {
+      if (router.confirm()) event.preventDefault();
+    } else if (!event.repeat && router.press(event.code)) event.preventDefault();
   });
 
   function frame(dt, actionsOverride = null) {
@@ -563,6 +587,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     if (state !== 'flying' && state !== 'paused') frostEl.style.opacity = '0';
     effects.update(dt, viewScale, wind.state.current, state === 'flying' ? session.body : null, view.camera, session.body?.smokeOn);
     traffic.update(dt, time);
+    gulls.update(dt, time, state === 'flying' || state === 'paused' ? session.simulation.damage : null);
     world.update(time, wind.state.current, focus, view.camera, view.viewHeight);
     view.render();
   }

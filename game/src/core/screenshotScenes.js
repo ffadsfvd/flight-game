@@ -6,6 +6,7 @@ import { missionById } from '../missions/missionCatalog.js';
 import { createSeededRandom } from './seededRandom.js';
 import { approachPlacement } from './flightSession.js';
 import { createScenePilot } from './scenePilot.js';
+import { applyHudScale } from '../ui/settingsScreen.js';
 
 const STEP = 1 / 60;
 
@@ -21,6 +22,8 @@ function run(game, seconds, actionsAt = {}) {
 /** Sets up scene `name` on the game director; resolves when painted. */
 export function stageScreenshot(name, game) {
   Math.random = createSeededRandom(20261126);
+  // The flight shots use the Large HUD setting, so every panel reads when the shot is shrunk.
+  applyHudScale(name === 'title' || name === 'debrief' ? 1 : 1.15);
   const session = game.session;
   if (name === 'title') {
     game.showTitle();
@@ -34,13 +37,14 @@ export function stageScreenshot(name, game) {
     // The chase camera sits close behind and a little to the left, Marina Sabbia on its beach and
     // the sea on the right, the Casale Vento farms and a crop duster on the left.
     game.startMission(missionById('medevac'));
-    const pilot = createScenePilot(game);
+    // The pilot reads the short-final call (land or go around) but has not answered it yet.
+    const pilot = createScenePilot(game, { answerCommit: false });
     pilot.flyUntil(() => {
       const g = game.runner.guidance();
-      return Boolean(g && g.distance < 1000);
+      return Boolean(g && g.distance < 760);
     }, 600);
     session.body.landingLights = true;
-    Object.assign(game.cameras.chaseFraming, { height: 1.15, distance: 1.45, lookAhead: 600, lookUp: -46, yaw: -0.08, fov: 44, lookSide: 45 });
+    Object.assign(game.cameras.chaseFraming, { height: 1.35, distance: 1.4, lookAhead: 400, lookUp: -36, yaw: -0.16, fov: 46, lookSide: 70 });
     game.traffic.place('Vento duster', 0.58);
     game.traffic.place('Marenza circuit', 0.16);
     for (let i = 0; i < 70; i += 1) pilot.frame('press-on', true);

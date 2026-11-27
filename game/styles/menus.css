@@ -4,7 +4,15 @@
 .screen .sheet {
   position: absolute; background: rgba(8, 14, 27, 0.86); border: 1px solid var(--panel-edge);
   border-radius: 0.7em; box-shadow: 0 0.5em 2.2em rgba(0, 0, 0, 0.5); padding: 1.2em 1.4em; box-sizing: border-box;
+  max-height: calc(100% - 1.6em); overflow-y: auto;
 }
+/* Sheets that fit the window (briefing, debrief): shrunk by the router, then the body scrolls and
+   the button row under it stays on screen. */
+.screen .sheet.fits-window { display: flex; flex-direction: column; overflow: hidden; max-height: 94%; }
+.sheet.fits-window > .sheet-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.sheet.fits-window > .btn-row, .sheet.fits-window > .debrief-actions { flex: none; }
+.btn-primary { background: rgba(255, 196, 106, 0.9); border-color: #ffd27f; color: #1a1206; }
+.btn-primary small { color: rgba(26, 18, 6, 0.7); }
 .screen h2 { margin: 0 0 0.6em; font-size: 1.6em; color: var(--accent); letter-spacing: 0.06em; }
 .screen h3 { margin: 0.8em 0 0.35em; font-size: 1.0em; color: var(--accent-2); letter-spacing: 0.1em; text-transform: uppercase; }
 .screen p { line-height: 1.4; margin: 0.35em 0; }
@@ -60,7 +68,7 @@
 .setting { display: flex; justify-content: space-between; align-items: center; padding: 0.4em 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
 .setting select, .setting input { font: 600 0.95em var(--font); }
 
-#screen-mission-briefing .sheet { left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40em; }
+#screen-mission-briefing .sheet { left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40em; max-width: 96%; }
 .dialogue { display: flex; gap: 0.8em; margin: 0.5em 0; align-items: flex-start; }
 .dialogue canvas { width: 4.6em; height: 4.6em; border-radius: 0.4em; border: 1px solid var(--panel-edge); flex: none; }
 .dialogue .who { color: var(--accent); font-weight: 700; font-size: 0.85em; letter-spacing: 0.06em; text-transform: uppercase; }
@@ -72,6 +80,9 @@
 .brief-goals li b { color: var(--accent-2); width: 1em; }
 .brief-goals li span { margin-left: auto; color: var(--accent); font-weight: 700; }
 .brief-hazard { color: var(--warn); font-size: 0.88em; }
+.brief-controls { display: flex; flex-wrap: wrap; gap: 0.35em 0.9em; align-items: center; margin: 0.55em 0 0.2em; padding: 0.45em 0.7em; border-radius: 0.4em; background: rgba(95, 227, 208, 0.12); border: 1px solid rgba(95, 227, 208, 0.45); font-size: 0.92em; }
+.brief-controls > b { color: var(--accent-2); letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.85em; }
+.brief-controls kbd, #hud-key-legend kbd { display: inline-block; min-width: 1.2em; padding: 0.02em 0.4em; border-radius: 0.25em; background: #f1e6d2; color: #1b1308; font: 700 0.92em var(--font); text-align: center; box-shadow: 0 0.12em 0 #9c8b6d; }
 .brief-damage { display: flex; gap: 0.8em; align-items: center; justify-content: space-between; margin: 0.4em 0; padding: 0.4em 0.6em; border-radius: 0.4em; background: rgba(255, 77, 61, 0.16); color: #ffb4a8; font-size: 0.9em; }
 .brief-damage.is-good { background: rgba(107, 227, 138, 0.14); color: var(--good); }
 .brief-damage .btn { width: auto; margin: 0; text-align: center; font-size: 0.9em; }
@@ -90,7 +101,7 @@
 .result-table td:last-child { text-align: right; font-weight: 700; }
 .grade-badge { float: right; font-size: 2.6em; font-weight: 800; color: var(--accent); line-height: 1; }
 .replay-tag { position: absolute; left: 50%; top: 2.5%; transform: translateX(-50%); padding: 0.3em 0.9em; border-radius: 0.3em; background: rgba(8, 14, 27, 0.7); color: #ff6a5a; font-weight: 800; letter-spacing: 0.12em; font-size: 0.95em; }
-#screen-mission-results .sheet.debrief { width: 70em; top: 51%; padding: 0.85em 1.25em 0.9em; }
+#screen-mission-results .sheet.debrief { width: 72em; max-width: 98%; top: 53%; max-height: 91%; padding: 0.85em 1.25em 0.9em; }
 .debrief-head { display: flex; justify-content: space-between; align-items: center; gap: 1em; }
 .debrief-title { color: var(--accent); font-weight: 700; font-size: 1.25em; }
 .debrief-sub { font-size: 0.8em; color: var(--muted); letter-spacing: 0.04em; margin-top: 0.1em; }
@@ -145,6 +156,58 @@ td.tone-good { color: #6be38a; } td.tone-warn { color: #ffc46a; } td.tone-bad { 
 .debrief-rank span:first-child { font-weight: 800; color: #ffc46a; }
 .debrief-promoted { color: #ffc46a; font-weight: 800; margin: 0.3em 0 0; }
 .debrief-none { color: var(--muted, #9aa4b2); font-size: 0.9em; }
+
+/* The debrief's bright sheet: dark ink on warm paper, the headline and the medal stamp large, the
+   recorder chart a dark display across the sheet, eight big lines, finer detail smaller. */
+#screen-mission-results .sheet.debrief { width: 72em; background: linear-gradient(#fcf8ef, #f1e8d6); color: #1d232c; border: 2px solid #d8c39a; box-shadow: 0 0.6em 2.4em rgba(0, 0, 0, 0.45); padding: 0.75em 1.2em 0.75em; }
+.sheet.debrief .debrief-head { align-items: center; }
+.sheet.debrief .debrief-title { color: #1d232c; font-size: 1.95em; font-weight: 800; line-height: 1.05; letter-spacing: 0.01em; }
+.sheet.debrief .result-banner { font-size: 3.2em; line-height: 1; margin: 0.03em 0 0.04em; letter-spacing: 0.04em; }
+.sheet.debrief .result-banner.good { color: #1d8a45; } .sheet.debrief .result-banner.bad { color: #c8372b; } .sheet.debrief .result-banner.warn { color: #b86e00; }
+.sheet.debrief .debrief-sub { color: #636a74; font-size: 0.86em; }
+.debrief-stamp { flex: none; width: 8em; height: 8em; margin-right: 0.6em; border-radius: 50%; border: 0.32em solid; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: rotate(-9deg); box-shadow: inset 0 0 0 0.2em rgba(255, 255, 255, 0.55), 0 0.25em 0.8em rgba(80, 50, 0, 0.25); }
+.debrief-stamp i { font-style: normal; font-weight: 800; letter-spacing: 0.14em; font-size: 1.1em; }
+.debrief-stamp b { font-size: 3.3em; line-height: 0.95; font-weight: 800; }
+.debrief-stamp small { font-size: 0.66em; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+.debrief-stamp.medal-gold { border-color: #b8860b; color: #6e4b00; background: radial-gradient(circle at 35% 30%, #fff7cf, #ffd75a 55%, #e3ad22); }
+.debrief-stamp.medal-silver { border-color: #7f8b99; color: #39424d; background: radial-gradient(circle at 35% 30%, #ffffff, #d6dde5 55%, #a7b2be); }
+.debrief-stamp.medal-bronze { border-color: #8a5228; color: #4f2c10; background: radial-gradient(circle at 35% 30%, #ffe4c8, #e0a067 55%, #b56d36); }
+.debrief-stamp.medal-none { border-color: #a3a9b1; color: #5e656e; background: #e8e3d9; }
+.sheet.debrief .result-cause { color: #2a2f37; font-size: 0.95em; margin: 0.3em 0 0.4em; }
+.sheet.debrief .debrief-recorder { margin: 0 0 0.45em; }
+.debrief-lines { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.35em 0.55em; margin: 0 0 0.45em; }
+.debrief-line { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5em; padding: 0.22em 0.65em; border-radius: 0.4em; background: rgba(255, 255, 255, 0.78); border: 1px solid #e2d4b8; }
+.debrief-line span { color: #4a515b; font-weight: 700; font-size: 0.95em; white-space: nowrap; }
+.debrief-line b { color: #1d232c; font-size: 1.5em; font-weight: 800; white-space: nowrap; }
+.debrief-line b small { color: #6a717b; font-size: 0.58em; font-weight: 700; margin-left: 0.25em; }
+.debrief-line.tone-good b { color: #1d8a45; } .debrief-line.tone-warn b { color: #b86e00; } .debrief-line.tone-bad b { color: #c8372b; }
+.sheet.debrief .debrief-columns { font-size: 0.8em; gap: 1.4em; }
+.sheet.debrief h3 { color: #93600a; margin: 0.2em 0 0.25em; }
+.sheet.debrief h3 small { color: #6a717b; }
+.sheet.debrief .debrief-grade { color: #93600a; }
+.sheet.debrief .result-table td { border-bottom-color: rgba(60, 40, 10, 0.1); color: #2a2f37; padding: 0.16em 0.3em; }
+.sheet.debrief td.tone-good { color: #1d8a45; } .sheet.debrief td.tone-warn { color: #b86e00; } .sheet.debrief td.tone-bad { color: #c8372b; }
+.sheet.debrief .debrief-table td small, .sheet.debrief td.debrief-muted { color: #6a717b; }
+.sheet.debrief .debrief-goals li span { color: #6a717b; }
+.sheet.debrief .debrief-goals li.goal-met b, .sheet.debrief .debrief-goals li.goal-met span { color: #1d8a45; }
+.sheet.debrief .debrief-goals li.goal-failed { color: #7d838c; } .sheet.debrief .debrief-goals li.goal-failed b { color: #c8372b; }
+.sheet.debrief .debrief-streak { color: #93600a; } .sheet.debrief .debrief-decision { color: #a35f00; }
+.sheet.debrief .debrief-career { display: flex; flex-direction: column; gap: 0.3em; margin: 0 0.4em 0 auto; padding: 0; border: 0; font-size: 0.82em; width: 27em; align-self: center; }
+.sheet.debrief .debrief-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.35em; }
+.sheet.debrief .debrief-rank { margin: 0; }
+.sheet.debrief .debrief-columns { font-size: 0.74em; }
+.sheet.debrief .debrief-tile { background: rgba(255, 255, 255, 0.7); border: 1px solid #e2d4b8; }
+.sheet.debrief .debrief-tile b { color: #93600a; } .sheet.debrief .debrief-tile span { color: #6a717b; }
+.sheet.debrief .debrief-rank span:first-child { color: #93600a; } .sheet.debrief .debrief-rank small { color: #5d646d; } .sheet.debrief .debrief-rank em { color: #a35f00; }
+.sheet.debrief .debrief-bar { background: rgba(60, 40, 10, 0.12); }
+.sheet.debrief .debrief-actions { margin-top: 0.45em; padding-top: 0.45em; border-top: 1px solid rgba(60, 40, 10, 0.14); }
+.sheet.debrief .debrief-turnaround-label { color: #1d232c; } .sheet.debrief .debrief-turnaround-label small { color: #6a717b; }
+.sheet.debrief .btn { color: #1d232c; background: rgba(255, 255, 255, 0.85); border-color: #cdb991; }
+.sheet.debrief .btn small { color: #6a717b; }
+.sheet.debrief .btn:hover { background: #ffe9bf; border-color: #b8860b; color: #1d232c; }
+.sheet.debrief .btn-primary { background: #1d8a45; border-color: #146a34; color: #fff; }
+.sheet.debrief .btn-primary small { color: rgba(255, 255, 255, 0.8); }
+.sheet.debrief .btn-primary:hover { background: #22a051; color: #fff; }
 #screen-challenges .sheet { left: 50%; top: 50%; transform: translate(-50%, -50%); width: 56em; max-height: 92%; overflow: auto; }
 .challenge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6em; }
 .challenge-card { padding: 0.55em 0.7em; border-radius: 0.5em; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); }

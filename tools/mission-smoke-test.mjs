@@ -111,7 +111,8 @@ export const DRIVER = String.raw`(async (id) => {
           c.pitch = -0.05; c.throttle = 0.8;
           step(60 * 9);
         }
-        const [fx, fz] = t.fires[pass % t.fires.length];
+        const burning = g.runner.markers().filter((m) => m.label === 'FIRE');
+        const [fx, fz] = burning.length ? [burning[pass % burning.length].x, burning[pass % burning.length].z] : t.fires[pass % t.fires.length];
         // Run in along the slope's contour so the ground stays level under the drop.
         const slope = g.world.terrain.normalAt(fx, fz, new THREE.Vector3());
         let hx = -slope.z;
@@ -122,7 +123,18 @@ export const DRIVER = String.raw`(async (id) => {
         s.body.water = s.body.water;
         c.throttle = 0.85;
         const holdY = ground(fx, fz) + 45;
-        for (let i = 0; i < 60 * 5.6; i += 1) { const body = b(); c.pitch = THREE.MathUtils.clamp((holdY + (i > 96 ? 110 : 0) - body.position.y) * 0.03 - body.verticalSpeed * 0.08 + 0.1, -0.5, 0.7); if (i === 96) actions = ['action']; step(); }
+        // Release when the water will land 40 m short of the hot spot's middle (the curtain runs on past it).
+        let released = false;
+        for (let i = 0; i < 60 * 5.6; i += 1) {
+          const body = b();
+          c.pitch = THREE.MathUtils.clamp((holdY + (released ? 110 : 0) - body.position.y) * 0.03 - body.verticalSpeed * 0.08 + 0.1, -0.5, 0.7);
+          const fall = Math.sqrt((2 * Math.max(1, body.agl)) / 9.81);
+          const ix = body.position.x + body.velocity.x * fall * 0.75;
+          const iz = body.position.z + body.velocity.z * fall * 0.75;
+          const along = ((fx - ix) * body.velocity.x + (fz - iz) * body.velocity.z) / Math.max(1, Math.hypot(body.velocity.x, body.velocity.z));
+          if (!released && along < 40) { actions = ['action']; released = true; }
+          step();
+        }
       }
     } else if (kind === 'sightseeing') {
       // Level, gentle passes over each sight inside its height band, so comfort stays full.
@@ -190,7 +202,7 @@ export const DRIVER = String.raw`(async (id) => {
 })`;
 
 async function main() {
-  const chrome = await launchChrome({ port: 9339, headless: testsRunHeadless() });
+  const chrome = await launchChrome({ port: 9340, headless: testsRunHeadless() });
   let failed = 0;
   try {
     const page = await openPage(chrome.port, 'http://localhost:8080/?shot=none&unlock=all');

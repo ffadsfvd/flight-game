@@ -11,7 +11,7 @@ export function createBingoDecisionPanel(element) {
         last = '';
         return;
       }
-      const html = `<div class="head">${panel.title}<small>${panel.fuel} · ${panel.timer} s</small></div>${panel.options.map((o) => `<div class="option"><kbd>${o.key}</kbd><div><b>${o.label}</b><span>${o.detail}</span></div></div>`).join('')}`;
+      const html = `<div class="head">${panel.title}<small>${panel.fuel} · ${panel.timer} s</small></div><div class="options">${panel.options.map((o) => `<div class="option"><kbd>${o.key}</kbd><div><b>${o.label}</b><span>${o.detail}</span></div></div>`).join('')}</div>`;
       if (html === last) return;
       last = html;
       element.innerHTML = html;

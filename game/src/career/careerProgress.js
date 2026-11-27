@@ -6,7 +6,7 @@ import { RANKS, rankIndexFor, rankProgress } from './pilotRanks.js';
 import { createLogbook, logFlight } from './pilotLogbook.js';
 import { claimChallenges } from './challengeBoard.js';
 
-export const DEFAULT_SETTINGS = { invertPitch: false, flightAssist: true, volume: 0.8, music: 0.5, mouseSensitivity: 1, birdStrikes: true, timeOfDay: 'golden', freeStart: 'marenza-27', quality: 'high' };
+export const DEFAULT_SETTINGS = { invertPitch: false, flightAssist: true, volume: 0.8, music: 0.5, mouseSensitivity: 1, birdStrikes: true, timeOfDay: 'golden', freeStart: 'marenza-27', quality: 'high', hudScale: 1 };
 
 /** A brand new career. */
 export function createCareer() {
@@ -65,7 +65,14 @@ export function applyFlightResult(career, result, flight) {
     career.missions[result.missionId] = record;
   }
   const before = rankIndexFor(career.xp);
-  career.money = Math.max(0, career.money + result.money - result.repairs);
+  // Repairs after a crash, ditching or belly landing are charged from the pay and savings, but the
+  // flying club's insurance covers whatever would take the pilot below KEEP_CREDITS, so a crash
+  // never leaves a pilot unable to fuel, repair or fly on.
+  const afterPay = career.money + result.money;
+  const charged = Math.max(0, Math.min(result.repairs, afterPay - KEEP_CREDITS));
+  result.repairsCharged = charged;
+  result.repairsCovered = result.repairs - charged;
+  career.money = Math.max(0, afterPay - charged);
   career.xp += result.xp;
   logFlight(career.logbook, { ...flight, result, crashed: result.severity === 'crash' });
   const challenges = claimChallenges(career);
@@ -77,6 +84,9 @@ export function applyFlightResult(career, result, flight) {
 export function featureCounts() {
   return { missions: MISSIONS.length, aircraft: AIRCRAFT.length, chapters: CHAPTERS.length };
 }
+
+/** Credits a crash's repairs never take the pilot below (the club's insurance pays the rest). */
+const KEEP_CREDITS = 150;
 
 /** Career progress in numbers: medals and golds won, missions passed, aircraft owned, of the totals. */
 export function careerSummary(career) {

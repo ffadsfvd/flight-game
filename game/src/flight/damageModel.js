@@ -76,7 +76,32 @@ export function stepDamage(body, tracker, dt) {
     }
   }
   if (tracker.birds && tracker.birdCooldown <= 0 && body.agl < 170 && body.airspeed > 22) {
-    if (tracker.random() < dt * 0.006) events.push(applyBirdStrike(body, tracker));
+    // A chance flock rises ahead on the flight path: flown into, it is a strike; climbed over or
+    // turned away from, it is avoided. The gulls are drawn from the moment they rise.
+    if (!tracker.pendingFlock && tracker.random() < dt * 0.006) {
+      const ahead = Math.max(120, body.airspeed * 4);
+      const v = body.velocity;
+      const speed = Math.max(1, Math.hypot(v.x, v.y, v.z));
+      tracker.pendingFlock = { x: body.position.x + (v.x / speed) * ahead, y: body.position.y + (v.y / speed) * ahead, z: body.position.z + (v.z / speed) * ahead, age: 0 };
+    }
+  }
+  const flock = tracker.pendingFlock;
+  if (flock) {
+    flock.age += dt;
+    const d = Math.hypot(body.position.x - flock.x, body.position.y - flock.y, body.position.z - flock.z);
+    if (d < 16) {
+      flock.struck = true;
+      tracker.lastFlock = flock;
+      tracker.pendingFlock = null;
+      tracker.birdCooldown = 25;
+      events.push(applyBirdStrike(body, tracker));
+    } else if (flock.age > 9 || (flock.age > 1 && d > (flock.closest ?? Infinity) + 40)) {
+      flock.passed = true;
+      tracker.lastFlock = flock;
+      tracker.pendingFlock = null;
+      tracker.birdCooldown = 25;
+    }
+    if (tracker.pendingFlock) flock.closest = Math.min(flock.closest ?? Infinity, d);
   }
   return events;
 }

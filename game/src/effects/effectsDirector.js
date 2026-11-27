@@ -4,6 +4,7 @@
 // storms, and the fireball and smoke of a crash.
 import * as THREE from 'three';
 import { createParticleSystem } from './particleSystem.js';
+import { createBurningFire } from './burningPatches.js';
 import { buildWildfireScenery, flameTexture } from './wildfireScenery.js';
 
 const tmp = new THREE.Vector3();
@@ -33,8 +34,10 @@ export function createEffectsDirector(scene, worldEmitters) {
     const spec = body.spec;
     const back = tmp.set(0, 0, spec.engine === 'jet' ? 4.6 : 1.5).applyQuaternion(body.quaternion).add(body.position);
     const hurt = 1 - body.engine.health;
-    if (body.engine.running && (hurt > 0.25 || body.engine.temperature > 215)) {
-      if (random() < dt * (10 + hurt * 30)) smoke.emit(back.x, back.y, back.z, body.velocity.x * 0.2, 0.5, body.velocity.z * 0.2, { life: 3.5, size: 2.5, grow: 4, alpha: 0.35 + hurt * 0.4, color: [0.25, 0.24, 0.24], drag: 1.2, lift: 0.8 });
+    // A hurt engine trails smoke from the moment it is damaged: a thin grey wisp at first, darker
+    // and thicker as the engine gets worse (or runs too hot).
+    if (body.engine.running && (hurt > 0.04 || body.engine.temperature > 215)) {
+      if (random() < dt * (16 + hurt * 46)) smoke.emit(back.x, back.y, back.z, body.velocity.x * 0.2, 0.5, body.velocity.z * 0.2, { life: 4, size: 1.3 + hurt * 2, grow: 3.4, alpha: 0.32 + hurt * 0.45, color: [0.3 - hurt * 0.12, 0.29 - hurt * 0.12, 0.29 - hurt * 0.12], drag: 1.2, lift: 0.8 });
     }
     if (smokeOn && !body.onGround) {
       const tail = tmp2.set(0, -0.2, spec.engine === 'jet' ? 4.6 : 4.4).applyQuaternion(body.quaternion).add(body.position);
@@ -83,9 +86,9 @@ export function createEffectsDirector(scene, worldEmitters) {
         for (let i = 0; i < 18; i += 1) smoke.emit(p.x, p.y, p.z, velocity.x * 0.6 + (random() - 0.5) * 6, (random() - 0.5) * 6, velocity.z * 0.6 + (random() - 0.5) * 6, { life: 1.2, size: 0.6, grow: 1, alpha: 0.9, color: [0.95, 0.95, 0.92], drag: 3 });
       }
     },
-    /** A forest fire of `radius` m at (x, y, z) on `terrain`; intensity 0..1 can be lowered by drops. */
+    /** A forest fire of `radius` m at (x, y, z) on `terrain`, as burning patches that water puts out (burningPatches.js). */
     addFire(x, y, z, radius, terrain = null) {
-      const f = { x, y, z, radius, intensity: 1 };
+      const f = createBurningFire(x, y, z, radius);
       fires.push(f);
       if (terrain) fireTerrain = terrain;
       sceneryDirty = true;
@@ -125,28 +128,40 @@ export function createEffectsDirector(scene, worldEmitters) {
       scenery?.update(clock);
       const groundAt = (x, z, fallback) => (fireTerrain ? Math.max(0, fireTerrain.heightAt(x, z)) : fallback);
       for (const f of fires) {
-        if (f.intensity <= 0.02) continue;
-        // Flame tongues along the burning front and through the stand, on the slope itself.
-        const n = dt * 150 * f.intensity;
-        for (let i = 0; i < n; i += 1) {
-          const a = random() * Math.PI * 2;
-          const r = f.radius * (0.25 + 0.75 * Math.sqrt(random()));
-          const x = f.x + Math.cos(a) * r;
-          const z = f.z + Math.sin(a) * r;
-          const size = 6 + random() * 8;
-          const y = groundAt(x, z, f.y) + size * 0.3;
-          const hot = random();
-          flames.emit(x, y, z, wind.x * 0.25, 2.5 + random() * 3, wind.z * 0.25, { life: 0.45 + random() * 0.5, size, grow: -size * 0.6, alpha: 0.95, color: [1, 0.82 + hot * 0.18, 0.62 + hot * 0.3], drag: 1.4, lift: 3 });
-          if (random() < 0.35) flames.emit(x, y + size * 0.4, z, wind.x * 0.3, 4 + random() * 3, wind.z * 0.3, { life: 0.35 + random() * 0.3, size: size * 0.6, grow: -size, alpha: 0.85, color: [1, 0.86, 0.55], drag: 1.2, lift: 3 });
-          // Embers that climb with the heat and drift off with the wind.
-          if (random() < 0.12) sparks.emit(x, y + 2, z, (random() - 0.5) * 4, 5 + random() * 7, (random() - 0.5) * 4, { life: 2.4 + random() * 2.2, size: 0.5 + random() * 0.4, grow: -0.08, alpha: 1, color: [1, 0.55 + random() * 0.25, 0.18], drag: 0.7, lift: 0.6 });
-        }
-        // Dark smoke rising off the flames and leaning away downwind.
-        if (random() < dt * 16 * f.intensity) {
-          const x = f.x + (random() - 0.5) * f.radius;
-          const z = f.z + (random() - 0.5) * f.radius;
-          const shade = 0.1 + random() * 0.1;
-          smoke.emit(x, groundAt(x, z, f.y) + 9, z, wind.x * 0.5, 7 + random() * 4, wind.z * 0.5, { life: 15, size: 9, grow: 5.5, alpha: 0.55, color: [shade, shade * 0.95, shade * 0.92], drag: 0.3, lift: 0.3 });
+        // Flame tongues on each patch still burning, on the slope itself: a patch the water put
+        // out has none, so a good drop leaves a dark gap in the fire where it landed.
+        for (const patch of f.patches) {
+          if (patch.heat > 0.02) {
+            const rate = dt * (150 / f.patches.length) * Math.min(1, patch.heat * 1.15);
+            const n = Math.floor(rate) + (random() < rate - Math.floor(rate) ? 1 : 0);
+            for (let i = 0; i < n; i += 1) {
+              const a = random() * Math.PI * 2;
+              const r = f.patchRadius * Math.sqrt(random());
+              const x = patch.x + Math.cos(a) * r;
+              const z = patch.z + Math.sin(a) * r;
+              const size = (6 + random() * 8) * (0.55 + 0.45 * patch.heat);
+              const y = groundAt(x, z, f.y) + size * 0.3;
+              const hot = random();
+              flames.emit(x, y, z, wind.x * 0.25, 2.5 + random() * 3, wind.z * 0.25, { life: 0.45 + random() * 0.5, size, grow: -size * 0.6, alpha: 0.95, color: [1, 0.82 + hot * 0.18, 0.62 + hot * 0.3], drag: 1.4, lift: 3 });
+              if (random() < 0.35) flames.emit(x, y + size * 0.4, z, wind.x * 0.3, 4 + random() * 3, wind.z * 0.3, { life: 0.35 + random() * 0.3, size: size * 0.6, grow: -size, alpha: 0.85, color: [1, 0.86, 0.55], drag: 1.2, lift: 3 });
+              // Embers that climb with the heat and drift off with the wind.
+              if (random() < 0.12) sparks.emit(x, y + 2, z, (random() - 0.5) * 4, 5 + random() * 7, (random() - 0.5) * 4, { life: 2.4 + random() * 2.2, size: 0.5 + random() * 0.4, grow: -0.08, alpha: 1, color: [1, 0.55 + random() * 0.25, 0.18], drag: 0.7, lift: 0.6 });
+            }
+            // Dark smoke rising off the flames and leaning away downwind.
+            if (random() < dt * (16 / f.patches.length) * patch.heat * 1.3) {
+              const x = patch.x + (random() - 0.5) * f.patchRadius;
+              const z = patch.z + (random() - 0.5) * f.patchRadius;
+              const shade = 0.1 + random() * 0.1;
+              smoke.emit(x, groundAt(x, z, f.y) + 9, z, wind.x * 0.5, 7 + random() * 4, wind.z * 0.5, { life: 15, size: 9, grow: 5.5, alpha: 0.55, color: [shade, shade * 0.95, shade * 0.92], drag: 0.3, lift: 0.3 });
+            }
+          }
+          // White steam off a patch the water just hit, thinning as it cools.
+          if (patch.steam > 0 && random() < dt * 4.5 * Math.min(1, patch.steam / 3)) {
+            const x = patch.x + (random() - 0.5) * f.patchRadius;
+            const z = patch.z + (random() - 0.5) * f.patchRadius;
+            const white = 0.82 + random() * 0.12;
+            smoke.emit(x, groundAt(x, z, f.y) + 3, z, wind.x * 0.4, 4 + random() * 3, wind.z * 0.4, { life: 8, size: 6, grow: 4.5, alpha: 0.5, color: [white, white, white * 0.98], drag: 0.4, lift: 0.4 });
+          }
         }
       }
       for (const f of flares) {

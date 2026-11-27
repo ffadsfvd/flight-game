@@ -5,9 +5,9 @@
 //   node tools/mission-playthrough.mjs [--only=postcards,orsa-gale]   (run `node serve.ts` first)
 // Missions: medevac (a bird strike on the climb-out, the bingo call answered with K, the route
 // gates in their speed band), banner-run (seven beach gates, the discipline streak), lagoon,
-// postcards, orsa-gale, sette-night and the three sightseeing tours. Run one Chrome at a time: a
-// hidden tab pauses the game.
-import { launchChrome, openPage, sleep } from './cdp.mjs';
+// postcards, orsa-gale, sette-night and the three sightseeing tours. Chrome runs headless (no window,
+// never takes the focus); --visible shows it, and then a hidden window pauses the game.
+import { launchChrome, openPage, sleep, testsRunHeadless } from './cdp.mjs';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => {
   const [k, ...v] = a.replace(/^--/, '').split('=');
@@ -195,7 +195,172 @@ async function flyTour(page, id, log) {
   return s;
 }
 
+/**
+ * Flies a firefight with real input: for each burning hot spot, a run-in along the slope's contour
+ * (so the ground stays level under the drop) at about 230 ft, Space when the water will land on
+ * the hot spot; then a long straight lane of open sea: settle on it with the gear up, hold 30 kt+
+ * on the floats until the tank is full, take off and come round for the next hot spot.
+ */
+async function flyFirefight(page, log) {
+  // Reads only: the burning hot spots, the predicted water impact point and where the aircraft is.
+  const FIRE = `(() => { const g = window.__solvara.game; const b = g.session.body; const t = g.world.terrain;
+    const fires = g.runner.markers().filter((m) => m.label === 'FIRE');
+    const v = b.velocity; const fall = Math.sqrt(2 * Math.max(1, b.agl) / 9.81);
+    const h = b.heading * Math.PI / 180; let ahead = 0;
+    // The highest ground in a fan ahead (a turn can carry her over the ground to the side).
+    for (const fan of [-0.9, -0.45, 0, 0.45, 0.9]) for (const d of [0, 120, 260, 450, 700]) ahead = Math.max(ahead, t.heightAt(b.position.x + Math.sin(h + fan) * d, b.position.z - Math.cos(h + fan) * d));
+    return { fires: fires.map((f) => ({ x: f.x, z: f.z, r: f.radius })), impact: { x: b.position.x + v.x * fall * 0.75, z: b.position.z + v.z * fall * 0.75 },
+      x: b.position.x, z: b.position.z, vx: v.x, vz: v.z, tank: b.water / b.spec.waterCapacity, ahead: Math.max(0, ahead) }; })()`;
+  // The clearest run-in line through a hot spot (the heading whose ground, from 1.5 km before the
+  // hot spot to 600 m past it, stays lowest), and the highest ground along it.
+  const RUN = (fx, fz) => `(() => { const t = window.__solvara.game.world.terrain; let best = null;
+    for (let hd = 0; hd < 360; hd += 15) { const h = hd * Math.PI / 180; let top = 0;
+      for (let d = -1500; d <= 600; d += 50) top = Math.max(top, t.heightAt(${fx} + Math.sin(h) * d, ${fz} - Math.cos(h) * d));
+      if (!best || top < best.top) best = { heading: hd, top }; }
+    return { heading: best.heading, top: Math.max(0, best.top), ground: Math.max(0, t.heightAt(${fx}, ${fz})) }; })()`;  const LANE = `(() => { const t = window.__solvara.game.world.terrain; const f = window.__solvara.game.runner.markers().find((m) => m.label === 'FIRE');
+    for (let r = 300; r <= 3500; r += 150) for (let a = 0; a < 360; a += 10) {
+      const x = f.x + Math.sin(a * Math.PI / 180) * r; const z = f.z - Math.cos(a * Math.PI / 180) * r;
+      for (let hd = 0; hd < 360; hd += 15) { const hx = Math.sin(hd * Math.PI / 180); const hz = -Math.cos(hd * Math.PI / 180); let ok = true;
+        for (let d = -2200; d <= 1400; d += 50) if (t.heightAt(x + hx * d, z + hz * d) > -2.5) { ok = false; break; }
+        if (ok) return { x, z, heading: hd }; } }
+    return null; })()`;
+  const lane = await page.evaluate(LANE);
+  log(`  scoop lane at ${lane ? `${lane.x.toFixed(0)}, ${lane.z.toFixed(0)} heading ${lane.heading}` : 'none'}`);
+  // Along-track and cross-track position (m) relative to a line through (x, z) on `heading`.
+  const lineFrame = (f, x, z, heading) => {
+    const h = (heading * Math.PI) / 180;
+    return { along: (f.x - x) * Math.sin(h) - (f.z - z) * Math.cos(h), cross: (f.x - x) * Math.cos(h) + (f.z - z) * Math.sin(h) };
+  };
+  // Flies to the line's entry point (`back` m before the line's point), then down the line, with
+  // some hysteresis so it never orbits the entry point: once on the line it stays on it until past
+  // the point or far off it (then it goes round to the entry point again).
+  const track = (f, x, z, heading, back, memo) => {
+    const p = lineFrame(f, x, z, heading);
+    const h = (heading * Math.PI) / 180;
+    const ex = x - Math.sin(h) * back;
+    const ez = z + Math.cos(h) * back;
+    const toEntry = Math.hypot(ex - f.x, ez - f.z);
+    if (memo.mode === 'line' && (p.along > 300 || Math.abs(p.cross) > 1400)) memo.mode = 'entry';
+    else if (memo.mode !== 'line' && (toEntry < 350 || (p.along < -back + 300 && Math.abs(p.cross) < 400))) memo.mode = 'line';
+    if (memo.mode === 'line') return { heading: heading - Math.max(-45, Math.min(45, p.cross * 0.12)), p, onLine: Math.abs(p.cross) < 60 };
+    return { heading: (Math.atan2(ex - f.x, -(ez - f.z)) * 180) / Math.PI, p, onLine: false };
+  };
+  const runMemo = {};
+  const laneMemo = {};  let s = await page.evaluate(READ);
+  let phase = 'attack';
+  let last = 0;
+  let flapsSet = s.flaps;
+  let dropped = 0;
+  let run = null;
+  for (let i = 0; i < 40000; i += 1) {
+    s = await page.evaluate(READ);
+    if (s.state !== 'flying') break;
+    const f = await page.evaluate(FIRE);
+    if (Date.now() - last > 4000) {
+      last = Date.now();
+      log(`  ${phase} ${phase === 'attack' ? runMemo.mode : laneMemo.mode} drops ${dropped} tank ${Math.round(f.tank * 100)}% ${s.stats} alt ${s.alt.toFixed(0)} m agl ${s.agl.toFixed(0)} ft ${s.kt.toFixed(0)} kt hdg ${s.hdg.toFixed(0)}`);
+    }
+    if (phase === 'attack') {
+      if (!f.fires.length) break;
+      if (f.tank < 0.1) {
+        laneMemo.mode = null;
+        phase = 'to-lane';
+        continue;
+      }
+      if (!run || !f.fires.some((x) => x.x === run.x && x.z === run.z)) {
+        const target = f.fires.reduce((a, c) => (Math.hypot(c.x - f.x, c.z - f.z) < Math.hypot(a.x - f.x, a.z - f.z) ? c : a));
+        const line = await page.evaluate(RUN(target.x, target.z));
+        run = { x: target.x, z: target.z, ...line };
+        runMemo.mode = null;
+        log(`  run-in on the hot spot at ${run.x.toFixed(0)}, ${run.z.toFixed(0)} heading ${run.heading.toFixed(0)}, ground ${run.ground.toFixed(0)} m, line top ${run.top.toFixed(0)} m`);
+      }
+      const g = track(f, run.x, run.z, run.heading, 1500, runMemo);
+      // On the run-in the line's own ground sets the height; elsewhere clear whatever is ahead.
+      const wanted = g.onLine && g.p.along > -1300 ? Math.max(run.ground + 55, run.top + 32, f.ahead + 28) : Math.max(150, run.top + 60, f.ahead + 90);
+      // Release once the water will land 40 m short of the middle: the curtain runs on over it.
+      const speed = Math.max(1, Math.hypot(f.vx, f.vz));
+      const along = ((run.x - f.impact.x) * f.vx + (run.z - f.impact.z) * f.vz) / speed;
+      const across = Math.abs(((run.x - f.impact.x) * f.vz - (run.z - f.impact.z) * f.vx) / speed);
+      if (g.onLine && along < 40 && along > -15 && across < 30) {
+        await page.press('Space');
+        dropped += 1;
+        log(`  drop ${dropped}: ${along.toFixed(0)} m short, ${across.toFixed(0)} m off the middle, agl ${s.agl.toFixed(0)} ft`);
+        await sleep(2400);
+        run = null;
+        continue;
+      }
+      // Past the hot spot without a drop: go round (the entry point is behind).
+      const digit = wanted - s.alt > 20 ? 0 : s.kt > 88 ? 4 : 6;
+      if (Math.abs(s.throttle - (digit === 0 ? 1 : digit / 10)) > 0.01) await page.press(`Digit${digit}`);
+      const pitchTarget = Math.max(-6, Math.min(12, (wanted - s.alt) * 0.1 + (s.kt - 75) * 0.25));
+      await step(page, s, { heading: g.heading, vs: 0, maxBank: g.onLine ? 12 : 25, pitchTarget });
+    } else if (phase === 'to-lane' || phase === 'descend') {
+      // Down the lane: hold 300 ft to 1 km before its middle, then 550 fpm down at 60 kt with
+      // flaps 1, a gentle flare onto the water.
+      const g = track(f, lane.x, lane.z, lane.heading, 2000, laneMemo);
+      if (s.onWater) {
+        phase = 'scoop';
+        log(`  on the water at ${s.kt.toFixed(0)} kt, ${g.p.along.toFixed(0)} m along the lane`);
+        continue;
+      }
+      if (g.onLine && g.p.along > -1500) phase = 'descend';
+      // Past the clear water still in the air: climb away and come round for the lane again.
+      if (phase === 'descend' && g.p.along > 1000) {
+        phase = 'to-lane';
+        laneMemo.mode = null;
+        continue;
+      }
+      if (phase === 'descend' && flapsSet < 1) {
+        await page.press('KeyF');
+        flapsSet = 1;
+      }
+      const flare = phase === 'descend' && s.agl < 20;
+      const vs = phase === 'descend' ? (flare ? -150 : -650) : 0;
+      const wanted = Math.max(90, phase === 'descend' ? 0 : f.ahead + 60);
+      const digit = phase === 'descend' ? (flare || s.kt > 62 ? 2 : 4) : wanted - s.alt > 25 ? 9 : 6;
+      if (Math.abs(s.throttle - digit / 10) > 0.01) await page.press(`Digit${digit}`);
+      const pitchTarget = phase === 'descend' ? (flare ? 3 : Math.max(-5, Math.min(6, 1 + (s.kt - 60) * 0.35))) : Math.max(-6, Math.min(9, (wanted - s.alt) * 0.06 + (s.kt - 78) * 0.25));
+      // Down the lane the line is tracked straight (no going back to the entry point).
+      const heading = phase === 'descend' ? lane.heading - Math.max(-30, Math.min(30, g.p.cross * 0.12)) : g.heading;
+      await step(page, s, { heading, vs, maxBank: phase === 'descend' ? 12 : 28, pitchTarget });
+    } else if (phase === 'scoop') {
+      // On the floats at 30 kt+: hold the nose down so she stays on the water until the tank is full.
+      if (f.tank >= 0.97) {
+        phase = 'takeoff';
+        log(`  tank full (${Math.round(f.tank * 100)}%)`);
+        await page.press('Digit9');
+        continue;
+      }
+      const digit = s.kt < 34 ? 8 : s.kt > 44 ? 5 : 7;
+      if (Math.abs(s.throttle - digit / 10) > 0.01) await page.press(`Digit${digit}`);
+      const steer = angleDiff(lane.heading, s.hdg);
+      if (!s.onWater && s.agl > 4) await step(page, s, { heading: lane.heading, vs: -200, maxBank: 6, pitchTarget: 0 });
+      else if (s.pitch > 1) await page.holdKey('KeyW', 60);
+      else if (Math.abs(steer) > 3) await page.holdKey(steer > 0 ? 'KeyE' : 'KeyQ', 80);
+      else await sleep(80);
+    } else if (phase === 'takeoff') {
+      // Full power straight down the lane, lift off at 50 kt, climb away, flaps up, back to the fire.
+      if (s.agl > 150) {
+        phase = 'attack';
+        if (flapsSet > 0) {
+          await page.press('KeyF');
+          flapsSet = 0;
+        }
+        continue;
+      }
+      await step(page, s, { heading: lane.heading, vs: 600, maxBank: 8, pitchTarget: s.kt > 50 ? 6 : 0 });
+    }
+  }
+  return finish(page, s);
+}
+
 const PLAYS = {
+  async firebreak(page, log) {
+    return flyFirefight(page, log);
+  },
+  async 'nesta-fire'(page, log) {
+    return flyFirefight(page, log);
+  },
   async 'bring-her-home'(page, log) {
     // Real-input damaged-aircraft mission: the Wren starts with the engine capped, the left wing
     // pulling and a cracked gear leg; the test pilot holds the wings level against the pull on the
@@ -422,7 +587,7 @@ const only = args.only ? String(args.only).split(',') : Object.keys(PLAYS).filte
 const DIVERT_PLAYS = new Set();
 const outcomes = [];
 for (const id of only) {
-  const chrome = await launchChrome({ port: 9339 });
+  const chrome = await launchChrome({ port: 9339, headless: testsRunHeadless() });
   try {
     const page = await openPage(chrome.port, 'http://localhost:8080/?unlock=all');
     await page.waitFor('window.__solvara && window.__solvara.game.state === "title"', 30000);

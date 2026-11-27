@@ -17,11 +17,26 @@ export const FREE_STARTS = [
   { id: 'final-sette', label: 'On final for the Sette platform', start: { type: 'approach', field: 'sette', end: 1, distance: 2200, flaps: 1 } },
 ];
 
+/** HUD sizes the settings offer (a factor on the HUD's text and panels). */
+export const HUD_SIZES = [
+  { scale: 0.9, label: 'Small' },
+  { scale: 1, label: 'Normal' },
+  { scale: 1.15, label: 'Large' },
+  { scale: 1.3, label: 'Extra large' },
+];
+
+/** Applies a HUD size to the page: every HUD panel, tape and gauge is sized in em from it. */
+export function applyHudScale(scale) {
+  document.documentElement.style.setProperty('--hud-scale', String(scale ?? 1));
+}
+
 export function settingsHtml(settings) {
   const times = TIME_OF_DAY_NAMES.map((t) => `<option value="${t}" ${settings.timeOfDay === t ? 'selected' : ''}>${lightingFor(t).label}</option>`).join('');
   const toggle = (key, label) => `<div class="setting"><span>${label}</span><button class="btn" style="width:auto" data-action="toggle" data-arg="${key}">${settings[key] ? 'On' : 'Off'}</button></div>`;
   const slider = (key, label) => `<div class="setting"><span>${label}</span><span><button class="btn" style="width:auto;display:inline-block" data-action="less" data-arg="${key}">−</button> ${Math.round(settings[key] * 100)}% <button class="btn" style="width:auto;display:inline-block" data-action="more" data-arg="${key}">+</button></span></div>`;
+  const hudSize = HUD_SIZES.find((s) => s.scale === (settings.hudScale ?? 1)) ?? HUD_SIZES[1];
   return `<div class="sheet"><h2>Settings</h2>${toggle('invertPitch', 'Invert pitch (W = nose up)')}${toggle('flightAssist', 'Flight assist (holds the nose up in banks)')}${toggle('birdStrikes', 'Bird strikes when flying low')}${slider('mouseSensitivity', 'Mouse stick sensitivity')}${slider('volume', 'Sound volume')}${slider('music', 'Music volume')}
+  <div class="setting"><span>HUD size (text and panels in flight)</span><button class="btn" style="width:auto" data-action="hud-size">${hudSize.label} · ${Math.round(hudSize.scale * 100)}%</button></div>
   <div class="setting"><span>Free flight conditions</span><select data-setting="timeOfDay">${times}</select></div>
   <div class="setting"><span>Free flight start</span><select data-setting="freeStart">${FREE_STARTS.map((s) => `<option value="${s.id}" ${settings.freeStart === s.id ? 'selected' : ''}>${s.label}</option>`).join('')}</select></div>
   <div class="btn-row"><button class="btn" data-action="back">Back</button><button class="btn" data-action="reset-career">Reset career</button></div></div>`;

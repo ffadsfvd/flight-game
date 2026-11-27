@@ -105,6 +105,17 @@ export function createRingCourseObjective(stage) {
       }
       return 'active';
     },
+    /** The big HUD callout: the next ring's number and distance, the speed against the band, and each ring as it is flown. */
+    callout(ctx) {
+      if (next >= rings.length) return null;
+      const kt = Math.round(ctx.body.airspeed * KT);
+      const inBand = band ? kt >= band[0] && kt <= band[1] : true;
+      const ring = rings[next];
+      const d = ring.position.distanceTo(ctx.body.position);
+      const speed = band ? `${kt} KT ${inBand ? 'IN THE BAND' : kt < band[0] ? 'TOO SLOW' : 'TOO FAST'} (${band[0]}-${band[1]})` : `${kt} KT`;
+      if (d > 900) return null;
+      return { text: `RING ${next + 1} OF ${rings.length}`, sub: `${Math.round(d)} M · ${speed}`, tone: inBand ? 'info' : 'warn' };
+    },
     info() {
       const stats = [['RINGS', `${next} / ${rings.length}`], ['TIME', `${(elapsed + penalties).toFixed(1)} s`], band ? ['BAND KT', `${band[0]}-${band[1]}`] : ['PAR', `${stage.par ?? 120} s`]];
       if (band) stats[1] = ['TIME / PAR', `${(elapsed + penalties).toFixed(0)} / ${stage.par ?? 120} s`];

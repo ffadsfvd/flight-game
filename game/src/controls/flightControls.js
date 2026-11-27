@@ -1,6 +1,6 @@
 // Turns keys and mouse into the pilot's controls: pitch W/S, roll A/D, yaw Q/E (arrows too),
 // throttle Shift/Ctrl or the wheel, brakes B, and one-shot actions (flaps F, gear G, camera C,
-// lights L, refuel R, smoke T, drop or photo Space, divert J or press on K at bingo fuel, pause
+// lights L, refuel R, smoke T, drop or photo Space, divert J or press on K at a decision, map M, pause
 // Esc, help H). Keyboard axes ramp in and out so taps make small corrections and holds make full
 // deflection.
 import { createKeyboardInput } from './keyboardInput.js';
@@ -9,7 +9,7 @@ import { createMouseStick } from './mouseStick.js';
 export const ACTION_KEYS = {
   KeyF: 'flaps', KeyG: 'gear', KeyC: 'camera', KeyL: 'lights', KeyR: 'refuel', KeyT: 'smoke', Space: 'action', KeyI: 'antiIce',
   Escape: 'pause', KeyP: 'pause', KeyH: 'help', F1: 'help', KeyV: 'lookBack', KeyX: 'assist', Enter: 'confirm', KeyN: 'radio',
-  KeyJ: 'divert', KeyK: 'pressOn',
+  KeyJ: 'divert', KeyK: 'pressOn', KeyM: 'map',
 };
 
 function rampAxis(current, target, dt) {

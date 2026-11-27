@@ -18,6 +18,7 @@ import { createSightseeingObjective } from './objectives/sightseeingObjective.js
 import { createBonusGoalTracker } from './bonusGoals.js';
 import { createFlyingDiscipline } from './flyingDiscipline.js';
 import { createBingoDecision, DIVERT_PAY } from './bingoDecision.js';
+import { createFinalCommitDecision, GO_AROUND_PAY } from './finalCommitDecision.js';
 import { createFlightDataRecorder } from '../flight/flightDataRecorder.js';
 import { createFuelPlanner } from '../flight/fuelPlanner.js';
 import { damageEffects, overallCondition } from '../flight/damageModel.js';
@@ -61,6 +62,7 @@ export function createMissionRunner(ctx) {
   let bonus = null;
   let discipline = createFlyingDiscipline();
   let bingo = createBingoDecision(null);
+  let commit = createFinalCommitDecision(null);
   let approach = null;
   let startFuel = 0;
   let damageLog = [];
@@ -105,6 +107,20 @@ export function createMissionRunner(ctx) {
       recorder.mark('damage', DAMAGE_MARKS[e.kind]);
       damageLog.push({ t: ctx.time, kind: e.kind, text: e.text ?? `Engine failure: ${e.cause}` });
     } else if (e.kind === 'ended') recorder.mark('crash', e.result.severity === 'ditch' ? 'DITCHED' : e.result.severity === 'belly' ? 'BELLY' : 'CRASH');
+  }
+
+  /** The short-final call: 'land' commits to this approach, 'go-around' climbs out for one more. */
+  function commitTo(kind, auto = false) {
+    if (!commit.choose(kind, ctx.time, ctx.body, auto)) return;
+    const who = mission.giver ?? 'dario';
+    if (kind === 'land') {
+      recorder.mark('decision', 'COMMIT');
+      ctx.radio(who, auto ? 'No answer: you are committed. Fly it all the way down.' : 'Committed. Fly it all the way down, nice and soft.', { priority: true });
+    } else {
+      recorder.mark('decision', 'GO AROUND');
+      ctx.radio(who, 'Going around. Full power, positive climb, and set it up stable this time.', { priority: true });
+      ctx.toast('GO AROUND', 'good');
+    }
   }
 
   function decide(kind, auto = false) {
@@ -156,6 +172,9 @@ export function createMissionRunner(ctx) {
     get bingo() {
       return bingo;
     },
+    get commit() {
+      return commit;
+    },
     /** The approach speed the final is judged against (kt), with an allowance for gusts. */
     get approachTarget() {
       return approach;
@@ -180,6 +199,7 @@ export function createMissionRunner(ctx) {
       discipline = createFlyingDiscipline();
       bonus = def ? createBonusGoalTracker(def, spec, ctx.body) : null;
       bingo = createBingoDecision(def);
+    commit = createFinalCommitDecision(def);
       recorder.reset();
       planner.reset();
       startFuel = ctx.body.engine.fuel;
@@ -227,6 +247,7 @@ export function createMissionRunner(ctx) {
       for (const a of actions) {
         if (a === 'divert' || a === 'pressOn') {
           if (bingo.pending) decide(a === 'divert' ? 'divert' : 'press-on');
+          else if (commit.pending) commitTo(a === 'divert' ? 'go-around' : 'land');
         } else current?.onAction?.(a, ctx);
       }
       const offer = bingo.update(dt, body, planner.plan, destination(), ctx.time);
@@ -237,6 +258,12 @@ export function createMissionRunner(ctx) {
         ctx.toast('BINGO FUEL · J DIVERT · K PRESS ON', 'bad');
         ctx.radio(mission.giver ?? 'dario', `That's bingo fuel, ${Math.round(d.fuelKg)} kilos. ${d.nearest.name} is ${d.nearestNm.toFixed(1)} miles: divert there, or press on${d.dest ? ` to ${d.dest.name}` : ''} on a thin reserve?`, { priority: true });
       } else if (offer === 'timeout') decide('press-on', true);
+      const call = bingo.pending ? null : commit.update(dt, body, guide, planner.plan, damageEffects(body), current?.kind, ctx.time);
+      if (call === 'offer') {
+        recorder.mark('decision', 'COMMIT?');
+        ctx.sound('warning');
+        ctx.radio(mission.giver ?? 'dario', `Short final with ${commit.decision.reasons[0]}. Your call: land it, or go around for one more try?`, { priority: true });
+      } else if (call === 'timeout') commitTo('land', true);
       const active = objectives[index];
       if (!active) return null;
       const status = active.update(dt, ctx);
@@ -290,7 +317,7 @@ export function createMissionRunner(ctx) {
     },
     /** The bingo choice for the HUD's decision panel, or null. */
     decisionPanel() {
-      return mission ? bingo.panel(mission.reward?.money ?? 0) : null;
+      return mission ? bingo.panel(mission.reward?.money ?? 0) ?? commit.panel(mission.reward?.money ?? 0) : null;
     },
     markers() {
       const hazards = (mission?.hazards ?? []).map((h) => ({ x: h.x, z: h.z, kind: 'area', radius: h.radius, active: true, label: h.label ?? 'BIRDS', color: '#ff9a4a' }));
@@ -308,6 +335,11 @@ export function createMissionRunner(ctx) {
     /** The ring speed band (kt) of the current stage, for the speed tape. */
     speedBand() {
       return objectives[index]?.band ?? null;
+    },
+    /** The big HUD callout the current objective raises (drop now, scooping, direct hit), or null. */
+    callout() {
+      if (!mission) return null;
+      return objectives[index]?.callout?.(ctx) ?? null;
     },
     /** Ends a free flight at the pilot's request: a logged flight with its record, no score. */
     endFreeFlight() {
@@ -365,6 +397,14 @@ export function createMissionRunner(ctx) {
       money = Math.round(reward.money * DIVERT_PAY);
       xp = Math.round(reward.xp * 0.5);
     }
+    // A go-around called on short final costs part of the pay for the delay.
+    const c = commit.decision;
+    let finalCall = null;
+    if (c && c.state !== 'pending') {
+      if (c.state === 'go-around' && success) money = Math.round(money * GO_AROUND_PAY);
+      finalCall = { kind: c.state, auto: c.auto, fuelKg: Math.round(c.fuelKg), reason: c.reasons[0], outcome: c.state === 'land' ? `Committed on short final with ${Math.round(c.fuelKg)} kg and ${c.reasons[0]}${success ? ': landed first time for the full pay' : ''}` : `Went around on short final with ${Math.round(c.fuelKg)} kg: ${Math.round(GO_AROUND_PAY * 100)}% of the pay for the delay${success ? `, landed with ${Math.round(body.engine.fuel)} kg` : ''}` };
+      rows.push(['Final call', c.state === 'land' ? `committed at ${Math.round(c.fuelKg)} kg` : `went around at ${Math.round(c.fuelKg)} kg`]);
+    }
     // A crash, ditching or belly landing is repaired at once; lesser damage waits for the turnaround.
     const repairs = severityCondition !== undefined ? Math.round((1 - condition) * 500) : 0;
     const found = objectives.map((o) => o.report).filter(Boolean).at(-1) ?? landings.at(-1) ?? null;
@@ -414,6 +454,7 @@ export function createMissionRunner(ctx) {
       bonus: { goals: (bonus?.goals ?? []).map((g) => ({ label: g.label, status: g.status, reward: g.reward, detail: g.detail })), ...bonusResult },
       discipline: disc,
       decision,
+      finalCall,
       landing,
       targetKt: approach ? Math.round(approach.targetKt) : null,
       impact,
