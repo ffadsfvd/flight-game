@@ -133,7 +133,7 @@ try {
     if (s.stage >= 1) break;
     await pilotStep(page, s, { heading: 90, vs: 800, kt: 68 });
   }
-  check('climbs to 500 ft and the circuit stage begins', s.stage >= 1, `stage ${s.stage + 1}, ${s.agl.toFixed(0)} ft`);
+  check('climbs out and the circuit stage begins', s.stage >= 1, `stage ${s.stage + 1}, ${s.agl.toFixed(0)} ft`);
 
   // Turn: hold D for a second and check the heading changes.
   const before = s.hdg;
