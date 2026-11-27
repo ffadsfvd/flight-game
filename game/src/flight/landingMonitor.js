@@ -4,9 +4,6 @@
 import { AIRFIELDS, landingDirection, toRunwayFrame } from '../world/airfieldDirectory.js';
 import { describePlace } from '../world/placeNames.js';
 
-const FPM = 196.85;
-const KT = 1.944;
-
 /** A monitor starting on the ground (parked) or in the air. */
 export function createLandingMonitor(startsAirborne) {
   return { airborne: startsAirborne, offGroundTime: startsAirborne ? 10 : 0, onGroundTime: 0, lastVs: 0, touchdown: null, bounces: 0, bouncing: false, landings: 0 };
@@ -131,3 +128,6 @@ export function stepLandingMonitor(m, body, world, dt) {
   }
   return events;
 }
+
+const FPM = 196.85;
+const KT = 1.944;

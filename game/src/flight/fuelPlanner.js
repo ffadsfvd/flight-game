@@ -6,8 +6,6 @@ import { AIRFIELDS } from '../world/airfieldDirectory.js';
 import { fuelBurnAt, fuelFlow } from './engineModel.js';
 
 export const RESERVE_MINUTES = 6;
-const CRUISE_POWER = 0.65;
-const HEADWIND_MARGIN = 1.15;
 
 /** Cruise speed (m/s) and fuel flow (kg/s) the plan assumes for an aircraft. */
 export function cruiseFigures(spec) {
@@ -83,3 +81,6 @@ export function createFuelPlanner() {
     },
   };
 }
+
+const CRUISE_POWER = 0.65;
+const HEADWIND_MARGIN = 1.15;

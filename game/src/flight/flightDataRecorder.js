@@ -2,11 +2,6 @@
 // ground, airspeed, fuel) with marks for what happened when (take-off, rings, drops, photos, the
 // bingo decision, damage, touchdowns, the crash). The debrief draws its chart from this record.
 
-const SAMPLE_SECONDS = 0.5;
-const MAX_SAMPLES = 3600;
-const FT = 3.28084;
-const KT = 1.94384;
-
 /** Creates an empty recorder. */
 export function createFlightDataRecorder() {
   let samples = [];
@@ -50,3 +45,8 @@ export function createFlightDataRecorder() {
     },
   };
 }
+
+const SAMPLE_SECONDS = 0.5;
+const MAX_SAMPLES = 3600;
+const FT = 3.28084;
+const KT = 1.94384;

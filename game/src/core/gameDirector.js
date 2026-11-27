@@ -7,7 +7,7 @@ import { createMissionRunner } from '../missions/missionRunner.js';
 import { applyFlightResult, buyAircraft, buyUpgrade, careerSummary, createCareer } from '../career/careerProgress.js';
 import { careerRank } from '../career/careerProgress.js';
 import { damageEffects } from '../flight/damageModel.js';
-import { aircraftById, tunedSpec } from '../aircraft/aircraftCatalog.js';
+import { UPGRADES, aircraftById, tunedSpec } from '../aircraft/aircraftCatalog.js';
 import { createCockpitPanel } from '../aircraft/cockpitPanel.js';
 import { createWindField } from '../flight/windField.js';
 import { createReadout, updateReadout } from '../hud/flightReadout.js';
@@ -23,7 +23,7 @@ import { controlsHelpHtml } from '../ui/controlsHelp.js';
 import { settingsHtml, FREE_STARTS } from '../ui/settingsScreen.js';
 import { pauseMenuHtml } from '../ui/pauseMenu.js';
 import { debriefHtml, paintDebriefCharts } from '../ui/debriefScreen.js';
-import { applyCarriedCondition, buyTopUp, repairAircraft, storeAircraftCondition } from '../career/aircraftTurnaround.js';
+import { applyCarriedCondition, buyTopUp, repairAircraft, storeAircraftCondition, suggestedUpgrade } from '../career/aircraftTurnaround.js';
 import { paintPortrait } from '../ui/portraitPainter.js';
 import { createCameraDirector } from '../camera/cameraDirector.js';
 import { createFlightControls } from '../controls/flightControls.js';
@@ -41,6 +41,7 @@ import { createTitleBackdrop } from './titleBackdrop.js';
 import { parkDisplayAircraft } from './apronDisplay.js';
 import { createAirTraffic } from '../world/airTraffic.js';
 import { createAtcRadio } from './atcRadio.js';
+import { createAiFlyer } from '../aircraft/aiFlyer.js';
 
 const SCREENS = ['screen-title', 'screen-mission-board', 'screen-hangar', 'screen-logbook', 'screen-challenges', 'screen-controls-help', 'screen-settings', 'screen-mission-briefing', 'screen-pause-menu', 'screen-mission-results'];
 
@@ -120,6 +121,8 @@ export function createGameDirector({ view, world, shotMode = false }) {
     toast: (text, tone) => hud.toast(text, tone),
     sound: (name) => sfx.play(name),
     report: () => {},
+    // Race rivals and formation leaders: AI aircraft flown along a path.
+    createAiFlyer,
     windFrom: () => wind.state.from,
     windVector: () => wind.state.current,
     flash: () => {
@@ -393,7 +396,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     hud.show(false);
     sfx.play(result.success ? 'success' : 'fail');
     const showDebrief = () => {
-      router.show('screen-mission-results', debriefHtml(result, progress, career, spec.id), handlers);
+      router.show('screen-mission-results', debriefHtml(result, { ...progress, summary: careerSummary(career), upgrade: suggestedUpgrade(career, spec.id, UPGRADES) }, career, spec.id), handlers);
       paintDebriefCharts(document.getElementById('screen-mission-results'), result);
     };
     const turnaround = (fn) => (arg) => {

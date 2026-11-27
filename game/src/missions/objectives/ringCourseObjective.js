@@ -4,11 +4,8 @@
 // and the bonus goals judge.
 import * as THREE from 'three';
 import { createRingMarkers, ringCrossing } from '../../effects/ringMarkers.js';
-import { createAiFlyer } from '../../aircraft/aiFlyer.js';
 import { failEngine } from '../../flight/engineModel.js';
 import { ringSpeedBand } from '../bonusGoals.js';
-
-const KT = 1.94384;
 
 /** Turns a course [[x, z, height, absolute?]] into rings facing along the course. */
 export function buildCourseRings(course, terrain, radius = 26) {
@@ -57,7 +54,7 @@ export function createRingCourseObjective(stage) {
       if (stage.say) ctx.radio(stage.say[0], stage.say[1]);
       if (stage.rivals) {
         const path = rings.map((r) => r.position.clone());
-        rivals = stage.rivals.map((r, i) => createAiFlyer(ctx.scene, { aircraft: r.aircraft, path, speed: r.speed, startDelay: r.delay ?? 0, lateral: (i - 1) * 14, start: ctx.body.position.clone().add(new THREE.Vector3((i + 1) * 22, 4, 18 + i * 10)), name: r.name, color: r.color }));
+        rivals = stage.rivals.map((r, i) => ctx.createAiFlyer(ctx.scene, { aircraft: r.aircraft, path, speed: r.speed, startDelay: r.delay ?? 0, lateral: (i - 1) * 14, start: ctx.body.position.clone().add(new THREE.Vector3((i + 1) * 22, 4, 18 + i * 10)), name: r.name, color: r.color }));
       }
       ctx.cleanup(() => objective.end());
     },
@@ -141,3 +138,5 @@ export function createRingCourseObjective(stage) {
   };
   return objective;
 }
+
+const KT = 1.94384;

@@ -4,14 +4,30 @@
 // goals, discipline, penalties) with the bonus checklist, fuel and damage with the bingo decision,
 // the career's progress, and the turnaround (repair, top-up, one upgrade) for the next sortie.
 import { paintFlightRecorder } from './flightRecorderChart.js';
-import { careerSummary } from '../career/careerProgress.js';
-import { TOP_UP, aircraftCondition, repairQuote, suggestedUpgrade } from '../career/aircraftTurnaround.js';
+import { TOP_UP, aircraftCondition, repairQuote } from '../career/aircraftTurnaround.js';
 
-const BANNER = { true: 'MISSION COMPLETE', crash: 'CRASHED', ditch: 'DITCHED', belly: 'BELLY LANDING', divert: 'DIVERTED', fail: 'MISSION FAILED' };
-const MEDALS = ['bronze', 'silver', 'gold'];
-const TICK = { met: '✓', failed: '✗', open: '○', current: '▸' };
+/** HTML for the debrief; paintDebriefCharts draws the recorder chart once it is in the page. */
+export function debriefHtml(result, progress, career, aircraftId) {
+  const banner = result.success ? (result.missionId ? BANNER.true : 'FLIGHT LOGGED') : BANNER[result.severity] ?? BANNER.fail;
+  const tone = result.success ? 'good' : result.severity === 'divert' ? 'warn' : 'bad';
+  const what = result.cause ?? (result.success && result.landing ? `Landed on ${result.landing.runway ? `runway ${result.landing.endName ?? ''} at ${result.landing.runway.name}` : result.landing.place ?? 'open ground'}, grade ${result.landing.grade}: ${result.landing.remarks.slice(0, 3).join(', ').toLowerCase()}.` : result.success ? `${result.title}: score ${result.score} of 100.` : '');
+  const sub = [result.chapter ? `Chapter ${result.chapter.id} · ${result.chapter.name}` : null, result.kind, result.aircraft, clock(result.time ?? 0)].filter(Boolean).join(' · ');
+  const left = touchdownReport(result) || crashReport(result.impact, result.severity) || '<h3>Touchdown</h3><p class="debrief-none">No landing on this flight.</p>';
+  const replay = result.severity === 'crash' ? 'the crash' : result.landing ? 'the touchdown' : 'the last seconds';
+  return `<div class="replay-tag">● REPLAY · ${replay}</div><div class="sheet debrief">
+  <div class="debrief-head"><div><div class="result-banner ${tone}">${banner}</div><div class="debrief-title">${result.title}</div><div class="debrief-sub">${sub}</div></div>${medalRow(result)}</div>
+  <div class="result-cause"><b>What happened:</b> ${what}</div>
+  <div class="debrief-recorder"><canvas class="debrief-chart" width="1100" height="172"></canvas></div>
+  <div class="debrief-columns"><div>${left}</div><div>${scoreBreakdown(result)}</div><div>${fuelAndDamage(result)}</div></div>
+  ${careerStrip(result, progress, career)}
+  <div class="debrief-actions">${result.missionId || result.damage ? turnaround(career, aircraftId, result.aircraft, progress?.upgrade ?? null) : ''}<button class="btn" data-action="retry">Retry <small>Enter</small></button><button class="btn" data-action="board">Mission board</button></div></div>`;
+}
 
-const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+/** Draws the flight recorder into the debrief's canvas. */
+export function paintDebriefCharts(root, result) {
+  const canvas = root.querySelector('.debrief-chart');
+  if (canvas) paintFlightRecorder(canvas, result.record);
+}
 
 function medalRow(result) {
   if (!result.medals) return '';
@@ -85,19 +101,18 @@ function fuelAndDamage(result) {
 
 function careerStrip(result, progress, career) {
   const rank = progress?.rank;
-  const s = careerSummary(career);
+  const s = progress?.summary ?? { medals: 0, gold: 0, passed: 0, missions: 0, aircraft: career.owned.length, aircraftTotal: 0 };
   const news = [progress?.promoted ? `Promoted to ${rank.name}!` : '', ...(progress?.challenges ?? []).map((ch) => `Challenge: ${ch.title} +${ch.reward.money} cr`)].filter(Boolean).join(' · ');
   const tile = (value, label) => `<div class="debrief-tile"><b>${value}</b><span>${label}</span></div>`;
   return `<div class="debrief-career">${rank ? `<div class="debrief-rank"><span>${rank.name}</span><span class="debrief-bar wide"><i class="tone-good" style="width:${Math.round(rank.fraction * 100)}%"></i></span><small>${rank.next ? `${rank.toNext} XP to ${rank.next}` : 'Top rank'}${news ? ` · <em>${news}</em>` : ''}</small></div>` : ''}
   ${tile(`+${result.money.toLocaleString('en-US')}`, `cr earned${result.repairs ? ` · −${result.repairs} repairs` : ''}`)}${tile(`+${result.xp}`, 'XP')}${tile(career.money.toLocaleString('en-US'), 'credits')}${tile(`${s.medals}/${s.missions}`, `medals · ${s.gold} gold`)}${tile(`${s.passed}/${s.missions}`, 'missions')}${tile(`${s.aircraft}/${s.aircraftTotal}`, 'aircraft')}</div>`;
 }
 
-function turnaround(career, aircraftId, aircraftName) {
+function turnaround(career, aircraftId, aircraftName, upgrade) {
   const c = aircraftCondition(career, aircraftId);
   const quote = repairQuote(career, aircraftId);
   const damaged = quote > 0;
   const parts = [['engine', c.engine], ['airframe', c.airframe], ['gear', c.gear]].filter(([, v]) => v < 0.995).map(([k, v]) => `${k} ${Math.round(v * 100)}%`).join(', ');
-  const upgrade = suggestedUpgrade(career, aircraftId);
   const buttons = [
     `<button class="btn" data-action="repair" ${damaged && career.money >= quote ? '' : 'disabled'}>${damaged ? `Repair ${parts} · ${quote} cr` : 'No repairs needed'}</button>`,
     `<button class="btn" data-action="top-up" ${c.topUp > 0 || career.money < TOP_UP.price ? 'disabled' : ''}>${c.topUp > 0 ? 'Tanks topped up' : `Top up +${TOP_UP.fraction * 100}% fuel · ${TOP_UP.price} cr`}</button>`,
@@ -106,25 +121,10 @@ function turnaround(career, aircraftId, aircraftName) {
   return `<div class="debrief-turnaround-label"><b>Turnaround · ${aircraftName}</b><small>${damaged ? 'Damage stays on until repaired' : 'Ready for the next sortie'}</small></div>${buttons}`;
 }
 
-/** HTML for the debrief; paintDebriefCharts draws the recorder chart once it is in the page. */
-export function debriefHtml(result, progress, career, aircraftId) {
-  const banner = result.success ? (result.missionId ? BANNER.true : 'FLIGHT LOGGED') : BANNER[result.severity] ?? BANNER.fail;
-  const tone = result.success ? 'good' : result.severity === 'divert' ? 'warn' : 'bad';
-  const what = result.cause ?? (result.success && result.landing ? `Landed on ${result.landing.runway ? `runway ${result.landing.endName ?? ''} at ${result.landing.runway.name}` : result.landing.place ?? 'open ground'}, grade ${result.landing.grade}: ${result.landing.remarks.slice(0, 3).join(', ').toLowerCase()}.` : result.success ? `${result.title}: score ${result.score} of 100.` : '');
-  const sub = [result.chapter ? `Chapter ${result.chapter.id} · ${result.chapter.name}` : null, result.kind, result.aircraft, clock(result.time ?? 0)].filter(Boolean).join(' · ');
-  const left = touchdownReport(result) || crashReport(result.impact, result.severity) || '<h3>Touchdown</h3><p class="debrief-none">No landing on this flight.</p>';
-  const replay = result.severity === 'crash' ? 'the crash' : result.landing ? 'the touchdown' : 'the last seconds';
-  return `<div class="replay-tag">● REPLAY · ${replay}</div><div class="sheet debrief">
-  <div class="debrief-head"><div><div class="result-banner ${tone}">${banner}</div><div class="debrief-title">${result.title}</div><div class="debrief-sub">${sub}</div></div>${medalRow(result)}</div>
-  <div class="result-cause"><b>What happened:</b> ${what}</div>
-  <div class="debrief-recorder"><canvas class="debrief-chart" width="1100" height="172"></canvas></div>
-  <div class="debrief-columns"><div>${left}</div><div>${scoreBreakdown(result)}</div><div>${fuelAndDamage(result)}</div></div>
-  ${careerStrip(result, progress, career)}
-  <div class="debrief-actions">${result.missionId || result.damage ? turnaround(career, aircraftId, result.aircraft) : ''}<button class="btn" data-action="retry">Retry <small>Enter</small></button><button class="btn" data-action="board">Mission board</button></div></div>`;
+function clock(s) {
+  return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 }
 
-/** Draws the flight recorder into the debrief's canvas. */
-export function paintDebriefCharts(root, result) {
-  const canvas = root.querySelector('.debrief-chart');
-  if (canvas) paintFlightRecorder(canvas, result.record);
-}
+const BANNER = { true: 'MISSION COMPLETE', crash: 'CRASHED', ditch: 'DITCHED', belly: 'BELLY LANDING', divert: 'DIVERTED', fail: 'MISSION FAILED' };
+const MEDALS = ['bronze', 'silver', 'gold'];
+const TICK = { met: '✓', failed: '✗', open: '○', current: '▸' };

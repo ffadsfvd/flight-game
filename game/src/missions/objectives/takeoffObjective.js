@@ -1,7 +1,5 @@
 // Objective: take off and climb to a height above the ground, keeping the climb speed.
 
-const FT = 3.28084;
-
 export function createTakeoffObjective(stage) {
   const target = stage.altitudeFt ?? 800;
   let rotateCalled = false;
@@ -33,3 +31,5 @@ export function createTakeoffObjective(stage) {
     guidance: () => null,
   };
 }
+
+const FT = 3.28084;

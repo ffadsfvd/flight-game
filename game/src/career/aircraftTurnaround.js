@@ -2,18 +2,8 @@
 // on it (an engine capped below full power, a wing that pulls, weak gear) until it is repaired;
 // the tanks can be topped up above a mission's planned fuel for the next sortie; and one upgrade
 // can be fitted on the spot. A crash, ditching or belly landing is always repaired after it.
-import { UPGRADES } from '../aircraft/aircraftCatalog.js';
 
-// Damage carried into the next sortie never goes below these: careful flying stays possible.
-const FLOOR = { engine: 0.6, airframe: 0.72, gear: 0.6 };
-const REPAIR_RATE = 380;
 export const TOP_UP = { fraction: 0.25, price: 45 };
-
-function fleetEntry(career, id) {
-  career.fleet = career.fleet ?? {};
-  career.fleet[id] = career.fleet[id] ?? { engine: 1, airframe: 1, gear: 1, wingPull: 1, wingBend: 0, topUp: 0 };
-  return career.fleet[id];
-}
 
 /** Keeps what the flight did to the aircraft; a wreck is repaired by the crash fee instead. */
 export function storeAircraftCondition(career, id, body, severity) {
@@ -57,10 +47,10 @@ export function buyTopUp(career, id) {
   return true;
 }
 
-/** The cheapest upgrade the aircraft does not have yet, offered at the turnaround. */
-export function suggestedUpgrade(career, id) {
+/** The cheapest of `upgrades` the aircraft does not have yet, offered at the turnaround. */
+export function suggestedUpgrade(career, id, upgrades) {
   const owned = career.upgrades[id] ?? [];
-  return UPGRADES.filter((u) => !owned.includes(u.id)).sort((a, b) => a.price - b.price)[0] ?? null;
+  return upgrades.filter((u) => !owned.includes(u.id)).sort((a, b) => a.price - b.price)[0] ?? null;
 }
 
 /** Puts the carried condition on a new flight's body and uses up a bought top-up. */
@@ -77,3 +67,14 @@ export function applyCarriedCondition(career, id, body, plannedFuelFraction) {
   }
   return e;
 }
+
+/** The career's record of one aircraft, made on first use. */
+function fleetEntry(career, id) {
+  career.fleet = career.fleet ?? {};
+  career.fleet[id] = career.fleet[id] ?? { engine: 1, airframe: 1, gear: 1, wingPull: 1, wingBend: 0, topUp: 0 };
+  return career.fleet[id];
+}
+
+// Damage carried into the next sortie never goes below these: careful flying stays possible.
+const FLOOR = { engine: 0.6, airframe: 0.72, gear: 0.6 };
+const REPAIR_RATE = 380;

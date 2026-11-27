@@ -1,8 +1,13 @@
 // Lift and drag coefficients: lift grows with angle of attack up to the stall, then breaks away;
 // drag is parasite plus induced, with flaps, gear, damage and the stalled wing's extra drag.
-import { smoothstep } from '../core/gradientNoise.js';
 
 export const AIR_DENSITY = 1.225;
+
+/** 0 below edge0, 1 above edge1, a smooth S between. */
+function smoothstep(edge0, edge1, x) {
+  const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)));
+  return t * t * (3 - 2 * t);
+}
 
 /** How far into the stall the wing is at `alpha` (rad): 0 attached, 1 fully stalled. */
 export function stallAmount(spec, alpha, flaps) {

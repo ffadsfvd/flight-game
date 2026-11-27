@@ -7,12 +7,6 @@
 import { reserveFuel } from '../flight/fuelPlanner.js';
 import { isDamaged } from '../flight/damageModel.js';
 
-const KT = 1.94384;
-const BONUS_POINTS = 15;
-
-const clock = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
-const round5 = (v) => Math.round(v / 5) * 5;
-
 /** The speed band (kt) a ring course is judged in: the stage's own, or one from the aircraft. */
 export function ringSpeedBand(stage, spec) {
   if (stage.band) return stage.band;
@@ -199,4 +193,15 @@ export function createBonusGoalTracker(mission, spec) {
       return { met: met.length, total: goals.length, points: success ? met.reduce((s, g) => s + g.points, 0) : 0, credits: success ? met.reduce((s, g) => s + g.reward, 0) : 0 };
     },
   };
+}
+
+const KT = 1.94384;
+const BONUS_POINTS = 15;
+
+function clock(s) {
+  return `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
+}
+
+function round5(v) {
+  return Math.round(v / 5) * 5;
 }

@@ -7,12 +7,6 @@
 // tells the pilot what was scored; the debrief turns the record into points out of 10.
 import { APPROACH_GATES, GLIDE_SLOPE_DEG } from '../world/approachGeometry.js';
 
-const FT = 3.28084;
-const KT = 1.94384;
-const SLAM_WINDOW = 0.5;
-const SLAM_CHANGE = 0.45;
-const SMOOTH_POWER_EVERY = 45;
-
 /** Streak multiplier for the number of good items in a row before this one. */
 export function streakMultiplier(streak) {
   return Math.min(4, 1 + Math.floor(streak / 2));
@@ -210,3 +204,9 @@ export function createFlyingDiscipline() {
     },
   };
 }
+
+const FT = 3.28084;
+const KT = 1.94384;
+const SLAM_WINDOW = 0.5;
+const SLAM_CHANGE = 0.45;
+const SMOOTH_POWER_EVERY = 45;

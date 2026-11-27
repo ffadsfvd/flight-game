@@ -2,25 +2,6 @@
 // as a cyan line against time, with a mark for every event of the sortie (take-off, rings, drops,
 // photos, the bingo decision, damage, touchdowns, the crash), labelled in two staggered rows.
 
-const MARK_STYLE = {
-  takeoff: { color: '#6be38a', icon: '▲' },
-  touchdown: { color: '#6be38a', icon: '▼' },
-  ring: { color: '#5fe3d0', icon: '◯' },
-  drop: { color: '#4fb8ff', icon: '◆' },
-  photo: { color: '#ff7fe0', icon: '◉' },
-  decision: { color: '#ffb02e', icon: '◆' },
-  damage: { color: '#ff5a4a', icon: '✱' },
-  crash: { color: '#ff3b2f', icon: '✖' },
-};
-
-const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
-
-function niceStep(range, steps) {
-  const raw = range / steps;
-  const mag = 10 ** Math.floor(Math.log10(raw));
-  return [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? raw;
-}
-
 /** Paints `record` ({ samples, marks, duration }) into a canvas at its own pixel size. */
 export function paintFlightRecorder(canvas, record, { font = 'Bahnschrift, "Segoe UI", sans-serif' } = {}) {
   const ctx = canvas.getContext('2d');
@@ -149,3 +130,25 @@ export function paintFlightRecorder(canvas, record, { font = 'Bahnschrift, "Sego
     ctx.fillText(label, mx, ly);
   }
 }
+
+/** A round tick spacing for an axis covering `range` in about `steps` steps. */
+function niceStep(range, steps) {
+  const raw = range / steps;
+  const mag = 10 ** Math.floor(Math.log10(raw));
+  return [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? raw;
+}
+
+function clock(s) {
+  return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+}
+
+const MARK_STYLE = {
+  takeoff: { color: '#6be38a', icon: '▲' },
+  touchdown: { color: '#6be38a', icon: '▼' },
+  ring: { color: '#5fe3d0', icon: '◯' },
+  drop: { color: '#4fb8ff', icon: '◆' },
+  photo: { color: '#ff7fe0', icon: '◉' },
+  decision: { color: '#ffb02e', icon: '◆' },
+  damage: { color: '#ff5a4a', icon: '✱' },
+  crash: { color: '#ff3b2f', icon: '✖' },
+};

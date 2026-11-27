@@ -3,17 +3,6 @@
 import * as THREE from 'three';
 import { describePlace } from '../world/placeNames.js';
 
-const point = new THREE.Vector3();
-const KT = 1.944;
-const FPM = 196.85;
-
-function attitudeWords(body) {
-  const pitch = Math.round(body.pitch);
-  const bank = Math.round(Math.abs(body.bank));
-  const pitchText = pitch < -3 ? `${-pitch}° nose down` : pitch > 3 ? `${pitch}° nose up` : 'wings level';
-  return bank > 8 ? `${pitchText}, ${bank}° bank` : pitchText;
-}
-
 /** Returns null while the flight is fine, else { severity: 'crash'|'ditch'|'belly', cause, place }. */
 export function detectCrash(body, world) {
   const spec = body.spec;
@@ -59,3 +48,15 @@ export function detectCrash(body, world) {
   }
   return null;
 }
+
+/** The attitude at impact in words: "12° nose down, 30° bank" or "wings level". */
+function attitudeWords(body) {
+  const pitch = Math.round(body.pitch);
+  const bank = Math.round(Math.abs(body.bank));
+  const pitchText = pitch < -3 ? `${-pitch}° nose down` : pitch > 3 ? `${pitch}° nose up` : 'wings level';
+  return bank > 8 ? `${pitchText}, ${bank}° bank` : pitchText;
+}
+
+const point = new THREE.Vector3();
+const KT = 1.944;
+const FPM = 196.85;

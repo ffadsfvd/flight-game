@@ -24,24 +24,6 @@ import { damageEffects, overallCondition } from '../flight/damageModel.js';
 import { airfieldById, nearestAirfield } from '../world/airfieldDirectory.js';
 import { CHAPTERS, medalFor } from './missionCatalog.js';
 
-const KT = 1.94384;
-
-const FACTORIES = {
-  takeoff: createTakeoffObjective,
-  rings: createRingCourseObjective,
-  land: createLandingObjective,
-  reach: createReachObjective,
-  'supply-drop': createSupplyDropObjective,
-  firefighting: createFirefightingObjective,
-  photo: createPhotoObjective,
-  aerobatics: createAerobaticsObjective,
-  formation: createFormationObjective,
-  search: createSearchObjective,
-  sightseeing: createSightseeingObjective,
-};
-
-const DAMAGE_MARKS = { bird: 'BIRD STRIKE', overstress: 'OVER-G', overspeed: 'OVERSPEED', 'hard-landing': 'HARD LANDING', flaps: 'FLAPS JAMMED', gear: 'GEAR DAMAGED', 'engine-out': 'ENGINE OUT' };
-
 /** A short checklist line for a main stage. */
 export function stageGoal(stage) {
   if (stage.goal) return stage.goal;
@@ -446,3 +428,22 @@ export function createMissionRunner(ctx) {
 
   return runner;
 }
+
+// Unit and lookup tables used by the runner (hoisted out of the way of the outline).
+const KT = 1.94384;
+
+const FACTORIES = {
+  takeoff: createTakeoffObjective,
+  rings: createRingCourseObjective,
+  land: createLandingObjective,
+  reach: createReachObjective,
+  'supply-drop': createSupplyDropObjective,
+  firefighting: createFirefightingObjective,
+  photo: createPhotoObjective,
+  aerobatics: createAerobaticsObjective,
+  formation: createFormationObjective,
+  search: createSearchObjective,
+  sightseeing: createSightseeingObjective,
+};
+
+const DAMAGE_MARKS = { bird: 'BIRD STRIKE', overstress: 'OVER-G', overspeed: 'OVERSPEED', 'hard-landing': 'HARD LANDING', flaps: 'FLAPS JAMMED', gear: 'GEAR DAMAGED', 'engine-out': 'ENGINE OUT' };

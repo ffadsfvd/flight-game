@@ -9,27 +9,6 @@ import { iceDrag, iceLiftFactor, iceThrustFactor } from './icingModel.js';
 import { createEngineState, stepEngine } from './engineModel.js';
 import { computeGroundContact, createContactResult } from './groundContact.js';
 
-const G = 9.81;
-const FORWARD = new THREE.Vector3(0, 0, -1);
-const UP = new THREE.Vector3(0, 1, 0);
-const RIGHT = new THREE.Vector3(1, 0, 0);
-
-const tmp = {
-  air: new THREE.Vector3(),
-  bodyAir: new THREE.Vector3(),
-  inverse: new THREE.Quaternion(),
-  forward: new THREE.Vector3(),
-  up: new THREE.Vector3(),
-  right: new THREE.Vector3(),
-  liftDir: new THREE.Vector3(),
-  force: new THREE.Vector3(),
-  aero: new THREE.Vector3(),
-  torque: new THREE.Vector3(),
-  axis: new THREE.Vector3(),
-  dq: new THREE.Quaternion(),
-  wind: new THREE.Vector3(),
-};
-
 /** A new aircraft body for a spec, parked at the origin with full fuel. */
 export function createAircraftBody(spec) {
   return {
@@ -255,3 +234,24 @@ export function stepAircraft(body, world, wind, controls, dt) {
   updateDerived(body, world);
   body.agl = body.position.y - groundBelow;
 }
+
+// Constants and scratch vectors shared by the steps (hoisted: only read when a step runs).
+const G = 9.81;
+const FORWARD = new THREE.Vector3(0, 0, -1);
+const UP = new THREE.Vector3(0, 1, 0);
+const RIGHT = new THREE.Vector3(1, 0, 0);
+const tmp = {
+  air: new THREE.Vector3(),
+  bodyAir: new THREE.Vector3(),
+  inverse: new THREE.Quaternion(),
+  forward: new THREE.Vector3(),
+  up: new THREE.Vector3(),
+  right: new THREE.Vector3(),
+  liftDir: new THREE.Vector3(),
+  force: new THREE.Vector3(),
+  aero: new THREE.Vector3(),
+  torque: new THREE.Vector3(),
+  axis: new THREE.Vector3(),
+  dq: new THREE.Quaternion(),
+  wind: new THREE.Vector3(),
+};

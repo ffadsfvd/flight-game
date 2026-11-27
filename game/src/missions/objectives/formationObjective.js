@@ -1,7 +1,7 @@
 // Objective: fly in formation off the leader's wing along a scenic route. Time spent inside the
 // slot (a box behind and to the right of the leader) is the score; falling far behind fails it.
+// The leader is an AI flyer the mission context builds (ctx.createAiFlyer).
 import * as THREE from 'three';
-import { createAiFlyer } from '../../aircraft/aiFlyer.js';
 
 export function createFormationObjective(stage) {
   let leader = null;
@@ -20,7 +20,7 @@ export function createFormationObjective(stage) {
     begin(ctx) {
       const path = stage.path.map(([x, z, alt]) => new THREE.Vector3(x, alt, z));
       const ahead = new THREE.Vector3(0, 0, -60).applyQuaternion(ctx.body.quaternion).add(ctx.body.position);
-      leader = createAiFlyer(ctx.scene, { aircraft: stage.aircraft ?? 'wren', path, speed: stage.speed ?? 48, start: ahead, name: 'Lead', color: '#ffd34d' });
+      leader = ctx.createAiFlyer(ctx.scene, { aircraft: stage.aircraft ?? 'wren', path, speed: stage.speed ?? 48, start: ahead, name: 'Lead', color: '#ffd34d' });
       start = ctx.time;
       if (stage.say) ctx.radio(stage.say[0], stage.say[1]);
       ctx.cleanup(() => leader.dispose());
