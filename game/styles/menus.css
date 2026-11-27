@@ -24,8 +24,10 @@
 #screen-title .brand h1 span { color: var(--accent); }
 #screen-title .brand .tagline { font-size: 1.25em; color: #ffe3bd; margin-top: 0.35em; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7); }
 #screen-title .brand .features { margin-top: 0.7em; display: inline-block; padding: 0.35em 0.8em; font-size: 1.0em; font-weight: 700; color: #0d1726; background: rgba(255, 196, 106, 0.92); border-radius: 0.35em; letter-spacing: 0.03em; }
-#screen-title .menu { left: 4.5%; top: 36%; width: 21em; }
-#screen-title .career-card { right: 3%; bottom: 5%; width: 21em; font-size: 0.95em; }
+#screen-title .menu { left: 4.5%; top: 35%; width: 15.5em; padding: 0.8em 1em; }
+#screen-title .menu .btn { padding: 0.36em 0.8em; margin: 0.22em 0; font-size: 0.98em; }
+#screen-title .menu .btn small { display: none; }
+#screen-title .career-card { right: 3%; bottom: 5%; width: 19em; font-size: 0.85em; padding: 0.8em 1em; }
 #screen-title .career-card b { color: var(--accent); }
 #screen-title .hint { position: absolute; left: 4.5%; bottom: 3%; color: #ffe3bd; font-size: 0.9em; text-shadow: 0 1px 4px #000; }
 

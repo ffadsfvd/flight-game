@@ -13,8 +13,53 @@ const RED = new THREE.Color('#ff3328');
 const AMBER = new THREE.Color('#ffb340');
 const PAPI_ANGLES = [2.5, 2.83, 3.17, 3.5];
 
+/** Apron concrete: two by two 5 m slabs per repeat with dark joints, grain and a few oil stains. */
+function concreteTexture() {
+  const size = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#c3c2be';
+  ctx.fillRect(0, 0, size, size);
+  let seed = 7;
+  const rand = () => {
+    seed = (seed * 16807) % 2147483647;
+    return seed / 2147483647;
+  };
+  // Each slab a slightly different shade, as poured on different days.
+  for (const [x, y] of [[0, 0], [128, 0], [0, 128], [128, 128]]) {
+    ctx.fillStyle = `rgba(${rand() < 0.5 ? '0,0,0' : '255,255,255'},${0.03 + rand() * 0.05})`;
+    ctx.fillRect(x, y, 128, 128);
+  }
+  for (let i = 0; i < 2600; i += 1) {
+    ctx.fillStyle = rand() < 0.5 ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.07)';
+    ctx.fillRect(rand() * size, rand() * size, 1 + rand() * 2, 1 + rand() * 2);
+  }
+  for (let i = 0; i < 5; i += 1) {
+    const x = rand() * size;
+    const y = rand() * size;
+    const g = ctx.createRadialGradient(x, y, 1, x, y, 10 + rand() * 18);
+    g.addColorStop(0, 'rgba(40,36,30,0.1)');
+    g.addColorStop(1, 'rgba(40,36,30,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(x - 30, y - 30, 60, 60);
+  }
+  ctx.fillStyle = 'rgba(60,58,54,0.55)';
+  for (const p of [0, 128]) {
+    ctx.fillRect(p, 0, 2, size);
+    ctx.fillRect(0, p, size, 2);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+  return texture;
+}
+
 const materials = {
-  apron: new THREE.MeshLambertMaterial({ color: '#8d8b86' }),
+  apron: new THREE.MeshLambertMaterial({ color: '#ffffff', map: concreteTexture() }),
   taxi: new THREE.MeshLambertMaterial({ color: '#4a4b4e' }),
   taxiLine: new THREE.MeshBasicMaterial({ color: '#e8c234' }),
   hangarWall: new THREE.MeshLambertMaterial({ color: '#e7e1d6' }),
@@ -247,7 +292,11 @@ export function buildAirfields(terrain) {
       group.add(runway);
       // Apron, taxiways and their yellow lines.
       const apronAcross = side * (field.apronOffset + field.apronDepth / 2);
-      group.add(flatStrip(field, 0, apronAcross, field.apronLength, field.apronDepth, y + 0.09, materials.apron));
+      const apron = flatStrip(field, 0, apronAcross, field.apronLength, field.apronDepth, y + 0.09, materials.apron);
+      // One concrete texture repeat covers 7 m, whatever the apron's size.
+      const apronUv = apron.geometry.getAttribute('uv');
+      for (let i = 0; i < apronUv.count; i += 1) apronUv.setXY(i, (apronUv.getX(i) * field.apronDepth) / 7, (apronUv.getY(i) * field.apronLength) / 7);
+      group.add(apron);
       for (const along of [-field.apronLength * 0.35, field.apronLength * 0.35]) {
         const taxiLength = field.apronOffset - field.width / 2 + 4;
         const taxiAcross = side * (field.width / 2 + taxiLength / 2 - 2);

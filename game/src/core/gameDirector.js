@@ -480,7 +480,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     let focus;
     if (state === 'title' || (state === 'menu' && !session.body)) {
       controls.update(dt, false);
-      focus = backdrop.update(dt, time, career.selected);
+      focus = backdrop.update(dt, time, career.selected, state === 'title');
       cameras.update(dt, null, null, world, controls.mouse.state, false);
       flightSounds.update(false, readout, [], time);
     } else if (state === 'menu') {
