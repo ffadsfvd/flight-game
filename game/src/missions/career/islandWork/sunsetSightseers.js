@@ -21,7 +21,7 @@ export const sunsetSightseers = {
       ],
       say: ['rosa', 'The ruins first, on the hill just ahead of you. Gentle turns.'],
     },
-    { type: 'land', field: 'marenza', end: 1, label: 'Land on runway 27 at Marenza International', hint: 'Gear down, flaps, 65 kt, a soft touchdown for the passengers',
+    { type: 'land', field: 'marenza', end: 1, label: 'Land on runway 27 at Marenza International', hint: 'Flaps down, about 70 kt, and a soft touchdown for the passengers',
       say: ['dario', 'Celeste tour, Marenza Tower, runway 27, wind 255 at 8, cleared to land.'] },
   ],
   reward: { money: 560, xp: 240 },

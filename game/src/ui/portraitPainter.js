@@ -45,9 +45,23 @@ export function paintPortrait(ctx, id, s) {
   ctx.fillStyle = shade(c.skin, -18);
   ctx.fillRect(42, 58, 16, 16);
   if (c.hairStyle === 'long') {
+    // Long hair behind the face: a crown and two lengths falling past the ears to the
+    // shoulders, kept clear of the chin so it never reads as a beard.
     ctx.fillStyle = c.hair;
     ctx.beginPath();
-    ctx.ellipse(50, 50, 25, 32, 0, 0, Math.PI * 2);
+    ctx.ellipse(50, 38, 25, 23, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(25, 37);
+    ctx.lineTo(25, 69);
+    ctx.quadraticCurveTo(30, 77, 39, 72);
+    ctx.lineTo(37, 40);
+    ctx.closePath();
+    ctx.moveTo(75, 37);
+    ctx.lineTo(75, 69);
+    ctx.quadraticCurveTo(70, 77, 61, 72);
+    ctx.lineTo(63, 40);
+    ctx.closePath();
     ctx.fill();
   }
   ctx.fillStyle = c.skin;
