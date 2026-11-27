@@ -80,6 +80,7 @@ export function createSearchObjective(stage) {
           spotted = true;
           ctx.sound('stage');
           ctx.toast('CONTACT · HOLD THE LIGHT ON IT', 'good');
+          ctx.report({ kind: 'contact' });
           if (stage.found) ctx.radio(stage.found[0], stage.found[1], { priority: true });
         }
       } else {
@@ -92,6 +93,7 @@ export function createSearchObjective(stage) {
         const minutes = (ctx.time - start) / 60;
         objective.score = Math.round(Math.max(45, Math.min(100, 100 - Math.max(0, minutes - (stage.parMinutes ?? 3)) * 12)));
         objective.rows.push(['Search time', `${Math.floor(minutes)}:${String(Math.round((minutes % 1) * 60)).padStart(2, '0')}`], ['Boat held in the light', `${stage.illuminate} s`]);
+        ctx.report({ kind: 'search-done', minutes });
         return 'done';
       }
       return 'active';

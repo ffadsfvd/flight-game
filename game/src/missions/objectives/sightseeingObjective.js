@@ -72,11 +72,13 @@ export function createSightseeingObjective(stage) {
         if (d < (next.radius ?? 400) && inBand) {
           next.seen = true;
           ctx.toast(`SIGHT: ${next.name.toUpperCase()}`, 'good');
+          ctx.report({ kind: 'sight', name: next.name, comfort });
           if (next.say) ctx.radio(next.say[0], next.say[1]);
         }
         return 'active';
       }
       objective.score = Math.round(comfort);
+      ctx.report({ kind: 'tour-done', comfort });
       objective.rows.push(['Passenger comfort', `${Math.round(comfort)}%`], ['Sights shown', `${sights.length} of ${sights.length}`], ['Steepest bank', `${Math.round(steepest)}°`], ['G range', `${lowestG.toFixed(1)} to ${peakG.toFixed(1)}`]);
       return 'done';
     },

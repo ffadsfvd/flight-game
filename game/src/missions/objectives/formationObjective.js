@@ -6,6 +6,7 @@ import { createAiFlyer } from '../../aircraft/aiFlyer.js';
 export function createFormationObjective(stage) {
   let leader = null;
   let inSlot = 0;
+  let held = 0;
   let total = 0;
   let lostTime = 0;
   let start = 0;
@@ -29,7 +30,14 @@ export function createFormationObjective(stage) {
       slot.copy(offset).applyQuaternion(leader.quaternion).add(leader.position);
       slotDistance = slot.distanceTo(ctx.body.position);
       total += dt;
-      if (slotDistance < (stage.tolerance ?? 24)) inSlot += dt;
+      if (slotDistance < (stage.tolerance ?? 24)) {
+        inSlot += dt;
+        held += dt;
+        if (held >= 15) {
+          held = 0;
+          ctx.report({ kind: 'slot-hold' });
+        }
+      } else held = 0;
       if (slotDistance > 700) lostTime += dt;
       else lostTime = 0;
       if (lostTime > 12) {
@@ -39,6 +47,7 @@ export function createFormationObjective(stage) {
       if (leader.finished) {
         objective.score = Math.round(Math.min(100, (inSlot / Math.max(1, total)) * 125));
         objective.rows.push(['Time in position', `${Math.round((inSlot / Math.max(1, total)) * 100)}%`], ['Formation time', `${Math.round(total)} s`]);
+        ctx.report({ kind: 'formation-done', pct: Math.round((inSlot / Math.max(1, total)) * 100) });
         return 'done';
       }
       return 'active';

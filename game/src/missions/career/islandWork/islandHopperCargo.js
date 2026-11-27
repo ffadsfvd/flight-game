@@ -15,4 +15,5 @@ export const islandHopperCargo = {
   ],
   reward: { money: 760, xp: 300 },
   cargo: true,
+  birds: true,
 };

@@ -12,4 +12,5 @@ export const beachBannerRun = {
       say: ['nadia', 'Banner is flying. The beach is full, wave if you like.'] },
   ],
   reward: { money: 520, xp: 230 },
+  birds: true,
 };

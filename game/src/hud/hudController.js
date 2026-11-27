@@ -9,6 +9,8 @@ import { createRadioPanel } from './radioPanel.js';
 import { createMissionTrackerPanel } from './missionTrackerPanel.js';
 import { createAircraftSystemsPanel } from './aircraftSystemsPanel.js';
 import { createFuelDamagePanel } from './fuelDamagePanel.js';
+import { createBingoDecisionPanel } from './bingoDecisionPanel.js';
+import { createDisciplinePopup } from './disciplinePopup.js';
 import { activeWarnings, createWarningPanel } from './flightWarnings.js';
 import { createCareerBadge } from './careerBadge.js';
 import { VIEW_NAMES } from '../camera/cameraDirector.js';
@@ -28,6 +30,8 @@ export function createHudController(terrain, { onRadio } = {}) {
   const tracker = createMissionTrackerPanel($('hud-mission-tracker'));
   const systems = createAircraftSystemsPanel($('hud-aircraft-systems'));
   const fuel = createFuelDamagePanel($('hud-fuel-and-damage'));
+  const decision = createBingoDecisionPanel($('hud-bingo-decision'));
+  const popup = createDisciplinePopup($('hud-discipline-popup'));
   const warnings = createWarningPanel($('hud-flight-warnings'));
   const badge = createCareerBadge($('hud-career-badge'));
   const cameraLabel = $('hud-camera-label');
@@ -40,6 +44,7 @@ export function createHudController(terrain, { onRadio } = {}) {
   return {
     radio,
     minimap,
+    popup,
     get warnings() {
       return currentWarnings;
     },
@@ -53,7 +58,7 @@ export function createHudController(terrain, { onRadio } = {}) {
       toasts.appendChild(div);
       setTimeout(() => div.remove(), 2500);
     },
-    /** s: { readout, view, mission, markers, others, guidance, targetKt, career, load, dt, force } */
+    /** s: { readout, view, mission, markers, others, guidance, targetKt, career, load, fuelPlan, damage, decision, dt, force } */
     update(s) {
       root.classList.toggle('is-cockpit', s.view === 'cockpit');
       const d = s.readout;
@@ -66,11 +71,13 @@ export function createHudController(terrain, { onRadio } = {}) {
       heading.draw(d);
       minimap.draw(s.position, d.heading, s.markers ?? [], s.others ?? [], d);
       radio.update(s.dt);
+      popup.update(s.mission?.discipline?.last ?? null, s.dt);
       textTimer -= s.dt;
       if (textTimer <= 0 || s.force) {
         textTimer = 1 / 15;
         systems.update(d);
-        fuel.update(d, s.load);
+        fuel.update(d, s.load, s.fuelPlan, s.damage ?? []);
+        decision.update(s.decision ?? null);
         warnings.update(currentWarnings);
         tracker.update(s.mission);
         badge.update(s.career);

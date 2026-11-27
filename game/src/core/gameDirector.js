@@ -4,8 +4,9 @@
 import * as THREE from 'three';
 import { missionById } from '../missions/missionCatalog.js';
 import { createMissionRunner } from '../missions/missionRunner.js';
-import { applyFlightResult, buyAircraft, buyUpgrade, createCareer } from '../career/careerProgress.js';
+import { applyFlightResult, buyAircraft, buyUpgrade, careerSummary, createCareer } from '../career/careerProgress.js';
 import { careerRank } from '../career/careerProgress.js';
+import { damageEffects } from '../flight/damageModel.js';
 import { aircraftById, tunedSpec } from '../aircraft/aircraftCatalog.js';
 import { createCockpitPanel } from '../aircraft/cockpitPanel.js';
 import { createWindField } from '../flight/windField.js';
@@ -21,7 +22,8 @@ import { challengesHtml } from '../ui/challengesScreen.js';
 import { controlsHelpHtml } from '../ui/controlsHelp.js';
 import { settingsHtml, FREE_STARTS } from '../ui/settingsScreen.js';
 import { pauseMenuHtml } from '../ui/pauseMenu.js';
-import { resultsHtml } from '../ui/resultsScreen.js';
+import { debriefHtml, paintDebriefCharts } from '../ui/debriefScreen.js';
+import { applyCarriedCondition, buyTopUp, repairAircraft, storeAircraftCondition } from '../career/aircraftTurnaround.js';
 import { paintPortrait } from '../ui/portraitPainter.js';
 import { createCameraDirector } from '../camera/cameraDirector.js';
 import { createFlightControls } from '../controls/flightControls.js';
@@ -105,6 +107,9 @@ export function createGameDirector({ view, world, shotMode = false }) {
     get sim() {
       return session.simulation;
     },
+    get controls() {
+      return controls.controls;
+    },
     world,
     scene: view.scene,
     effects,
@@ -114,6 +119,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     radio: (who, text, options) => hud.radio.say(who, text, options),
     toast: (text, tone) => hud.toast(text, tone),
     sound: (name) => sfx.play(name),
+    report: () => {},
     windFrom: () => wind.state.from,
     windVector: () => wind.state.current,
     flash: () => {
@@ -186,12 +192,23 @@ export function createGameDirector({ view, world, shotMode = false }) {
 
   function showBriefing(def) {
     state = 'menu';
-    router.show('screen-mission-briefing', briefingHtml(def), {
+    const refresh = () => {
+      router.show('screen-mission-briefing', briefingHtml(def, career), handlers);
+      for (const c of document.querySelectorAll('#screen-mission-briefing canvas[data-portrait]')) paintPortrait(c.getContext('2d'), c.dataset.portrait, c.width);
+    };
+    const handlers = {
       fly: () => startMission(def),
       back: showBoard,
       confirm: () => startMission(def),
-    });
-    for (const c of document.querySelectorAll('#screen-mission-briefing canvas[data-portrait]')) paintPortrait(c.getContext('2d'), c.dataset.portrait, c.width);
+      repair: () => {
+        if (repairAircraft(career, def.aircraft)) {
+          sfx.play('stage');
+          save();
+        }
+        refresh();
+      },
+    };
+    refresh();
   }
 
   function back(target) {
@@ -300,7 +317,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
       controls: () => showControls('pause'),
       settings: () => showSettings('pause'),
       quit: () => {
-        if (!mission) finishFlight({ success: true, missionId: null, title: 'Free flight', severity: null, cause: 'Free flight ended by the pilot.', score: 0, medal: 'none', money: 0, repairs: 0, xp: 20, rows: [['Flight time', `${Math.round(session.simulation.flightTime)} s`], ['Landings', String(landingsThisFlight.length)]], landing: landingsThisFlight.at(-1) ?? null, time: ctx.time });
+        if (!mission) finishFlight({ ...runner.endFreeFlight(), rows: [['Flight time', `${Math.round(session.simulation.flightTime)} s`], ['Landings', String(landingsThisFlight.length)]], landing: landingsThisFlight.at(-1) ?? null });
         else {
           runner.stop();
           showBoard();
@@ -332,7 +349,8 @@ export function createGameDirector({ view, world, shotMode = false }) {
     const spec = tunedSpec(id, upgrades);
     const freeStart = (FREE_STARTS.find((s) => s.id === settings.freeStart) ?? FREE_STARTS[0]).start;
     const placement = placementFor(def?.start ?? freeStart, spec, world);
-    session.start(id, upgrades, placement, { birds: settings.birdStrikes && !shotMode, fuelFraction: def?.fuel ?? 1, icing: def?.icing ?? null });
+    // Birds strike only where a mission briefs them (coastal cliffs, the beach) and in free flight.
+    session.start(id, upgrades, placement, { birds: settings.birdStrikes && !shotMode && (!def || def.birds === true), fuelFraction: def?.fuel ?? 1, icing: def?.icing ?? null });
     dropBanner();
     if (def?.banner) {
       banner = createTowBanner(def.banner);
@@ -340,6 +358,8 @@ export function createGameDirector({ view, world, shotMode = false }) {
     }
     session.body.payload = def?.payload ?? 0;
     session.body.flightAssist = settings.flightAssist;
+    // Damage left by the last sortie stays on the aircraft until it is repaired at a turnaround.
+    applyCarriedCondition(career, id, session.body, def?.fuel ?? 1);
     controls.mouse.state.sensitivity = 0.0045 * settings.mouseSensitivity;
     cockpitFor(session.rig);
     runner.start(def);
@@ -347,6 +367,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     landingsThisFlight = [];
     atc.reset();
     hud.radio.clear();
+    hud.popup.clear();
     hud.show(true);
     router.hideAll();
     cameras.view = 'chase';
@@ -362,6 +383,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     const body = session.body;
     const spec = body.spec;
     const progress = applyFlightResult(career, result, { title: result.title, aircraft: spec.name, aircraftId: spec.id, night: light.night > 0.5, seconds: session.simulation.flightTime, distance: session.simulation.distance, landings: landingsThisFlight });
+    storeAircraftCondition(career, spec.id, body, result.severity);
     save();
     state = 'results';
     controls.mouse.unlock();
@@ -370,7 +392,18 @@ export function createGameDirector({ view, world, shotMode = false }) {
     gates.set(null);
     hud.show(false);
     sfx.play(result.success ? 'success' : 'fail');
-    router.show('screen-mission-results', resultsHtml(result, progress), {
+    const showDebrief = () => {
+      router.show('screen-mission-results', debriefHtml(result, progress, career, spec.id), handlers);
+      paintDebriefCharts(document.getElementById('screen-mission-results'), result);
+    };
+    const turnaround = (fn) => (arg) => {
+      if (fn(arg)) {
+        sfx.play('stage');
+        save();
+      }
+      showDebrief();
+    };
+    const handlers = {
       retry: () => startMission(mission, freeAircraft),
       board: () => {
         runner.stop();
@@ -383,7 +416,11 @@ export function createGameDirector({ view, world, shotMode = false }) {
         showBoard();
       },
       confirm: () => startMission(mission, freeAircraft),
-    });
+      repair: turnaround(() => repairAircraft(career, spec.id)),
+      'top-up': turnaround(() => buyTopUp(career, spec.id)),
+      upgrade: turnaround((uid) => buyUpgrade(career, spec.id, uid)),
+    };
+    showDebrief();
     window.__lastResult = result;
   }
 
@@ -437,7 +474,9 @@ export function createGameDirector({ view, world, shotMode = false }) {
       gates.set(null);
     }
     updateReadout(readout, body, controls.controls, { ...guidanceExtras(guidance), refuelling: session.refuelling, icing: session.simulation.icing });
+    readout.bandKt = runner.speedBand();
     const rank = careerRank(career);
+    const approachTarget = runner.approachTarget;
     hud.update({
       readout,
       view: cameras.view,
@@ -446,9 +485,12 @@ export function createGameDirector({ view, world, shotMode = false }) {
       markers: runner.markers(),
       others: [...runner.others(), ...[...traffic.flyers, ...traffic.holding].map((f) => ({ x: f.rig.root.position.x, z: f.rig.root.position.z, color: '#d8e2ee' }))],
       guidance,
-      targetKt: body.spec.vApproach * 1.944,
-      career: { rank: rank.name, money: career.money, clock: light.clock, weather: light.label, aircraft: body.spec.name },
+      targetKt: approachTarget ? approachTarget.targetKt : body.spec.vApproach * 1.944,
+      career: { rank: rank.name, money: career.money, clock: light.clock, weather: light.label, aircraft: body.spec.name, medals: careerSummary(career) },
       load: runner.load(),
+      fuelPlan: runner.fuelPlan,
+      damage: damageEffects(body),
+      decision: runner.decisionPanel(),
       stick: { active: controls.mouse.state.locked || controls.mouse.state.dragging, x: controls.mouse.state.x, y: controls.mouse.state.y },
       dt,
       force,

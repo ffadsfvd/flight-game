@@ -77,3 +77,16 @@ export function applyFlightResult(career, result, flight) {
 export function featureCounts() {
   return { missions: MISSIONS.length, aircraft: AIRCRAFT.length, chapters: CHAPTERS.length };
 }
+
+/** Career progress in numbers: medals and golds won, missions passed, aircraft owned, of the totals. */
+export function careerSummary(career) {
+  const records = Object.values(career.missions);
+  return {
+    medals: records.filter((r) => r.medal && r.medal !== 'none').length,
+    gold: records.filter((r) => r.medal === 'gold').length,
+    passed: records.filter((r) => r.passed).length,
+    missions: MISSIONS.length,
+    aircraft: career.owned.length,
+    aircraftTotal: AIRCRAFT.length,
+  };
+}

@@ -11,13 +11,22 @@ export function createFirefightingObjective(stage) {
   let drops = 0;
   let hits = 0;
   let scooped = 0;
+  let initial = 1;
   const pending = [];
+  // Water knocked off the fire by each drop, reported once all of that drop has landed.
+  const dropKnock = new Map();
   const objective = {
     kind: 'firefighting',
     score: 0,
     rows: [],
+    /** How much of the fire is out, 0..1 (the fire-contained figure on the HUD). */
+    get contained() {
+      const now = fires.reduce((s, f) => s + f.intensity, 0);
+      return Math.max(0, Math.min(1, 1 - now / Math.max(0.01, initial)));
+    },
     begin(ctx) {
       fires = stage.fires.map(([x, z, radius]) => ctx.effects.addFire(x, Math.max(0, ctx.world.terrain.heightAt(x, z)), z, radius, ctx.world.terrain));
+      initial = fires.reduce((s, f) => s + f.intensity, 0);
       if (stage.startFull) ctx.body.water = ctx.body.spec.waterCapacity;
       if (stage.say) ctx.radio(stage.say[0], stage.say[1]);
     },
@@ -25,8 +34,10 @@ export function createFirefightingObjective(stage) {
       if (action !== 'action' || ctx.body.water <= 1 || releasing > 0 || ctx.body.onGround) return;
       releasing = 1.4;
       drops += 1;
+      dropKnock.set(drops, 0);
       ctx.sound('release');
       ctx.toast('WATER AWAY', 'good');
+      ctx.report({ kind: 'drop', count: drops });
     },
     update(dt, ctx) {
       const b = ctx.body;
@@ -43,7 +54,7 @@ export function createFirefightingObjective(stage) {
         releasing -= dt;
         ctx.effects.burst('drop-water', b.position, b.velocity);
         const fall = Math.sqrt((2 * Math.max(1, b.agl)) / 9.81);
-        const impact = { x: b.position.x + b.velocity.x * fall * 0.75, z: b.position.z + b.velocity.z * fall * 0.75, at: ctx.time + fall, amount: out / cap };
+        const impact = { x: b.position.x + b.velocity.x * fall * 0.75, z: b.position.z + b.velocity.z * fall * 0.75, at: ctx.time + fall, amount: out / cap, drop: drops };
         pending.push(impact);
         if (b.water <= 0.5) releasing = 0;
       }
@@ -56,8 +67,13 @@ export function createFirefightingObjective(stage) {
           if (d < f.radius + 30) {
             const knock = w.amount * 1.35 * (1 - d / (f.radius + 30));
             if (knock > 0.01) hits += knock;
+            dropKnock.set(w.drop, (dropKnock.get(w.drop) ?? 0) + Math.min(knock, f.intensity));
             f.intensity = Math.max(0, f.intensity - knock);
           }
+        }
+        if ((w.drop !== drops || releasing <= 0) && !pending.some((p) => p.drop === w.drop) && dropKnock.has(w.drop)) {
+          ctx.report({ kind: 'drop-hit', knock: dropKnock.get(w.drop) });
+          dropKnock.delete(w.drop);
         }
       }
       if (fires.every((f) => f.intensity < 0.15)) {
@@ -65,6 +81,7 @@ export function createFirefightingObjective(stage) {
         const efficiency = Math.min(1, fires.length / Math.max(1, drops * 0.75));
         objective.score = Math.round(55 + 45 * efficiency);
         objective.rows.push(['Water drops', String(drops)], ['Water scooped', `${Math.round(scooped)} kg`], ['Hot spots out', `${fires.length} / ${fires.length}`]);
+        ctx.report({ kind: 'fire-out', drops });
         return 'done';
       }
       return 'active';
@@ -82,7 +99,7 @@ export function createFirefightingObjective(stage) {
       return {
         objective: stage.label ?? `Put out the fire: ${burning.length} hot spot${burning.length === 1 ? '' : 's'} left`,
         next,
-        stats: [['WATER', `${Math.round(tank * 100)}%`], ['FIRE', `${Math.round((fires.reduce((s, f) => s + f.intensity, 0) / Math.max(1, fires.length)) * 100)}%`], ['AGL FT', Math.round(b.agl * FT)]],
+        stats: [['WATER', `${Math.round(tank * 100)}%`], ['CONTAINED', `${Math.round(objective.contained * 100)}%`], ['AGL FT', Math.round(b.agl * FT)]],
         progress: 1 - fires.reduce((s, f) => s + f.intensity, 0) / Math.max(1, fires.length),
       };
     },

@@ -50,6 +50,7 @@ export function createPhotoObjective(stage) {
       best.t.done = true;
       best.t.score = Math.round(40 + 40 * framing + 20 * ideal);
       ctx.toast(`PHOTO: ${best.t.name.toUpperCase()}  ${best.t.score}%`, 'good');
+      ctx.report({ kind: 'photo', name: best.t.name, score: best.t.score });
     },
     update() {
       if (targets.every((t) => t.done)) {

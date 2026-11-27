@@ -9,6 +9,28 @@ export function createEngineState(spec, fuel) {
   return { running: true, rpm: 0.25, temperature: 70, health: 1, failed: false, failureCause: '', fuel, fuelUsed: 0, overheatTime: 0 };
 }
 
+/** Idle RPM fraction of the engine type. */
+export function idleRpm(spec) {
+  return spec.engine === 'jet' ? 0.3 : 0.22;
+}
+
+/** Fuel burn in kg/s at a power setting 0..1, the curve the engine model burns by. */
+export function fuelBurnAt(spec, power) {
+  return spec.fuelBurnIdle + (spec.fuelBurnFull - spec.fuelBurnIdle) * Math.pow(Math.max(0, Math.min(1, power)), 1.4);
+}
+
+/** The real fuel flow right now in kg/s (zero with the engine stopped). */
+export function fuelFlow(engine, spec) {
+  if (!engine.running) return 0;
+  const idle = idleRpm(spec);
+  return fuelBurnAt(spec, (engine.rpm - idle) / (1 - idle));
+}
+
+/** A damaged engine cannot reach full power: the throttle is capped by its health (1 when sound). */
+export function enginePowerCap(engine) {
+  return engine.health >= 0.995 ? 1 : 0.55 + 0.45 * Math.max(0, engine.health);
+}
+
 /** Advances the engine by dt; returns the thrust in newtons. */
 export function stepEngine(engine, spec, throttle, airspeed, dt) {
   if (engine.fuel <= 0 && engine.running) {
@@ -22,15 +44,15 @@ export function stepEngine(engine, spec, throttle, airspeed, dt) {
     engine.failed = true;
     engine.failureCause = engine.failureCause || 'engine seized';
   }
-  const idle = spec.engine === 'jet' ? 0.3 : 0.22;
+  const idle = idleRpm(spec);
   const windmill = spec.engine === 'jet' ? Math.min(0.12, airspeed / 600) : Math.min(0.35, airspeed / 160);
-  const target = engine.running ? idle + (1 - idle) * throttle : windmill;
+  // A damaged engine (a bird through the intake, an overheat) runs rough and tops out below full power.
+  const target = engine.running ? idle + (1 - idle) * Math.min(throttle, enginePowerCap(engine)) : windmill;
   const rate = engine.running ? 1 / spec.spool : 0.6;
   engine.rpm += (target - engine.rpm) * Math.min(1, rate * dt);
 
   if (engine.running) {
-    const power = Math.max(0, (engine.rpm - idle) / (1 - idle));
-    const burn = spec.fuelBurnIdle + (spec.fuelBurnFull - spec.fuelBurnIdle) * Math.pow(power, 1.4);
+    const burn = fuelFlow(engine, spec);
     engine.fuel = Math.max(0, engine.fuel - burn * dt);
     engine.fuelUsed += burn * dt;
   }
@@ -47,7 +69,8 @@ export function stepEngine(engine, spec, throttle, airspeed, dt) {
   }
 
   if (!engine.running) return 0;
-  const healthFactor = 0.35 + 0.65 * engine.health;
+  // Beyond the power cap, a hurt engine also loses a little thrust at every setting.
+  const healthFactor = 0.85 + 0.15 * engine.health;
   if (spec.engine === 'jet') {
     return spec.thrustStatic * Math.pow(engine.rpm, 1.6) * (1 - Math.min(0.3, airspeed / 900)) * healthFactor;
   }

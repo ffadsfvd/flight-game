@@ -6,6 +6,7 @@ import { tunedSpec } from '../aircraft/aircraftCatalog.js';
 import { buildAircraftModel } from '../aircraft/aircraftModelBuilder.js';
 import { createAircraftAnimator } from '../aircraft/aircraftAnimator.js';
 import { createAircraftSimulation } from '../flight/aircraftSimulation.js';
+import { gearWillRetract } from '../flight/damageModel.js';
 import { airfieldAt, airfieldById, fromRunwayFrame, landingDirection } from '../world/airfieldDirectory.js';
 import { crossingHeight } from '../world/approachGeometry.js';
 
@@ -103,6 +104,8 @@ export function createFlightSession({ scene, world, wind, director, controls }) 
         } else if (action === 'gear' && spec.gearRetracts) {
           if (body.onGround && body.gearDown && !body.onWater) {
             notices.push({ kind: 'gear-blocked' });
+          } else if (body.gearDown && !gearWillRetract(body)) {
+            notices.push({ kind: 'gear-stuck' });
           } else {
             body.gearDown = !body.gearDown;
             notices.push({ kind: 'gear', down: body.gearDown });

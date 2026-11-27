@@ -46,6 +46,7 @@ export function createAircraftBody(spec) {
     gearPosition: 1,
     landingLights: true,
     airframe: 1,
+    wingPull: 1,
     gearHealth: 1,
     flapsJammed: false,
     payload: 0,
@@ -88,6 +89,7 @@ export function placeAircraft(body, { x, y, z, heading = 0, pitch = 0, bank = 0,
   body.engine = createEngineState(body.spec, fuel ?? body.spec.fuelCapacity);
   body.engine.rpm = 0.22 + 0.78 * throttle;
   body.airframe = 1;
+  body.wingPull = 1;
   body.gearHealth = 1;
   body.flapsJammed = false;
   body.stall = 0;
@@ -227,7 +229,7 @@ export function stepAircraft(body, world, wind, controls, dt) {
     dwx -= 1.1 * stall * stability;
     dwz += body.wingDrop * 1.6 * stall * stability;
   }
-  dwz += wingDamage * 0.3 * stability;
+  dwz += wingDamage * 0.5 * stability * (body.wingPull ?? 1);
 
   if (contact.wheelsDown > 0 || contact.floatsWet > 0 || contact.force.lengthSq() > 0) {
     const tb = tmp.torque.copy(contact.torque).applyQuaternion(tmp.inverse);

@@ -77,6 +77,21 @@ export function createSpeedTape(canvas) {
       band(d.vfeKt, d.vneKt * 0.82, GREEN);
       band(d.vneKt * 0.82, d.vneKt, '#ffc23a');
       band(d.vneKt, d.vneKt + 400, '#ff3b2f');
+      if (d.bandKt) {
+        // The ring course's speed band: a cyan bracket the readout should sit inside.
+        const top = cy - (d.bandKt[1] - d.kt) * pxPerKt;
+        const bottom = cy - (d.bandKt[0] - d.kt) * pxPerKt;
+        ctx.fillStyle = 'rgba(95,227,208,0.22)';
+        ctx.fillRect(3, top, 10, bottom - top);
+        ctx.strokeStyle = '#5fe3d0';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(13, top);
+        ctx.lineTo(4, top);
+        ctx.lineTo(4, bottom);
+        ctx.lineTo(13, bottom);
+        ctx.stroke();
+      }
       ctx.strokeStyle = '#f4efe6';
       ctx.fillStyle = '#f4efe6';
       ctx.font = `600 15px ${INSTRUMENT_FONT}`;

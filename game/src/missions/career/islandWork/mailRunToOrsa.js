@@ -12,4 +12,5 @@ export const mailRunToOrsa = {
   ],
   reward: { money: 520, xp: 200 },
   cargo: true,
+  birds: true,
 };

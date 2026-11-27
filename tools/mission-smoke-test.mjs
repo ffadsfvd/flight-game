@@ -12,6 +12,8 @@ const DRIVER = String.raw`(async (id) => {
   const g = window.__solvara.game;
   const { missionById } = window.__solvara.missions;
   const def = missionById(id);
+  // Each mission starts with a sound aircraft: damage carried from the last test flight is cleared.
+  g.career.fleet = {};
   g.startMission(def);
   const s = g.session;
   const dt = 1 / 60;

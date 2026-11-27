@@ -29,11 +29,15 @@ body { font-family: var(--font); font-size: calc(16px * var(--ui)); color: var(-
 #hud-career-badge { left: 0.8em; top: 0.7em; padding: 0.35em 0.8em; display: flex; gap: 0.9em; align-items: center; font-size: 0.95em; }
 #hud-career-badge .rank { color: var(--accent); font-weight: 700; letter-spacing: 0.04em; }
 #hud-career-badge .money { color: var(--good); font-weight: 700; }
+#hud-career-badge .medals { color: #ffd34d; font-weight: 700; }
+#hud-career-badge .medals small { font-size: 0.7em; letter-spacing: 0.08em; }
 #hud-career-badge .clock { color: var(--muted); }
 
 #hud-heading-tape { position: absolute; left: 50%; top: 0.55em; width: 27.5em; height: 3.6em; transform: translateX(-50%); }
 
-#hud-mission-tracker { left: 0.8em; top: 3.4em; width: 19.5em; padding: 0.55em 0.8em 0.6em; }
+#hud-left-column { position: absolute; left: 0.8em; top: 3.4em; width: 19.5em; display: flex; flex-direction: column; gap: 0.55em; }
+#hud-left-column > .panel { position: relative; left: auto; top: auto; width: auto; }
+#hud-mission-tracker { padding: 0.55em 0.8em 0.6em; }
 #hud-mission-tracker .chapter { color: var(--muted); font-size: 0.72em; letter-spacing: 0.12em; text-transform: uppercase; }
 #hud-mission-tracker .title { color: var(--accent); font-size: 1.22em; font-weight: 700; margin: 0.05em 0 0.25em; }
 #hud-mission-tracker .stage { display: flex; justify-content: space-between; font-size: 0.86em; color: var(--accent-2); font-weight: 700; }
@@ -45,11 +49,38 @@ body { font-family: var(--font); font-size: calc(16px * var(--ui)); color: var(-
 #hud-mission-tracker .stat { flex: 1; background: rgba(255, 255, 255, 0.07); border-radius: 0.3em; padding: 0.2em 0.4em; }
 #hud-mission-tracker .stat b { display: block; font-size: 1.15em; color: var(--text); }
 #hud-mission-tracker .stat span { font-size: 0.66em; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+#hud-mission-tracker .goals { margin-top: 0.45em; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 0.3em; }
+#hud-mission-tracker .goal { display: flex; align-items: baseline; gap: 0.4em; font-size: 0.8em; line-height: 1.32; color: var(--muted); }
+#hud-mission-tracker .goal b { width: 0.95em; flex: none; text-align: center; }
+#hud-mission-tracker .goal em { margin-left: auto; font-style: normal; font-weight: 700; white-space: nowrap; color: var(--accent); }
+#hud-mission-tracker .goal.is-met { color: var(--text); } #hud-mission-tracker .goal.is-met b, #hud-mission-tracker .goal.is-met em { color: var(--good); }
+#hud-mission-tracker .goal.is-current { color: #fff; font-weight: 700; } #hud-mission-tracker .goal.is-current b { color: var(--accent-2); }
+#hud-mission-tracker .goal.is-failed { color: #8f98a6; text-decoration: line-through rgba(255, 90, 74, 0.6); } #hud-mission-tracker .goal.is-failed b { color: var(--danger); text-decoration: none; } #hud-mission-tracker .goal.is-failed em { color: #8f98a6; }
+#hud-mission-tracker .goal-head { font-size: 0.62em; letter-spacing: 0.14em; color: var(--accent); font-weight: 700; margin: 0.25em 0 0.05em; }
+#hud-mission-tracker .discipline { display: flex; align-items: center; gap: 0.5em; margin-top: 0.4em; padding: 0.22em 0.45em; border-radius: 0.3em; background: rgba(95, 227, 208, 0.12); font-size: 0.82em; }
+#hud-mission-tracker .discipline b { color: var(--accent-2); font-size: 1.1em; }
+#hud-mission-tracker .discipline span { color: var(--muted); font-size: 0.85em; letter-spacing: 0.06em; }
+#hud-mission-tracker .discipline i { margin-left: auto; font-style: normal; font-weight: 800; color: #10202a; background: var(--accent-2); border-radius: 0.25em; padding: 0 0.35em; }
+#hud-mission-tracker .discipline i.is-cold { background: rgba(255, 255, 255, 0.15); color: var(--muted); }
+
+#hud-discipline-popup { position: absolute; left: 50%; top: 6.9em; transform: translateX(-50%); pointer-events: none; text-align: center; }
+#hud-discipline-popup div { display: inline-block; padding: 0.2em 0.8em; border-radius: 0.3em; background: rgba(9, 16, 30, 0.7); font-size: 1.05em; font-weight: 800; letter-spacing: 0.06em; color: var(--accent-2); text-shadow: 0 1px 4px #000; white-space: nowrap; animation: popup 2.3s ease-out forwards; }
+#hud-discipline-popup div.bad { color: #ff8a7a; }
+#hud-discipline-popup div.is-held { animation: none; }
+@keyframes popup { 0% { opacity: 0; transform: translateY(0.4em); } 10% { opacity: 1; transform: none; } 78% { opacity: 1; } 100% { opacity: 0; } }
+
+#hud-bingo-decision { left: 50%; top: 9.2em; transform: translateX(-50%); width: 25em; padding: 0.5em 0.75em; border-color: rgba(255, 176, 46, 0.9); box-shadow: 0 0 1.2em rgba(255, 150, 40, 0.35); }
+#hud-bingo-decision .head { display: flex; justify-content: space-between; align-items: baseline; color: var(--warn); font-weight: 800; letter-spacing: 0.1em; }
+#hud-bingo-decision .head small { color: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
+#hud-bingo-decision .option { display: flex; gap: 0.55em; align-items: center; margin-top: 0.35em; }
+#hud-bingo-decision kbd { display: inline-block; min-width: 1.3em; text-align: center; padding: 0.05em 0.35em; border-radius: 0.25em; background: #f1e6d2; color: #1b1308; font: 800 0.95em var(--font); box-shadow: 0 0.12em 0 #9c8b6d; }
+#hud-bingo-decision .option b { display: block; font-size: 0.92em; }
+#hud-bingo-decision .option span { display: block; font-size: 0.76em; color: var(--muted); }
 
 #hud-minimap-frame { right: 0.8em; top: 0.7em; width: 15.5em; height: 15.5em; padding: 0.35em; border-radius: 50%; }
 #hud-minimap { width: 100%; height: 100%; display: block; border-radius: 50%; }
 
-#hud-radio-message { left: 0.8em; top: 21.2em; width: 19.5em; padding: 0.5em; display: flex; gap: 0.6em; align-items: flex-start; transition: opacity 0.4s; }
+#hud-radio-message { padding: 0.5em; display: flex; gap: 0.6em; align-items: flex-start; transition: opacity 0.4s; }
 #hud-radio-message canvas { width: 3.9em; height: 3.9em; border-radius: 0.35em; flex: none; border: 1px solid var(--panel-edge); }
 #hud-radio-message .who { color: var(--accent); font-size: 0.78em; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 #hud-radio-message .who em { color: var(--accent-2); font-style: normal; margin-left: 0.4em; }
@@ -84,6 +115,17 @@ body { font-family: var(--font); font-size: calc(16px * var(--ui)); color: var(-
 .sys-tags span.moving { background: rgba(255, 176, 46, 0.3); color: var(--warn); }
 .sys-tags span.bad { background: rgba(255, 77, 61, 0.3); color: var(--danger); }
 .panel-title { font-size: 0.7em; color: var(--accent); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 0.2em; font-weight: 700; }
+.fuel-plan { display: flex; flex-wrap: wrap; gap: 0.25em; margin: 0.2em 0 0.3em; }
+.fuel-plan span { flex: 1; background: rgba(255, 255, 255, 0.07); border-radius: 0.25em; padding: 0.08em 0.3em; text-align: center; }
+.fuel-plan span i { display: block; font-style: normal; font-size: 0.56em; letter-spacing: 0.1em; color: var(--muted); }
+.fuel-plan span b { display: block; font-size: 0.84em; }
+.fuel-plan span.is-warn { background: rgba(255, 176, 46, 0.3); } .fuel-plan span.is-warn b, .fuel-plan span.is-warn i { color: var(--warn); }
+.fuel-plan span.is-bad { background: rgba(255, 77, 61, 0.35); } .fuel-plan span.is-bad b { color: #fff; }
+.fuel-plan small { flex-basis: 100%; font-size: 0.62em; color: var(--muted); letter-spacing: 0.06em; text-align: center; }
+.dmg-effects div { font-size: 0.7em; font-weight: 700; letter-spacing: 0.05em; padding: 0.12em 0.35em; margin: 0.15em 0; border-radius: 0.25em; }
+.dmg-effects div.warn { background: rgba(255, 176, 46, 0.22); color: #ffc46a; }
+.dmg-effects div.danger { background: rgba(255, 77, 61, 0.3); color: #ff8a7a; }
+.dmg-effects b { color: #fff; margin-right: 0.3em; }
 
 #hud-instrument-strip { position: absolute; left: 50%; bottom: 0.4em; width: 51.25em; height: 9.4em; transform: translateX(-50%); }
 #hud.is-cockpit #hud-instrument-strip, #hud.is-cockpit #hud-airspeed-tape, #hud.is-cockpit #hud-altitude-tape { display: none; }

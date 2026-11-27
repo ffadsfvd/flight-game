@@ -6,6 +6,9 @@ import { airfieldById, landingDirection, toRunwayFrame } from './airfieldDirecto
 export const GLIDE_SLOPE_DEG = 3;
 export const THRESHOLD_CROSSING_M = 12;
 
+/** Distances (m before the threshold) of the glide-path gates on every final approach. */
+export const APPROACH_GATES = Array.from({ length: 11 }, (_, i) => 180 + i * 260);
+
 /** Height over the threshold on the glide path: 12 m, or a field's own (a short deck wants less). */
 export function crossingHeight(field) {
   return field.crossingHeight ?? THRESHOLD_CROSSING_M;

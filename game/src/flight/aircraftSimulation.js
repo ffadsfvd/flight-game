@@ -4,7 +4,7 @@
 // sound react to.
 import * as THREE from 'three';
 import { createAircraftBody, placeAircraft, stepAircraft } from './flightDynamics.js';
-import { applyTouchdownDamage, createDamageTracker, stepDamage } from './damageModel.js';
+import { applyTouchdownDamage, createDamageTracker, gearLimits, stepDamage } from './damageModel.js';
 import { createLandingMonitor, stepLandingMonitor } from './landingMonitor.js';
 import { detectCrash } from './crashDetector.js';
 import { stepIcing } from './icingModel.js';
@@ -52,7 +52,7 @@ function explainCrash(cause, body, history) {
   if (stall && body.time - stall.time < 9) {
     const flaps = ['flaps up', 'flaps 15°', 'full flaps'][stall.flaps] ?? 'flaps up';
     const iced = stall.ice > 0.2 ? `With ${Math.round(stall.ice * 100)}% ice on the wings, stalled` : 'Stalled';
-    return `${iced} at ${stall.aglFt} ft and ${stall.kt} kt with ${flaps}${body.spec.gearRetracts && !body.gearDown ? ' and the gear up' : ''}, then ${tail}`;
+    return `${iced} at ${stall.aglFt} ft and ${stall.kt} kt with ${flaps}${body.spec.gearRetracts && !body.gearDown ? ' and the gear up' : ''}, the ${stall.wing} wing dropping, then ${tail}`;
   }
   const out = history.engineOut;
   if (out && !body.engine.running) return `Engine out at ${out.aglFt} ft (${out.cause ?? 'failure'}), then ${tail}`;
@@ -109,7 +109,7 @@ export function createAircraftSimulation(world, wind) {
       sim.history.engineOut = { time: body.time, aglFt: Math.round(body.agl * 3.281), cause: body.engine.failureCause };
     }
     if (!body.onGround && body.stall > 0.55 && (!sim.history.stall || body.time - sim.history.stall.time > 9)) {
-      sim.history.stall = { time: body.time, aglFt: Math.round(body.agl * 3.281), kt: Math.round(body.airspeed * 1.944), flaps: body.flapSetting, ice: body.ice ?? 0 };
+      sim.history.stall = { time: body.time, aglFt: Math.round(body.agl * 3.281), kt: Math.round(body.airspeed * 1.944), flaps: body.flapSetting, ice: body.ice ?? 0, wing: body.wingDrop >= 0 ? 'left' : 'right' };
     }
     if (stepIcing(body, sim.icing, PHYSICS_STEP) === 'icing') events.push({ kind: 'icing', level: sim.icing?.level ?? 0 });
     sim.peakIce = Math.max(sim.peakIce, body.ice);
@@ -118,7 +118,7 @@ export function createAircraftSimulation(world, wind) {
     for (const e of stepDamage(body, sim.damage, PHYSICS_STEP)) events.push(e);
     for (const e of stepLandingMonitor(sim.landing, body, world, PHYSICS_STEP)) {
       if (e.kind === 'touchdown' && !e.touchdown.water) {
-        if (e.touchdown.fpm > body.spec.gearCollapseFpm) {
+        if (e.touchdown.fpm > gearLimits(body).collapseFpm) {
           sim.ended = { severity: 'crash', cause: explainCrash(`The gear collapsed on a ${e.touchdown.fpm} fpm touchdown`, body, sim.history), place: e.touchdown.place };
         } else {
           const hurt = applyTouchdownDamage(body, sim.damage, e.touchdown.fpm);

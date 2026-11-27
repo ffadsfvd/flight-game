@@ -12,4 +12,5 @@ export const marketDayShuttle = {
   ],
   reward: { money: 740, xp: 290 },
   cargo: true,
+  birds: true,
 };

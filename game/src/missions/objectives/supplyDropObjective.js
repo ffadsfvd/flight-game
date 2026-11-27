@@ -44,6 +44,7 @@ export function createSupplyDropObjective(stage) {
       crates.push({ mesh, p, v: ctx.body.velocity.clone(), age: 0, landed: false });
       ctx.sound('release');
       ctx.toast('CRATE AWAY', 'good');
+      ctx.report({ kind: 'release', what: 'crate' });
     },
     update(dt, ctx) {
       const wind = ctx.windVector();
@@ -67,6 +68,7 @@ export function createSupplyDropObjective(stage) {
           ctx.effects.burst(ground <= 0.1 ? 'splash' : 'crate-impact', c.p);
           ctx.toast(`CRATE DOWN ${Math.round(d)} m FROM THE FLARE`, d < (stage.radius ?? 60) ? 'good' : 'bad');
           if (best === null || d < best) best = d;
+          ctx.report({ kind: 'crate', distance: d, radius: (stage.radius ?? 60) * 0.5, best });
         }
         c.mesh.group.position.copy(c.p);
       }

@@ -14,4 +14,10 @@ export const medevacToMarenza = {
   ],
   reward: { money: 680, xp: 280 },
   cargo: true,
+  birds: true,
+  bonus: [
+    { type: 'par', seconds: 190, label: 'Route gates under 3:10' },
+    { type: 'soft', fpm: 200, label: 'Patient-soft touchdown, under 200 fpm' },
+    { type: 'intact', label: 'No damage to the aircraft' },
+  ],
 };

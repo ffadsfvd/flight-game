@@ -23,7 +23,7 @@ export function createFlightEventHandler({ effects, sfx, hud, radioFor }) {
         } else if (e.kind === 'bird') {
           sfx.play('bird');
           effects.burst('bird', body.position, body.velocity);
-          hud.radio.say(radioFor('warn'), `${e.text}. Watch your engine temperature and land when you can.`, { priority: true });
+          hud.radio.say(radioFor('warn'), e.part === 'engine' ? `${e.text}. Power is capped now: keep the speed up and fly a long, flat final.` : `${e.text}. She'll pull ${e.text.includes('left') ? 'left' : 'right'}: hold a little opposite aileron.`, { priority: true });
         } else if (e.kind === 'hard-landing' || e.kind === 'overstress' || e.kind === 'overspeed' || e.kind === 'flaps' || e.kind === 'gear') {
           sfx.play('warning');
           hud.toast(e.text.toUpperCase(), 'bad');
@@ -58,6 +58,7 @@ export function createFlightEventHandler({ effects, sfx, hud, radioFor }) {
           sfx.play('gear');
           hud.toast(n.down ? 'GEAR DOWN' : 'GEAR UP');
         } else if (n.kind === 'gear-blocked') hud.toast('GEAR LOCKED ON THE GROUND', 'bad');
+        else if (n.kind === 'gear-stuck') hud.toast("GEAR DAMAGED · WON'T RETRACT", 'bad');
         else if (n.kind === 'gear-fixed') hud.toast('FIXED GEAR ON THIS AIRCRAFT');
         else if (n.kind === 'flaps') {
           sfx.play('flaps');

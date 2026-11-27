@@ -43,6 +43,7 @@ export function createAerobaticsObjective(stage) {
         f.score = Math.round(Math.max(20, Math.min(100, score)));
         ctx.toast(`${f.name.toUpperCase()}  ${f.score}%`, 'good');
         ctx.sound('ring');
+        ctx.report({ kind: 'figure', name: f.name, score: f.score });
       };
       if (Math.abs(pitchAccum) > Math.PI * 1.85 && Math.abs(rollAccum) < Math.PI * 0.6) {
         complete('loop', 100 - Math.abs(b.position.y - entryAlt) * 0.5 - maxBankDev * 0.4);
