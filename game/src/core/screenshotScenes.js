@@ -50,20 +50,21 @@ export function stageScreenshot(name, game) {
   } else if (name === 'cockpit') {
     game.startMission(missionById('canyon-run'));
     const objective = game.runner.objective;
-    const ring = objective.jumpTo(4, game.runnerContext, 31.4);
+    const ring = objective.jumpTo(3, game.runnerContext, 31.4);
     const n = ring.normal;
-    const p = ring.position.clone().addScaledVector(n, -175);
+    const p = ring.position.clone().addScaledVector(n, -145);
     const heading = (THREE.MathUtils.radToDeg(Math.atan2(n.x, -n.z)) + 360) % 360;
     session.simulation.start(session.spec, { x: p.x, y: p.y + 2, z: p.z, heading, pitch: 1, speed: 52, flaps: 0, throttle: 0.82 }, { birds: false });
     game.controls.controls.throttle = 0.82;
     game.cameras.view = 'cockpit';
     run(game, 1.2);
-    game.hud.radio.say('ines', 'Ring four. Keep your eyes outside, not on the walls.', { priority: true });
+    game.hud.radio.say('ines', 'Ring three. Keep your eyes outside, not on the walls.', { priority: true });
     game.hud.radio.hold();
     run(game, 0.3);
-    // Glance down a little so the stick, the throttle and the pilot's gloves are in the frame.
-    game.controls.mouse.state.lookY = 0.09;
+    // Glance down a little so the whole panel, the stick, the throttle and the pilot's gloves are
+    // in the frame (the glance is applied to the cockpit camera directly, as a held free look).
     run(game, 1 / 60);
+    game.cameras.update(0, session.body, session.spec, game.world, { x: 0, y: 0.06 }, false);
   } else if (name === 'firefight') {
     // Second pass over the fire line on Calvera's south slope: the west flank is already out, the
     // Heron banks along the slope with its water curtain falling on the east hot spot, the smoke

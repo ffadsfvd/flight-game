@@ -90,7 +90,7 @@ body { font-family: var(--font); font-size: calc(16px * var(--ui)); color: var(-
 #hud.is-cockpit #hud-aircraft-systems, #hud.is-cockpit #hud-fuel-and-damage { bottom: 12.5em; }
 
 #hud-camera-label { position: absolute; left: 50%; bottom: 14.3em; transform: translateX(-50%); font-size: 0.72em; color: #e9e2d4; letter-spacing: 0.12em; text-shadow: 0 1px 3px #000; white-space: nowrap; }
-#hud.is-cockpit #hud-camera-label { bottom: 0.8em; }
+#hud.is-cockpit #hud-camera-label { bottom: auto; top: 6.2em; }
 #hud-stick-indicator { position: absolute; left: 50%; top: 50%; width: 4.4em; height: 4.4em; margin: -2.2em 0 0 -2.2em; border: 1px solid rgba(255, 244, 220, 0.35); border-radius: 50%; opacity: 0; transition: opacity 0.4s; }
 #hud-stick-indicator.is-active { opacity: 1; }
 #hud-stick-indicator i { position: absolute; left: 50%; top: 50%; width: 0.7em; height: 0.7em; margin: -0.35em 0 0 -0.35em; border-radius: 50%; background: #ffc46a; box-shadow: 0 0 0.4em rgba(255, 196, 106, 0.8); }

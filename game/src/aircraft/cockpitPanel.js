@@ -174,13 +174,13 @@ function drawAnnunciators(ctx, d) {
     ctx.shadowBlur = 0;
   });
   const warn = d.stall > 0.25 ? 'STALL' : !d.engineRunning ? 'ENGINE OUT' : d.fuelFrac < 0.1 ? 'LOW FUEL' : '';
-  ctx.fillStyle = warn ? '#ff3b2f' : '#2a0f0d';
+  ctx.fillStyle = warn ? '#ff3b2f' : '#3a1411';
   ctx.beginPath();
   ctx.roundRect(800, 256, 196, 56, 8);
   ctx.fill();
   ctx.strokeStyle = 'rgba(190,196,206,0.55)';
   ctx.stroke();
-  ctx.fillStyle = warn ? '#ffffff' : '#6a302a';
+  ctx.fillStyle = warn ? '#ffffff' : '#c4594b';
   ctx.font = `800 22px ${INSTRUMENT_FONT}`;
   ctx.fillText(warn || 'MASTER WARN', 898, 292);
 }
