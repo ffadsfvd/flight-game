@@ -198,6 +198,9 @@ const PLAYS = {
   async 'ignara-honeymoon'(page, log) {
     return finish(page, await flyTour(page, 'ignara-honeymoon', log));
   },
+  async 'lumeno-tour'(page, log) {
+    return finish(page, await flyTour(page, 'lumeno-tour', log));
+  },
   async lagoon(page, log) {
     await page.press('KeyF');
     const s = await flyLanding(page, { vref: 56, flapsDown: 2, water: true, log });

@@ -13,6 +13,7 @@ export const CHARACTERS = {
   rosa: { name: 'Rosa Bellini', role: 'Celeste Air Tours', callsign: 'Celeste Tours', skin: '#c9946a', hair: '#3a1e14', hairStyle: 'long', shirt: '#2a8a9a', backdrop: '#17464f', glasses: true },
   walt: { name: 'Walt Haddon', role: 'Passenger, row two', callsign: 'Passenger', skin: '#efc7a4', hair: '#b89a6a', hairStyle: 'short', shirt: '#d84a7a', backdrop: '#4a2238', shades: true },
   sofi: { name: 'Sofi Bruni', role: 'Passenger, honeymoon', callsign: 'Passenger', skin: '#d9a47c', hair: '#1e1410', hairStyle: 'swept', shirt: '#f2e6d0', backdrop: '#5a3a2a' },
+  elio: { name: 'Elio Vasa', role: 'Passenger, Lumeno fisherman', callsign: 'Passenger', skin: '#b07a4e', hair: '#d8d4cc', hairStyle: 'bald', shirt: '#2f5a3a', backdrop: '#1e3a28', beard: true },
 };
 
 /** The character for an id (the instructor if unknown). */
