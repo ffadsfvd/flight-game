@@ -203,6 +203,12 @@ try {
     s = await read(page);
   }
   check('water landing completes the lagoon mission', s.state === 'results' && s.result && s.result.success, s.result ? `${s.result.success ? 'success' : 'fail'}: ${s.result.cause ?? s.result.score}` : s.state);
+  // The turnaround on the debrief: buy a fuel top-up for the next sortie with a real click.
+  const fleetBefore = await page.evaluate('JSON.stringify({ money: window.__solvara.game.career.money, topUp: (window.__solvara.game.career.fleet?.heron?.topUp ?? 0) })');
+  await clickAction(page, 'top-up');
+  const fleetAfter = await page.evaluate('JSON.stringify({ money: window.__solvara.game.career.money, topUp: (window.__solvara.game.career.fleet?.heron?.topUp ?? 0) })');
+  const [b0, a0] = [JSON.parse(fleetBefore), JSON.parse(fleetAfter)];
+  check('the debrief turnaround sells a fuel top-up for the next sortie', a0.topUp > 0 && a0.money < b0.money, `${b0.money} -> ${a0.money} cr, top-up ${a0.topUp}`);
   await clickAction(page, 'board');
 
   // Every mission starts.
