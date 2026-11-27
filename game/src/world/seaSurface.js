@@ -149,7 +149,46 @@ function createHeightTexture(terrain) {
   return texture;
 }
 
-/** Creates the sea mesh; call update(time) each frame and setLighting() when the hour changes. */
+/**
+ * The sea's flat grid, centred on the camera: 40 m cells out to 400 m, then each ring of cells 22%
+ * longer, out past 45 km. The sea used to be one 90 km quad, and the GPU sets up a triangle's depth
+ * and world position from its corners in 32-bit floats, so with corners 45 km away the sea's depth
+ * came out decimetres to metres off near the camera, nearer or farther as the view moved: the
+ * waterline jumped, the water painted over the beach and, flying low, up over the wing. With small
+ * triangles round the camera the error is gone.
+ */
+function createSeaGrid() {
+  const offsets = [0];
+  let cell = 40;
+  while (offsets[offsets.length - 1] < 46000) {
+    offsets.push(offsets[offsets.length - 1] + cell);
+    if (offsets[offsets.length - 1] >= 400) cell *= 1.22;
+  }
+  const lines = [...offsets.slice(1).reverse().map((v) => -v), ...offsets];
+  const n = lines.length;
+  const positions = new Float32Array(n * n * 3);
+  for (let iz = 0; iz < n; iz += 1) {
+    for (let ix = 0; ix < n; ix += 1) {
+      const i = (iz * n + ix) * 3;
+      positions[i] = lines[ix];
+      positions[i + 2] = lines[iz];
+    }
+  }
+  const index = [];
+  for (let iz = 0; iz < n - 1; iz += 1) {
+    for (let ix = 0; ix < n - 1; ix += 1) {
+      const a = iz * n + ix;
+      index.push(a, a + n, a + 1, a + 1, a + n, a + n + 1);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setIndex(index);
+  geometry.computeBoundingSphere();
+  return geometry;
+}
+
+/** Creates the sea mesh; call update(time, camera) each frame and setLighting() when the hour changes. */
 export function createSeaSurface(terrain) {
   const uniforms = THREE.UniformsUtils.merge([
     THREE.UniformsLib.fog,
@@ -170,16 +209,16 @@ export function createSeaSurface(terrain) {
   ]);
   uniforms.uHeightTex.value = createHeightTexture(terrain);
   const material = new THREE.ShaderMaterial({ uniforms, vertexShader: VERTEX, fragmentShader: FRAGMENT, fog: true });
-  const geometry = new THREE.PlaneGeometry(90000, 90000, 1, 1);
-  geometry.rotateX(-Math.PI / 2);
-  const mesh = new THREE.Mesh(geometry, material);
+  const mesh = new THREE.Mesh(createSeaGrid(), material);
   mesh.name = 'sea';
   mesh.receiveShadow = false;
 
   return {
     mesh,
-    update(time) {
+    /** Animates the waves and keeps the grid's fine centre under the camera (the sea stays flat, so moving it changes nothing but precision). */
+    update(time, camera) {
       uniforms.uTime.value = time;
+      if (camera) mesh.position.set(camera.position.x, 0, camera.position.z);
     },
     setLighting(light) {
       uniforms.uSunDir.value.copy(light.sunDirection);

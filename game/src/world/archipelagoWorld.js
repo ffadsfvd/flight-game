@@ -115,7 +115,7 @@ export function createArchipelagoWorld(scene) {
     },
     /** Per frame: animate the sea and landmarks, aim the shadows, update light sprites. */
     update(time, wind, focus, camera, viewHeight) {
-      sea.update(time);
+      sea.update(time, camera);
       sky.follow(camera);
       lighting.follow(focus);
       airfields.update(time, wind, focus);
