@@ -284,7 +284,7 @@ async function flyFirefight(page, log) {
       // On the run-in the line's own ground sets the height (about 200 ft over the flames, as the
       // briefing asks), with the ground and the trees straight ahead cleared; elsewhere clear
       // whatever is ahead.
-      const wanted = g.onLine && g.p.along > -1300 ? Math.max(run.ground + 55, run.top + 32, f.aheadNarrow + 38) : Math.max(150, run.top + 60, f.ahead + 90);
+      const wanted = g.onLine && g.p.along > -1300 ? Math.max(run.ground + 55, run.top + 32, f.aheadNarrow + 38) : Math.max(170, run.top + 80, f.ahead + 120);
       // Release once the water will land 40 m short of the middle: the curtain runs on over it.
       const speed = Math.max(1, Math.hypot(f.vx, f.vz));
       const along = ((run.x - f.impact.x) * f.vx + (run.z - f.impact.z) * f.vz) / speed;
@@ -297,11 +297,13 @@ async function flyFirefight(page, log) {
         run = null;
         continue;
       }
-      // Past the hot spot without a drop: go round (the entry point is behind).
+      // Past the hot spot without a drop: go round (the entry point is behind). Never turn back
+      // toward rising ground low: with the hills ahead less than 90 m below, climb straight first.
       const digit = wanted - s.alt > 20 ? 0 : s.kt > 88 ? 4 : 6;
       if (Math.abs(s.throttle - (digit === 0 ? 1 : digit / 10)) > 0.01) await page.press(`Digit${digit}`);
       const pitchTarget = Math.max(-6, Math.min(12, (wanted - s.alt) * 0.1 + (s.kt - 75) * 0.25));
-      await step(page, s, { heading: g.heading, vs: 0, maxBank: g.onLine ? 12 : 25, pitchTarget });
+      const climbFirst = !g.onLine && s.alt - f.ahead < 90;
+      await step(page, s, { heading: climbFirst ? s.hdg : g.heading, vs: 0, maxBank: g.onLine ? 12 : 25, pitchTarget });
     } else if (phase === 'to-lane' || phase === 'descend') {
       // Down the lane: hold 300 ft to 1 km before its middle, then 550 fpm down at 60 kt with
       // flaps 1, a gentle flare onto the water.
@@ -714,7 +716,8 @@ const only = args.only ? String(args.only).split(',') : Object.keys(PLAYS).filte
 const DIVERT_PLAYS = new Set();
 const outcomes = [];
 for (const id of only) {
-  const chrome = await launchChrome({ port: 9339, headless: testsRunHeadless() });
+  // --port lets a second run go side by side with another (each Chrome needs its own debugging port).
+  const chrome = await launchChrome({ port: Number(args.port ?? 9339), headless: testsRunHeadless() });
   try {
     const page = await openPage(chrome.port, 'http://localhost:8080/?unlock=all');
     await page.waitFor('window.__solvara && window.__solvara.game.state === "title"', 30000);
