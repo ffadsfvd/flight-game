@@ -47,6 +47,7 @@ export function createFinalCommitDecision(mission) {
         circuitKg,
         reasons,
         runway: `${guidance.field.code} ${guidance.name ?? ''}`.trim(),
+        end: guidance.name ?? '',
         auto: false,
       };
       return 'offer';
@@ -70,8 +71,8 @@ export function createFinalCommitDecision(mission) {
         fuel: `${Math.round(d.fuelKg)} kg left · ${d.reasons[0]}`,
         timer: Math.max(0, Math.ceil(d.timer)),
         options: [
-          { key: 'K', label: `LAND · commit to ${d.runway || 'this runway'}`, detail: `full pay ${missionPay} cr · no fuel or power for a second try` },
-          { key: 'J', label: 'GO AROUND · one more circuit', detail: `${Math.round(missionPay * GO_AROUND_PAY)} cr · burns ≈${Math.round(d.circuitKg)} kg${after > 0 ? `, lands with ≈${after} kg` : ': the tank runs dry!'}` },
+          { key: 'K', label: `LAND · commit to ${d.end || 'this runway'}`, detail: `full pay ${missionPay} cr · no fuel or power for a second try` },
+          { key: 'J', label: 'GO AROUND', detail: `one more circuit · ${Math.round(missionPay * GO_AROUND_PAY)} cr · burns ≈${Math.round(d.circuitKg)} kg${after > 0 ? `, lands with ≈${after} kg` : ': the tank runs dry!'}` },
         ],
       };
     },

@@ -164,6 +164,7 @@ export function createFlyingDiscipline() {
       else if (e.kind === 'flaps') fault('flaps', 'FLAPS OVER THEIR SPEED');
       else if (e.kind === 'gear') fault('gear', 'GEAR OVER ITS SPEED');
       else if (e.kind === 'bounce') fault('bounce', 'BOUNCED');
+      else if (e.kind === 'scrape') fault('scrape', e.text.startsWith('Wingtip') ? 'WINGTIP SCRAPE' : 'TAIL SCRAPE');
       else if (e.kind === 'landed') {
         const g = e.report.grade;
         if (g === 'A+') award('landing', 'GREASER · A+', 50);

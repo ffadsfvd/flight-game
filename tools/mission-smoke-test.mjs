@@ -1,4 +1,5 @@
-// Mission logic smoke test: proves every mission can be completed. Unlike the input test, it
+// Mission logic smoke test: proves every mission can be completed, in its own aircraft and in each
+// other type it lists as suiting the job. Unlike the input test, it
 // drives the simulation inside the page: for each stage it puts the aircraft where that stage
 // needs it (before each ring, on short final, over the flare or the fire, facing a landmark, in
 // the formation slot...) and flies the last part with simple control laws, then checks the
@@ -198,7 +199,7 @@ export const DRIVER = String.raw`(async (id) => {
   let wait = 0;
   while (g.state === 'flying' && wait < 600) { g.updateFlying(dt, []); wait += 1; }
   const r = window.__lastResult;
-  return { id, ok: Boolean(r && r.success && r.missionId === id), why: r ? (r.cause || 'score ' + r.score + ' ' + r.medal) : g.state };
+  return { id, ok: Boolean(r && r.success && r.missionId === id), why: r ? (r.cause || 'score ' + r.score + ' ' + r.medal) : g.state, aircraft: s.spec ? s.spec.id : null };
 })`;
 
 async function main() {
@@ -221,6 +222,14 @@ async function main() {
       }
       const log = await page.evaluate('JSON.stringify(window.__fireLog || null)');
       if (log !== 'null' && only) console.log(log);
+    }
+    // Every other type a mission lists as suiting its work, flown by a pilot who owns it.
+    const pairs = await page.evaluate(`window.__solvara.missions.MISSIONS.filter((m) => ${JSON.stringify(ids)}.includes(m.id)).flatMap((m) => (m.alternatives ?? []).map((a) => [m.id, a]))`);
+    for (const [id, alt] of pairs) {
+      const r = await page.evaluate(`(async () => { const g = window.__solvara.game; g.career.owned = ['wren', 'heron', 'kestrel', 'pelican', 'swallow', 'swiftlet', 'saker']; g.career.missionAircraft = { ${JSON.stringify(id)}: ${JSON.stringify(alt)} }; const r = await ${DRIVER}(${JSON.stringify(id)}); g.career.missionAircraft = {}; return r; })()`);
+      const ok = r.ok && r.aircraft === alt;
+      console.log(`${ok ? 'PASS' : 'FAIL'}  ${id} in the ${alt}  ${r.why}${r.aircraft === alt ? '' : ` (flew the ${r.aircraft})`}`);
+      if (!ok) failed += 1;
     }
     const errors = page.consoleMessages.filter((m) => m.type === 'error' || m.type === 'exception');
     if (errors.length) {

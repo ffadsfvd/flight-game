@@ -89,9 +89,10 @@ export function bonusGoalsFor(mission, spec) {
 export function createBonusGoalTracker(mission, spec, startBody = null) {
   const goals = bonusGoalsFor(mission, spec).map((g) => ({ ...g, status: 'open', detail: '' }));
   const lastLandIndex = mission.stages.map((s) => s.type).lastIndexOf('land');
-  // "No damage" means no new damage: what a past sortie or the mission itself left is the baseline.
+  // "No damage" means no new damage: what a past sortie or the mission itself left is the baseline,
+  // and only a real hurt counts (half a percent or more), never a rounding step.
   const baseline = startBody ? { engine: startBody.engine.health, airframe: startBody.airframe, gear: startBody.gearHealth, flaps: startBody.flapsJammed } : { engine: 1, airframe: 1, gear: 1, flaps: false };
-  const newDamage = (b) => b.engine.health < baseline.engine - 0.001 || b.airframe < baseline.airframe - 0.001 || b.gearHealth < baseline.gear - 0.001 || (b.flapsJammed && !baseline.flaps);
+  const newDamage = (b) => b.engine.health < baseline.engine - 0.005 || b.airframe < baseline.airframe - 0.005 || b.gearHealth < baseline.gear - 0.005 || (b.flapsJammed && !baseline.flaps);
   let courseStart = null;
   let courseDone = false;
   let finalSeen = 0;
@@ -152,7 +153,7 @@ export function createBonusGoalTracker(mission, spec, startBody = null) {
       const b = ctx.body;
       if (courseStart !== null && !courseDone) each('par', (g) => g.status === 'open' && ctx.time - courseStart > g.seconds && set(g, 'failed', 'over par'));
       each('mission-par', (g) => g.status === 'open' && ctx.time > g.seconds && set(g, 'failed', 'over time'));
-      each('intact', (g) => g.status === 'open' && newDamage(b) && set(g, 'failed', 'damaged'));
+      each('intact', (g) => g.status === 'open' && newDamage(b) && set(g, 'failed', (ctx.sim?.damage?.log.at(-1)?.text ?? 'damaged').split(':')[0].toLowerCase()));
       each('ice', (g) => g.status === 'open' && (b.ice ?? 0) * 100 > g.pct && set(g, 'failed', `${Math.round(b.ice * 100)}% ice`));
       each('reserve', (g) => {
         if (g.status === 'met') return;

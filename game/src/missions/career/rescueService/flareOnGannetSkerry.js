@@ -1,6 +1,6 @@
 // Rescue Service 1: find the stranded kayakers' red flare on Gannet Skerry and drop supply crates on it.
 export const flareOnGannetSkerry = {
-  id: 'rescue-drop', chapter: 3, title: 'Flare on Gannet Skerry', kind: 'Search & rescue', giver: 'lena', aircraft: 'wren',
+  id: 'rescue-drop', chapter: 3, title: 'Flare on Gannet Skerry', kind: 'Search & rescue', giver: 'lena', aircraft: 'wren', alternatives: ['heron', 'pelican'],
   summary: 'Two kayakers are stranded on Gannet Skerry. Find their red flare and drop a supply crate on it.',
   time: 'golden', wind: { from: 230, speed: 5, gust: 2, turbulence: 0.5 }, fuel: 0.5,
   start: { type: 'air', x: -4200, y: 320, z: 1300, heading: 255, speed: 48, flaps: 0, throttle: 0.7 },

@@ -1,6 +1,6 @@
 // Night and Storm 5: a night search for a smuggler's boat running dark between Marenza and Nesta, found and held in the landing light.
 export const darkWater = {
-  id: 'dark-water', chapter: 5, title: 'Dark Water', kind: 'Night search', giver: 'lena', aircraft: 'wren',
+  id: 'dark-water', chapter: 5, title: 'Dark Water', kind: 'Night search', giver: 'lena', aircraft: 'wren', alternatives: ['heron', 'pelican'],
   summary: 'A boat is running without lights in the strait north of Marenza. Sweep the search area low with your landing light and hold it in the beam until the patrol arrives.',
   time: 'night', wind: { from: 240, speed: 3, gust: 1, turbulence: 0.3 }, fuel: 0.55,
   start: { type: 'air', x: -1200, y: 300, z: -1900, heading: 20, speed: 46, flaps: 0, throttle: 0.6 },

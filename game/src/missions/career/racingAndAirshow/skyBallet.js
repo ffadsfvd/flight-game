@@ -1,6 +1,6 @@
 // Racing and Airshow 1: a scored aerobatic display over the bay: loop, roll, inverted pass and wingover.
 export const skyBallet = {
-  id: 'sky-ballet', chapter: 4, title: 'Sky Ballet', kind: 'Aerobatics', giver: 'teo', aircraft: 'swiftlet',
+  id: 'sky-ballet', chapter: 4, title: 'Sky Ballet', kind: 'Aerobatics', giver: 'teo', aircraft: 'swiftlet', alternatives: ['kestrel', 'saker'],
   summary: 'Fly a display over the bay of Porto Celeste: loop, aileron roll, inverted pass and wingover.',
   time: 'golden', wind: { from: 250, speed: 2, gust: 0.5, turbulence: 0.1 }, fuel: 0.6,
   start: { type: 'air', x: -2200, y: 900, z: 5200, heading: 90, speed: 85, flaps: 0, throttle: 0.75, gearDown: false },

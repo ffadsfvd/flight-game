@@ -2,7 +2,7 @@
 // Faro Lumeno lighthouse, up over the ridge wind farm, down across Ventara harbour and out low over
 // the lagoon, for an old Lumeno fisherman seeing his island from the air for the first time.
 export const lumenoGardenTour = {
-  id: 'lumeno-tour', chapter: 2, title: 'Lumeno from the Air', kind: 'Sightseeing tour', giver: 'rosa', aircraft: 'wren',
+  id: 'lumeno-tour', chapter: 2, title: 'Lumeno from the Air', kind: 'Sightseeing tour', giver: 'rosa', aircraft: 'wren', alternatives: ['heron', 'pelican'],
   summary: 'Fly Elio round his home island of Lumeno: the Faro Lumeno lighthouse, the ridge wind farm, Ventara harbour and the green lagoon, gently, so he can point out his house.',
   time: 'golden', wind: { from: 240, speed: 4, gust: 1.5, turbulence: 0.35 }, fuel: 0.6, payload: 90,
   start: { type: 'air', x: 6900, y: 240, z: 3400, heading: 275, speed: 46, flaps: 0, throttle: 0.6, gearDown: false },

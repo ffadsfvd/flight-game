@@ -1,6 +1,6 @@
 // Night and Storm 4: the last ferry flight into Orsa Cay ahead of a gale, a gusty approach past the mesas.
 export const orsaGale = {
-  id: 'orsa-gale', chapter: 5, title: 'Gale at Orsa Cay', kind: 'Storm approach', giver: 'mags', aircraft: 'wren',
+  id: 'orsa-gale', chapter: 5, title: 'Gale at Orsa Cay', kind: 'Storm approach', giver: 'mags', aircraft: 'wren', alternatives: ['pelican'],
   summary: 'Beat the gale into Orsa Cay: a long final to runway 22 in heavy gusts and rain, with the mesas beside the approach.',
   time: 'storm', wind: { from: 205, speed: 9, gust: 4.5, turbulence: 1.3 }, fuel: 0.45, payload: 60,
   start: { type: 'approach', field: 'orsa', end: 1, distance: 5200, height: 90, flaps: 0 },

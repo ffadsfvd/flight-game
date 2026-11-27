@@ -33,9 +33,8 @@ export function stageScreenshot(name, game) {
     // A mid-career sortie on its final leg, flown for real from the take-off at Orsa Cay by the
     // scene pilot: the medevac Wren took a gull through the engine climbing out (power capped), hit
     // bingo fuel at the first gate and pressed on, and is now on short final to runway 09 at
-    // Marenza through the glide-path gates, its discipline streak running, the ambulance waiting.
-    // The chase camera sits close behind and a little to the left, Marina Sabbia on its beach and
-    // the sea on the right, the Casale Vento farms and a crop duster on the left.
+    // Marenza through the glide-path rings, its discipline streak running, the ambulance waiting,
+    // and the game asks the short-final question: commit to the landing or go around.
     game.startMission(missionById('medevac'));
     // The pilot reads the short-final call (land or go around) but has not answered it yet.
     const pilot = createScenePilot(game, { answerCommit: false });
@@ -44,7 +43,9 @@ export function stageScreenshot(name, game) {
       return Boolean(g && g.distance < 760);
     }, 600);
     session.body.landingLights = true;
-    Object.assign(game.cameras.chaseFraming, { height: 1.35, distance: 1.4, lookAhead: 400, lookUp: -36, yaw: -0.16, fov: 46, lookSide: 70 });
+    // A long lens from close behind and a little left: the runway sits large in the middle of the
+    // next target ring with the approach lights leading in, Marina Sabbia's roofs on the right.
+    Object.assign(game.cameras.chaseFraming, { height: 1.0, distance: 2.5, lookAhead: 400, lookUp: -12, yaw: -0.12, fov: 30, lookSide: 28 });
     game.traffic.place('Vento duster', 0.58);
     game.traffic.place('Marenza circuit', 0.16);
     for (let i = 0; i < 70; i += 1) pilot.frame('press-on', true);
@@ -116,7 +117,7 @@ export function stageScreenshot(name, game) {
     game.startMission(missionById(name === 'night' ? 'night-mail' : 'storm-approach'));
     game.runner.skipTo(name === 'night' ? 2 : 0);
     const spec = session.spec;
-    session.simulation.start(spec, { ...approachPlacement(spec, 'marenza', 1, 1400, { flaps: 2 }), throttle: 0.32 }, { birds: false });
+    session.simulation.start(spec, { ...approachPlacement(spec, 'marenza', name === 'night' ? 0 : 1, 1400, { flaps: 2 }), throttle: 0.32 }, { birds: false });
     game.controls.controls.throttle = 0.32;
     run(game, 3);
   }

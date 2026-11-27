@@ -1,6 +1,6 @@
 // Racing and Airshow 3: ten rings round Mount Ignara and a finish through the Arco Solare sea arch.
 export const ignaraRingRun = {
-  id: 'volcano-run', chapter: 4, title: 'Ignara Ring Run', kind: 'Time trial', giver: 'teo', aircraft: 'heron',
+  id: 'volcano-run', chapter: 4, title: 'Ignara Ring Run', kind: 'Time trial', giver: 'teo', aircraft: 'heron', alternatives: ['wren', 'kestrel', 'saker'],
   summary: 'Circle Mount Ignara through ten rings and finish through the Arco Solare sea arch.',
   time: 'golden', wind: { from: 250, speed: 4, gust: 2, turbulence: 0.6 }, fuel: 0.6,
   start: { type: 'air', x: 1400, y: 300, z: -2600, heading: 10, speed: 50, flaps: 0, throttle: 0.85, gearDown: false },

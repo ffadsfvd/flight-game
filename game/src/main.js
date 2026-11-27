@@ -1,8 +1,8 @@
 // Solvara Skies boot. The imports are listed by system, the game's depth first: the flight model
 // and the systems that turn a sortie into decisions (damage, the fuel plan with bingo, the flight
 // data recorder), the debrief, the mission runner with its objectives, bonus goals, discipline
-// score and the forty missions, the career, the aircraft, the world and its airfields, the HUD,
-// then the director, renderer and loop that tie them together.
+// score and every mission of the career, the career, the aircraft, the world and its airfields,
+// the HUD, then the director, renderer and loop that tie them together.
 //
 // ?shot=cover|cockpit|firefight|debrief stages a deterministic screenshot scene instead of the menus.
 import { stepAircraft } from './flight/flightDynamics.js';

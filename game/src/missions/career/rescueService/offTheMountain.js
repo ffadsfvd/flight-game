@@ -1,7 +1,7 @@
 // Rescue Service 7: a climber with a broken leg flown off the Nesta Mountain Strip, a short grass
 // take-off from the terrace, across the strait to Calvera Highstrip and the waiting ambulance.
 export const offTheMountain = {
-  id: 'off-the-mountain', chapter: 3, title: 'Off the Mountain', kind: 'Mountain strip rescue', giver: 'lena', aircraft: 'wren',
+  id: 'off-the-mountain', chapter: 3, title: 'Off the Mountain', kind: 'Mountain strip rescue', giver: 'lena', aircraft: 'wren', alternatives: ['heron'],
   summary: 'Take off from the 520 m grass terrace of the Nesta Mountain Strip with an injured climber aboard, cross the strait and land him gently on Calvera Highstrip.',
   time: 'golden', wind: { from: 150, speed: 5, gust: 1.5, turbulence: 0.6 }, fuel: 0.5, payload: 90,
   start: { type: 'runway', field: 'nesta', end: 0 },

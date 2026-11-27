@@ -1,6 +1,6 @@
 // Rescue Service 6: the island doctor flown to the reef station, landed on the short grass strip across Coral Keys at dusk.
 export const reefDoctor = {
-  id: 'reef-doctor', chapter: 3, title: 'Reef Doctor', kind: 'Island strip', giver: 'lena', aircraft: 'wren',
+  id: 'reef-doctor', chapter: 3, title: 'Reef Doctor', kind: 'Island strip', giver: 'lena', aircraft: 'wren', alternatives: ['heron'],
   summary: 'Fly Doctor Amara to the reef station and land on the 380 m grass strip that crosses Coral Keys from sea to sea.',
   time: 'dusk', wind: { from: 80, speed: 4, gust: 1.5, turbulence: 0.4 }, fuel: 0.5, payload: 85,
   start: { type: 'air', x: -5200, y: 240, z: -5500, heading: 95, speed: 46, flaps: 1, throttle: 0.55 },

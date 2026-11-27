@@ -1,6 +1,6 @@
 // Island Work 1: 110 kg of mail from Marenza to Orsa Cay Field, paid by how gently it arrives.
 export const mailRunToOrsa = {
-  id: 'mail-run', chapter: 2, title: 'Mail Run to Orsa Cay', kind: 'Cargo', giver: 'mags', aircraft: 'wren',
+  id: 'mail-run', chapter: 2, title: 'Mail Run to Orsa Cay', kind: 'Cargo', giver: 'mags', aircraft: 'wren', alternatives: ['heron', 'pelican'],
   summary: 'Carry 110 kg of mail from Marenza to Orsa Cay Field. A soft landing keeps the parcels intact.',
   time: 'golden', wind: { from: 240, speed: 5, gust: 2, turbulence: 0.4 }, fuel: 0.42, payload: 110,
   start: { type: 'runway', field: 'marenza', end: 1 },

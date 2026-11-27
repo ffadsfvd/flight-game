@@ -1,5 +1,6 @@
 // The Solvara career: six chapters of missions, one small file per mission under career/, each
-// with its giver, aircraft, start, weather (wind, light, icing), briefing dialogue, stages and pay.
+// with its giver, aircraft (and the other types that suit the job, which a pilot who owns them may
+// fly instead), start, weather (wind, light, icing), briefing dialogue, stages and pay.
 // Stage types: takeoff, rings (with rivals: a race; engineOff: soaring), land (water, short field,
 // engine failure), reach, supply-drop, firefighting, photo, aerobatics, formation, search and
 // sightseeing (a passenger tour scored on comfort).
@@ -67,6 +68,22 @@ export const MISSIONS = [
 /** The mission with this id. */
 export function missionById(id) {
   return MISSIONS.find((m) => m.id === id) ?? null;
+}
+
+/**
+ * The aircraft a mission can be flown in: its own first (provided for the job), then each type
+ * the mission lists as suiting its work (`alternatives`) that the career owns.
+ */
+export function aircraftChoices(mission, career) {
+  const choices = [mission.aircraft];
+  for (const id of mission.alternatives ?? []) if (career?.owned?.includes(id) && !choices.includes(id)) choices.push(id);
+  return choices;
+}
+
+/** The aircraft the career flies this mission in: the pilot's pick when it suits, else the mission's own. */
+export function missionAircraft(mission, career) {
+  const pick = career?.missionAircraft?.[mission.id];
+  return pick && aircraftChoices(mission, career).includes(pick) ? pick : mission.aircraft;
 }
 
 /** Medal for a 0..100 score with the mission's thresholds. */

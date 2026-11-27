@@ -86,7 +86,10 @@ export function computeGroundContact(s, world, controls, out) {
   }
 
   // Tail and wingtip skids: an over-rotation or a wing-low touchdown scrapes instead of digging in.
+  // The damage model reads the scrape (which skid, how fast it slides) and decides what it costs.
   s.tailScrape = false;
+  s.scrapeKind = null;
+  s.scrapeSpeed = 0;
   for (const [tx, ty, tz, kind] of spec.crashPoints) {
     if (kind !== 'tail' && kind !== 'wingtip') continue;
     arm.set(tx, ty, tz).applyQuaternion(s.quaternion);
@@ -105,6 +108,8 @@ export function computeGroundContact(s, world, controls, out) {
     torque.crossVectors(arm, force);
     out.torque.add(torque);
     s.tailScrape = true;
+    if (kind === 'tail' || !s.scrapeKind) s.scrapeKind = kind;
+    s.scrapeSpeed = Math.max(s.scrapeSpeed, speed);
   }
 
   if (spec.floats) {

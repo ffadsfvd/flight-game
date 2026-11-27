@@ -5,7 +5,9 @@
 //   node tools/mission-playthrough.mjs [--only=postcards,orsa-gale]   (run `node serve.ts` first)
 // Missions: medevac (a bird strike on the climb-out, the bingo call answered with K, the route
 // gates in their speed band), banner-run (seven beach gates, the discipline streak), lagoon,
-// postcards, orsa-gale, sette-night and the three sightseeing tours. Chrome runs headless (no window,
+// postcards, orsa-gale, sette-night, the three sightseeing tours, both firefights, bring-her-home,
+// long-hop, and the work of the other types: storm-approach and night-mail in the Pelican twin,
+// nesta-hut (the mountain terrace) and coral-drop (a crate drop) in the Heron. Chrome runs headless (no window,
 // never takes the focus); --visible shows it, and then a hidden window pauses the game.
 import { launchChrome, openPage, sleep, testsRunHeadless } from './cdp.mjs';
 
@@ -360,6 +362,124 @@ const PLAYS = {
   },
   async 'nesta-fire'(page, log) {
     return flyFirefight(page, log);
+  },
+  async 'nesta-hut'(page, log) {
+    // The Heron up to the Nesta terrace: gear down (it flies in with the wheels up in the floats).
+    // The start is high and close to the strip, so the test pilot first turns out over the sea to
+    // the south, flies out along the extended centreline to 3 km, coming down to the glide path's
+    // height there, then turns back and flies the approach guide down to runway 09 on the slope.
+    await page.press('KeyG');
+    let s = await page.evaluate(READ);
+    const elevation = await page.evaluate(`window.__solvara.airfields.airfieldById('nesta').elevationResolved`);
+    const runwayHdg = s.guideHdg ?? 95;
+    let last = 0;
+    let phase = 'south';
+    for (let i = 0; i < 5000; i += 1) {
+      s = await page.evaluate(READ);
+      if (s.state !== 'flying' || s.guideDist === null) break;
+      if (phase === 'south' && (s.guideLat ?? 0) > 650) phase = 'out';
+      if (phase === 'out' && s.guideDist > 3000) break;
+      if (Date.now() - last > 4000) {
+        last = Date.now();
+        log(`  ${phase} dist ${s.guideDist.toFixed(0)} lat ${s.guideLat?.toFixed(0)} alt ${s.alt.toFixed(0)} m ${s.kt.toFixed(0)} kt hdg ${s.hdg.toFixed(0)}`);
+      }
+      const heading = phase === 'south' ? runwayHdg + 90 : runwayHdg + 180 + Math.max(-30, Math.min(30, ((s.guideLat ?? 0) - 650) * 0.2));
+      const targetAlt = elevation + Math.tan((3 * Math.PI) / 180) * 3000 + 30;
+      const digit = s.alt > targetAlt + 40 ? 3 : 5;
+      if (Math.abs(s.throttle - digit / 10) > 0.01) await page.press(`Digit${digit}`);
+      const pitchTarget = Math.max(-6, Math.min(6, (targetAlt - s.alt) * 0.05 + (s.kt - 68) * 0.3));
+      await step(page, s, { heading, vs: 0, maxBank: 22, pitchTarget });
+    }
+    log(`  turning back for the final: dist ${s.guideDist?.toFixed(0)} lat ${s.guideLat?.toFixed(0)} alt ${s.alt.toFixed(0)} m (strip ${elevation.toFixed(0)} m)`);
+    if (s.state === 'flying') s = await flyLanding(page, { vref: 62, flapsDown: 2, log });
+    return finish(page, s);
+  },
+  async 'storm-approach'(page, log) {
+    // The Pelican through the squall line: the approach guide to runway 27 in rain and gusts,
+    // flaps 1 and a few knots over its 70 kt approach speed for the gusts.
+    const s = await flyLanding(page, { vref: 76, flapsDown: 1, log });
+    return finish(page, s);
+  },
+  async 'night-mail'(page, log) {
+    // The Pelican off Orsa's runway 22 at night: full power, rotate at 62 kt, a straight climb out,
+    // then 800 ft over the water on the bearing bug round the west coast to the bay off Marenza at
+    // 100 kt, then the guide down to 09.
+    await page.press('Digit0');
+    let s = await page.evaluate(READ);
+    for (let i = 0; i < 100 && s.kt < 62; i += 1) {
+      await sleep(250);
+      s = await page.evaluate(READ);
+    }
+    await page.keyDown('KeyS');
+    for (let i = 0; i < 40; i += 1) {
+      await sleep(100);
+      s = await page.evaluate(READ);
+      if (!s.onGround && s.agl > 10) break;
+    }
+    await page.keyUp('KeyS');
+    const runway = s.hdg;
+    let last = 0;
+    for (let i = 0; i < 6000; i += 1) {
+      s = await page.evaluate(READ);
+      if (s.state !== 'flying' || s.guideDist !== null) break;
+      if (Date.now() - last > 4000) {
+        last = Date.now();
+        log(`  ${s.kind} alt ${s.alt.toFixed(0)} m ${s.kt.toFixed(0)} kt hdg ${s.hdg.toFixed(0)} -> ${s.bearing?.toFixed(0)} ${s.stats}`);
+      }
+      const heading = s.kind === 'takeoff' || s.agl < 300 ? runway : s.bearing ?? s.hdg;
+      const digit = s.kind === 'takeoff' ? 0 : 7;
+      if (Math.abs(s.throttle - (digit === 0 ? 1 : digit / 10)) > 0.01) await page.press(`Digit${digit}`);
+      const pitchTarget = Math.max(-5, Math.min(8, (250 - s.alt) * 0.05 + (s.kt - (s.kind === 'takeoff' ? 75 : 100)) * 0.2));
+      await step(page, s, { heading, vs: 0, maxBank: 22, pitchTarget });
+    }
+    if (s.state === 'flying') s = await flyLanding(page, { vref: 72, flapsDown: 2, log });
+    return finish(page, s);
+  },
+  async 'coral-drop'(page, log) {
+    // The Heron's supply drop on Coral Keys: the bearing bug to the flare at about 300 ft and
+    // 70 kt; Space when the crate's path (read from the aircraft's speed and the wind, as the
+    // crate will fall: free fall, then the chute drifting it downwind) ends on the flare. A miss
+    // flies on, turns back on the bug and runs in again.
+    const PREDICT = `(() => { const g = window.__solvara.game; const b = g.session.body; const st = g.runner.mission ? g.runner.mission.stages[g.runner.stageIndex] : null;
+      if (g.state !== 'flying' || !st || st.type !== 'supply-drop') return null;
+      const w = g.wind.state.current; const p = { x: b.position.x, y: b.position.y - 2, z: b.position.z }; const v = { x: b.velocity.x, y: b.velocity.y, z: b.velocity.z };
+      const ground = Math.max(0, g.world.terrain.heightAt(st.x, st.z)); const dt = 1 / 30;
+      for (let t = 0; t < 40 && p.y > ground + 0.5; t += dt) { const open = t > 1.2; const drag = open ? 1.6 : 0.08;
+        v.x += (w.x - v.x) * Math.min(1, drag * dt); v.z += (w.z - v.z) * Math.min(1, drag * dt); v.y -= 9.81 * dt;
+        if (open) v.y += (-6.5 - v.y) * Math.min(1, dt * 2.5); p.x += v.x * dt; p.y += v.y * dt; p.z += v.z * dt; }
+      const sp = Math.max(1, Math.hypot(b.velocity.x, b.velocity.z));
+      return { along: ((st.x - p.x) * b.velocity.x + (st.z - p.z) * b.velocity.z) / sp, cross: ((st.x - p.x) * b.velocity.z - (st.z - p.z) * b.velocity.x) / sp,
+        ground, crates: g.runner.trackerInfo().stats.find((r) => r[0] === 'CRATES')?.[1] }; })()`;
+    let s = await page.evaluate(READ);
+    let last = 0;
+    let lastDrop = 0;
+    for (let i = 0; i < 9000; i += 1) {
+      s = await page.evaluate(READ);
+      if (s.state !== 'flying') break;
+      const d = await page.evaluate(PREDICT);
+      if (!d) {
+        await sleep(200);
+        continue;
+      }
+      if (Date.now() - last > 4000) {
+        last = Date.now();
+        log(`  crates ${d.crates} ${s.stats} alt ${s.alt.toFixed(0)} m ${s.kt.toFixed(0)} kt hdg ${s.hdg.toFixed(0)} -> ${s.bearing?.toFixed(0)} crate lands ${d.along.toFixed(0)} m short, ${d.cross.toFixed(0)} m aside`);
+      }
+      if (Math.abs(d.cross) < 18 && d.along < 4 && d.along > -25 && Date.now() - lastDrop > 6000 && Math.abs(s.bank) < 12) {
+        await page.press('Space');
+        lastDrop = Date.now();
+        log(`  crate away: predicted ${d.along.toFixed(0)} m short, ${d.cross.toFixed(0)} m aside, ${s.agl.toFixed(0)} ft, ${s.kt.toFixed(0)} kt`);
+        continue;
+      }
+      const wanted = d.ground + 90;
+      const digit = s.kt > 78 ? 4 : s.kt < 62 ? 7 : 5;
+      if (Math.abs(s.throttle - digit / 10) > 0.01) await page.press(`Digit${digit}`);
+      const pitchTarget = Math.max(-5, Math.min(7, (wanted - s.alt) * 0.06 + (s.kt - 70) * 0.25));
+      // Steer to put the crate's landing point on the flare: the bug far out, the cross error close in.
+      const heading = d.along > 0 && d.along < 1500 ? s.hdg + Math.max(-25, Math.min(25, -d.cross * 0.4)) : s.bearing ?? s.hdg;
+      await step(page, s, { heading, vs: 0, maxBank: 25, pitchTarget });
+    }
+    return finish(page, s);
   },
   async 'bring-her-home'(page, log) {
     // Real-input damaged-aircraft mission: the Wren starts with the engine capped, the left wing

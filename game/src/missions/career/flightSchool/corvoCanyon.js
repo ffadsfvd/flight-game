@@ -1,6 +1,6 @@
 // Flight School 2: a time trial through twelve rings in the gorge of Corvo Canyon.
 export const corvoCanyon = {
-  id: 'canyon-run', chapter: 1, title: 'Corvo Canyon', kind: 'Time trial', giver: 'ines', aircraft: 'wren',
+  id: 'canyon-run', chapter: 1, title: 'Corvo Canyon', kind: 'Time trial', giver: 'ines', aircraft: 'wren', alternatives: ['kestrel'],
   summary: 'Thread twelve rings through the gorge of Corvo Canyon to the north coast. Beat the par time.',
   time: 'golden', wind: { from: 250, speed: 2, gust: 1, turbulence: 0.5 }, fuel: 0.5,
   start: { type: 'air', x: -230, y: 150, z: 2750, heading: 352, speed: 50, flaps: 0, throttle: 0.8 },

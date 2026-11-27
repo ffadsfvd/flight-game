@@ -24,7 +24,7 @@ export function createFlightEventHandler({ effects, sfx, hud, radioFor }) {
           sfx.play('bird');
           effects.burst('bird', body.position, body.velocity);
           hud.radio.say(radioFor('warn'), e.part === 'engine' ? `${e.text}. Power is capped now: keep the speed up and fly a long, flat final.` : `${e.text}. She'll pull ${e.text.includes('left') ? 'left' : 'right'}: hold a little opposite aileron.`, { priority: true });
-        } else if (e.kind === 'hard-landing' || e.kind === 'overstress' || e.kind === 'overspeed' || e.kind === 'flaps' || e.kind === 'gear') {
+        } else if (e.kind === 'hard-landing' || e.kind === 'overstress' || e.kind === 'overspeed' || e.kind === 'flaps' || e.kind === 'gear' || e.kind === 'scrape') {
           sfx.play('warning');
           hud.toast(e.text.toUpperCase(), 'bad');
         } else if (e.kind === 'refuel-full') {

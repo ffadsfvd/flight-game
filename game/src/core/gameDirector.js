@@ -2,7 +2,7 @@
 // logbook, settings, the flight itself, pause and results. It owns the career and its save,
 // starts missions (weather, aircraft, placement) and turns their results into pay and progress.
 import * as THREE from 'three';
-import { missionById } from '../missions/missionCatalog.js';
+import { missionAircraft, missionById } from '../missions/missionCatalog.js';
 import { createMissionRunner } from '../missions/missionRunner.js';
 import { applyFlightResult, buyAircraft, buyUpgrade, careerSummary, createCareer } from '../career/careerProgress.js';
 import { careerRank } from '../career/careerProgress.js';
@@ -206,8 +206,15 @@ export function createGameDirector({ view, world, shotMode = false }) {
       fly: () => startMission(def),
       back: showBoard,
       confirm: () => startMission(def),
+      // The pilot's own aircraft that suits the job, picked instead of the one the mission provides.
+      'pick-aircraft': (id) => {
+        career.missionAircraft = { ...(career.missionAircraft ?? {}), [def.id]: id };
+        sfx.play('click');
+        save();
+        refresh();
+      },
       repair: () => {
-        if (repairAircraft(career, def.aircraft)) {
+        if (repairAircraft(career, missionAircraft(def, career))) {
           sfx.play('stage');
           save();
         }
@@ -278,8 +285,10 @@ export function createGameDirector({ view, world, shotMode = false }) {
 
   function showSettings(from) {
     menuReturn = from;
+    // Erasing the career takes two clicks: the first arms the button and says what it will do.
+    let resetArmed = false;
     const refresh = () => {
-      router.show('screen-settings', settingsHtml(settings), handlers);
+      router.show('screen-settings', settingsHtml(settings, { resetArmed }), handlers);
       for (const select of document.querySelectorAll('#screen-settings select[data-setting]')) {
         select.addEventListener('change', () => {
           settings[select.dataset.setting] = select.value;
@@ -311,6 +320,12 @@ export function createGameDirector({ view, world, shotMode = false }) {
         apply();
       },
       'reset-career': () => {
+        if (!resetArmed) {
+          resetArmed = true;
+          refresh();
+          return;
+        }
+        resetArmed = false;
         clearCareer();
         career = createCareer();
         Object.assign(career.settings, settings);
@@ -358,7 +373,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
   // ----- Flight -----
   function startMission(def, aircraftOverride = null) {
     mission = def;
-    const id = def ? def.aircraft : aircraftOverride ?? freeAircraft ?? career.selected;
+    const id = def ? missionAircraft(def, career) : aircraftOverride ?? freeAircraft ?? career.selected;
     freeAircraft = def ? freeAircraft : id;
     const upgrades = career.upgrades[id] ?? [];
     light = world.setTimeOfDay(def ? def.time : settings.timeOfDay, view.renderer);

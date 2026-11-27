@@ -487,4 +487,4 @@ const FACTORIES = {
   sightseeing: createSightseeingObjective,
 };
 
-const DAMAGE_MARKS = { bird: 'BIRD STRIKE', overstress: 'OVER-G', overspeed: 'OVERSPEED', 'hard-landing': 'HARD LANDING', flaps: 'FLAPS JAMMED', gear: 'GEAR DAMAGED', 'engine-out': 'ENGINE OUT' };
+const DAMAGE_MARKS = { bird: 'BIRD STRIKE', overstress: 'OVER-G', overspeed: 'OVERSPEED', 'hard-landing': 'HARD LANDING', flaps: 'FLAPS JAMMED', gear: 'GEAR DAMAGED', scrape: 'SCRAPE', 'engine-out': 'ENGINE OUT' };

@@ -26,7 +26,9 @@ body { font-family: var(--font); font-size: calc(16px * var(--ui)); color: var(-
   border-radius: 0.45em; box-shadow: 0 0.2em 0.9em rgba(0, 0, 0, 0.35); box-sizing: border-box;
 }
 
-#hud-career-badge { left: 0.8em; top: 0.7em; padding: 0.35em 0.8em; display: flex; gap: 0.9em; align-items: center; font-size: 0.95em; }
+/* The badge grows less than the HUD and stops short of the heading tape at every HUD size (15 HUD em = the tape's half width and a gap). */
+#hud-career-badge { left: 0.8em; top: 0.7em; padding: 0.35em 0.55em; display: flex; gap: 0.45em; align-items: center; font-size: calc(0.92em * (0.55 + 0.45 / var(--hud-scale, 1))); max-width: calc(50% - 15em / (0.92 * (0.55 + 0.45 / var(--hud-scale, 1)))); white-space: nowrap; overflow: hidden; }
+#hud-career-badge .clock { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 0.92em; }
 #hud-career-badge .rank { color: var(--accent); font-weight: 700; letter-spacing: 0.04em; }
 #hud-career-badge .money { color: var(--good); font-weight: 700; }
 #hud-career-badge .medals { color: #ffd34d; font-weight: 700; }
@@ -171,3 +173,5 @@ body { font-family: var(--font); font-size: calc(16px * var(--ui)); color: var(-
 #toast-messages div.good { color: var(--good); }
 #toast-messages div.bad { color: var(--danger); }
 @keyframes toast { 0% { opacity: 0; transform: translateY(0.6em); } 12% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; } }
+/* A flight's last toasts (LANDED, LANDING A) never print over the debrief or a menu. */
+.screen.is-open ~ #toast-messages { display: none; }

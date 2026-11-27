@@ -1,6 +1,6 @@
 // Expedition 1: mountain flying round the snow-capped summit of Monte Nesta through high gates.
 export const snowsOfMonteNesta = {
-  id: 'nesta-pass', chapter: 6, title: 'Snows of Monte Nesta', kind: 'Mountain flying', giver: 'ines', aircraft: 'wren',
+  id: 'nesta-pass', chapter: 6, title: 'Snows of Monte Nesta', kind: 'Mountain flying', giver: 'ines', aircraft: 'wren', alternatives: ['kestrel', 'heron'],
   summary: 'Climb to 2,000 ft and circle the snow cap of Monte Nesta through six high gates, with downdrafts off every ridge.',
   time: 'golden', wind: { from: 300, speed: 7, gust: 3, turbulence: 1.1 }, fuel: 0.55,
   start: { type: 'air', x: 700, y: 520, z: -4300, heading: 0, speed: 50, flaps: 0, throttle: 0.9 },

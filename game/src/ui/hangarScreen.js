@@ -28,6 +28,6 @@ export function hangarHtml(career) {
   const sel = career.selected;
   const owned = career.upgrades[sel] ?? [];
   const upgrades = UPGRADES.map((u) => `<div class="upgrade"><span><b>${u.name}</b> · ${u.describe}</span><button data-action="upgrade" data-arg="${u.id}" ${owned.includes(u.id) || career.money < u.price ? 'disabled' : ''}>${owned.includes(u.id) ? 'Fitted' : `${u.price} cr`}</button></div>`).join('');
-  return `<div class="sheet"><h2>Hangar</h2><p>${career.money.toLocaleString('en-US')} cr available</p><div class="aircraft-row">${cards}</div><h3>Upgrades for ${AIRCRAFT.find((a) => a.id === sel).name}</h3>${upgrades}
+  return `<div class="sheet keeps-buttons"><h2>Hangar</h2><p>${career.money.toLocaleString('en-US')} cr available</p><div class="sheet-body"><div class="aircraft-row">${cards}</div><h3>Upgrades for ${AIRCRAFT.find((a) => a.id === sel).name}</h3>${upgrades}</div>
   <div class="btn-row"><button class="btn" data-action="back">Back</button><button class="btn" data-action="free">Free Flight in ${AIRCRAFT.find((a) => a.id === sel).name}</button></div></div>`;
 }

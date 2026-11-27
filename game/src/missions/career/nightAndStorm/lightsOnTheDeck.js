@@ -1,7 +1,7 @@
 // Night and Storm 6: the rescue medic flown out to the Sette platform at night, landed on a deck
 // that is nothing but two rows of white lights on black water.
 export const lightsOnTheDeck = {
-  id: 'sette-night', chapter: 5, title: 'Lights on the Deck', kind: 'Night platform landing', giver: 'lena', aircraft: 'wren',
+  id: 'sette-night', chapter: 5, title: 'Lights on the Deck', kind: 'Night platform landing', giver: 'lena', aircraft: 'wren', alternatives: ['heron'],
   summary: 'Fly the rescue medic to the Sette platform at night and land on its 300 m deck, two rows of white lights 22 m above a black sea with no horizon.',
   time: 'night', wind: { from: 275, speed: 5, gust: 1.5, turbulence: 0.5 }, fuel: 0.5, payload: 75,
   start: { type: 'approach', field: 'sette', end: 1, distance: 3600, height: 70, flaps: 1 },

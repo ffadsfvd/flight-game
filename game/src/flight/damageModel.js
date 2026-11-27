@@ -7,7 +7,7 @@ import { enginePowerCap } from './engineModel.js';
 
 /** Per-flight damage bookkeeping; `flocks` are a mission's bird colonies [{ x, z, radius, topFt }]. */
 export function createDamageTracker({ birds = true, random = Math.random, flocks = [] } = {}) {
-  return { birds, random, flocks: flocks.map((f) => ({ ...f, hit: false })), overspeedTime: 0, overstressTime: 0, birdCooldown: 25, birdStrikes: 0, log: [] };
+  return { birds, random, flocks: flocks.map((f) => ({ ...f, hit: false })), overspeedTime: 0, overstressTime: 0, scrapeTime: 0, scraped: false, birdCooldown: 25, birdStrikes: 0, log: [] };
 }
 
 function record(tracker, event) {
@@ -39,6 +39,21 @@ export function applyBirdStrike(body, tracker, { engineHit = tracker.random() < 
 export function stepDamage(body, tracker, dt) {
   const spec = body.spec;
   const events = [];
+  // The tail skid or a wingtip on the ground: a touch at rotation or in the flare costs nothing.
+  // Dragged along at speed for over a second it wears the skin, and the first time it is called
+  // out with what to do, so the damage always reads as what happened.
+  if (body.tailScrape && (body.scrapeSpeed ?? 0) > 6) {
+    tracker.scrapeTime += dt;
+    if (tracker.scrapeTime > SCRAPE_GRACE_SECONDS) {
+      body.airframe = Math.max(0.05, body.airframe - SCRAPE_WEAR_PER_SECOND * dt);
+      if (!tracker.scraped) {
+        tracker.scraped = true;
+        events.push(record(tracker, { kind: 'scrape', part: 'airframe', text: body.scrapeKind === 'wingtip' ? 'Wingtip scraping the ground: level the wings' : 'Tail dragging on the ground: ease the stick forward' }));
+      }
+    }
+  } else {
+    tracker.scrapeTime = Math.max(0, tracker.scrapeTime - dt * 2);
+  }
   if (body.onGround) return events;
   if (body.airspeed > spec.vne) {
     tracker.overspeedTime += dt;
@@ -166,3 +181,6 @@ export function isDamaged(body) {
 export function overallCondition(body) {
   return Math.min(body.airframe, 0.4 + 0.6 * body.engine.health, 0.5 + 0.5 * body.gearHealth);
 }
+
+const SCRAPE_GRACE_SECONDS = 1.2;
+const SCRAPE_WEAR_PER_SECOND = 0.02;

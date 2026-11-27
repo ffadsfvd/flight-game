@@ -30,7 +30,7 @@ export function applyHudScale(scale) {
   document.documentElement.style.setProperty('--hud-scale', String(scale ?? 1));
 }
 
-export function settingsHtml(settings) {
+export function settingsHtml(settings, { resetArmed = false } = {}) {
   const times = TIME_OF_DAY_NAMES.map((t) => `<option value="${t}" ${settings.timeOfDay === t ? 'selected' : ''}>${lightingFor(t).label}</option>`).join('');
   const toggle = (key, label) => `<div class="setting"><span>${label}</span><button class="btn" style="width:auto" data-action="toggle" data-arg="${key}">${settings[key] ? 'On' : 'Off'}</button></div>`;
   const slider = (key, label) => `<div class="setting"><span>${label}</span><span><button class="btn" style="width:auto;display:inline-block" data-action="less" data-arg="${key}">−</button> ${Math.round(settings[key] * 100)}% <button class="btn" style="width:auto;display:inline-block" data-action="more" data-arg="${key}">+</button></span></div>`;
@@ -39,5 +39,5 @@ export function settingsHtml(settings) {
   <div class="setting"><span>HUD size (text and panels in flight)</span><button class="btn" style="width:auto" data-action="hud-size">${hudSize.label} · ${Math.round(hudSize.scale * 100)}%</button></div>
   <div class="setting"><span>Free flight conditions</span><select data-setting="timeOfDay">${times}</select></div>
   <div class="setting"><span>Free flight start</span><select data-setting="freeStart">${FREE_STARTS.map((s) => `<option value="${s.id}" ${settings.freeStart === s.id ? 'selected' : ''}>${s.label}</option>`).join('')}</select></div>
-  <div class="btn-row"><button class="btn" data-action="back">Back</button><button class="btn" data-action="reset-career">Reset career</button></div></div>`;
+  <div class="btn-row"><button class="btn" data-action="back">Back</button><button class="btn${resetArmed ? ' is-danger' : ''}" data-action="reset-career">${resetArmed ? 'Erase the whole career? Click again' : 'Reset career'}</button></div></div>`;
 }

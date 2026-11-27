@@ -2,7 +2,7 @@
 // crater of Mount Ignara down past the old lava fields and the Arco Solare to San Calvo harbour,
 // a long, gentle descent through the bumpy air that rises off the volcano.
 export const ignaraHoneymoon = {
-  id: 'ignara-honeymoon', chapter: 2, title: 'Honeymoon over Ignara', kind: 'Sightseeing tour', giver: 'rosa', aircraft: 'heron',
+  id: 'ignara-honeymoon', chapter: 2, title: 'Honeymoon over Ignara', kind: 'Sightseeing tour', giver: 'rosa', aircraft: 'heron', alternatives: ['pelican'],
   summary: 'Show a honeymoon couple Calvera from the air: the crater of Mount Ignara, the lava fields, the sea arch and San Calvo, coming down gently through the bumpy volcanic air.',
   time: 'golden', wind: { from: 20, speed: 4, gust: 1.5, turbulence: 0.5 }, fuel: 0.6, payload: 150,
   start: { type: 'air', x: 5700, y: 1250, z: -3700, heading: 267, speed: 44, flaps: 0, throttle: 0.55, gearDown: false },

@@ -253,6 +253,20 @@ try {
   check('Enter continues to the mission board (Continue in view at 1024x600)', Boolean(continueButton) && await page.evaluate('document.getElementById("screen-mission-board").classList.contains("is-open")'));
   await setViewport(page, 1280, 800);
 
+  // The pilot's own aircraft for a job: Hut under the Snow is a Heron mission that suits the Wren
+  // too, so the briefing offers the owned Wren; a real click on it flies the mission in the Wren.
+  await clickAction(page, 'brief', 'nesta-hut');
+  await clickAction(page, 'pick-aircraft', 'wren');
+  const picked = await page.evaluate('document.querySelector(".brief-plane.is-picked") ? document.querySelector(".brief-plane.is-picked").dataset.arg : null');
+  await clickAction(page, 'fly', 'nesta-hut');
+  await sleep(1200);
+  s = await read(page);
+  const flownIn = await page.evaluate('window.__solvara.game.session.spec.id');
+  check("the briefing flies a job in the pilot's own aircraft that suits it", picked === 'wren' && s.state === 'flying' && s.mission === 'nesta-hut' && flownIn === 'wren', `picked ${picked}, flying the ${flownIn}`);
+  await page.press('Escape');
+  await sleep(250);
+  await clickAction(page, 'quit');
+
   // Every mission starts.
   const ids = [];
   const all = await page.evaluate('[...document.querySelectorAll(".mission-card")].map((c) => c.dataset.arg).filter(Boolean)');

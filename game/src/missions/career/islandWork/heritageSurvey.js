@@ -1,6 +1,6 @@
 // Island Work 4: a photo survey of the Rocca Celeste ruins, the Monte Aurio radio mast and the Lumeno wind farm.
 export const heritageSurvey = {
-  id: 'heritage-survey', chapter: 2, title: 'Heritage Survey', kind: 'Photo survey', giver: 'nadia', aircraft: 'wren',
+  id: 'heritage-survey', chapter: 2, title: 'Heritage Survey', kind: 'Photo survey', giver: 'nadia', aircraft: 'wren', alternatives: ['kestrel', 'heron', 'pelican'],
   summary: 'Survey three landmarks for the island council: the Rocca Celeste castle ruins, the radio mast on Monte Aurio and the Lumeno wind farm.',
   time: 'golden', wind: { from: 260, speed: 4, gust: 1, turbulence: 0.4 }, fuel: 0.6,
   start: { type: 'air', x: -3050, y: 360, z: 2500, heading: 345, speed: 48, flaps: 0, throttle: 0.7 },

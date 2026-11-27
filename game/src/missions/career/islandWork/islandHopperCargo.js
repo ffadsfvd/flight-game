@@ -1,6 +1,6 @@
 // Island Work 5: a two-leg freight run, Marenza to Orsa Cay to Calvera Highstrip, with too little fuel for both.
 export const islandHopperCargo = {
-  id: 'island-hopper', chapter: 2, title: 'Island Hopper', kind: 'Multi-leg cargo', giver: 'mags', aircraft: 'wren',
+  id: 'island-hopper', chapter: 2, title: 'Island Hopper', kind: 'Multi-leg cargo', giver: 'mags', aircraft: 'wren', alternatives: ['heron', 'pelican'],
   summary: 'Deliver spares to Orsa Cay, then fly on to Calvera Highstrip. The tanks hold one leg and a reserve: refuel at Orsa (R) or gamble.',
   time: 'golden', wind: { from: 250, speed: 5, gust: 2, turbulence: 0.4 }, fuel: 0.26, payload: 80,
   start: { type: 'runway', field: 'marenza', end: 1 },

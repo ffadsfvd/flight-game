@@ -65,8 +65,11 @@ function bigLines(result) {
   if (f) lines.push(['Fuel left', `${f.end} kg <small>reserve ${f.reserve}</small>`, f.end >= f.reserve ? 'good' : 'bad']);
   const dmg = result.damage;
   if (dmg) {
+    // A crash, ditching or belly landing wrecks more than the gauges show; its repair is charged at once.
+    const wreck = { crash: 'wrecked', ditch: 'ditched', belly: 'belly scraped' }[result.severity];
     const worst = [['Engine', dmg.engine], ['Airframe', dmg.airframe], ['Gear', dmg.gear]].filter(([, v]) => v < 0.995).sort((a, b) => a[1] - b[1])[0];
-    lines.push(['Damage', worst ? `${worst[0]} ${Math.round(worst[1] * 100)}%` : 'none', worst ? (worst[1] > 0.75 ? 'warn' : 'bad') : 'good']);
+    if (wreck) lines.push(['Damage', `${wreck}${result.repairs ? ` <small>repairs ${result.repairs} cr</small>` : ''}`, 'bad']);
+    else lines.push(['Damage', worst ? `${worst[0]} ${Math.round(worst[1] * 100)}%` : 'none', worst ? (worst[1] > 0.75 ? 'warn' : 'bad') : 'good']);
   }
   if (result.decision || result.finalCall) {
     const calls = [result.decision ? (result.decision.kind === 'divert' ? 'diverted' : 'pressed on') : null, result.finalCall ? (result.finalCall.kind === 'land' ? 'committed' : 'went around') : null].filter(Boolean);
@@ -130,6 +133,7 @@ function fuelAndDamage(result) {
     const effect = (part) => (dmg.effects ?? []).find((e) => e.part === part)?.text.toLowerCase();
     const parts = [['Engine', dmg.engine, effect('ENGINE')], ['Airframe', dmg.airframe, effect('WING')], ['Gear', dmg.gear, effect('GEAR')]].filter(([, v]) => v < 0.995);
     for (const [k, v, what] of parts) rows.push([k, `${Math.round(v * 100)}%${what ? ` · ${what}` : ''}`, v > 0.75 ? 'warn' : 'bad']);
+    if (result.repairs) rows.push(['Repairs', `${result.repairs} cr${result.repairsCovered ? ` · insurance paid ${result.repairsCovered}` : ''}`, 'bad']);
     const first = (dmg.log ?? [])[0];
     if (first) rows.push([clock(first.t), first.text, 'bad']);
   }

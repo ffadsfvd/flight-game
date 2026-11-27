@@ -1,7 +1,7 @@
 // Island Work 8: a sunset sightseeing charter in the Pelican, with a family of tourists who want
 // a smooth ride past the ruins, the beaches and both harbours before landing back at Marenza.
 export const sunsetSightseers = {
-  id: 'sunset-tour', chapter: 2, title: 'Sunset Sightseers', kind: 'Sightseeing tour', giver: 'rosa', aircraft: 'pelican',
+  id: 'sunset-tour', chapter: 2, title: 'Sunset Sightseers', kind: 'Sightseeing tour', giver: 'rosa', aircraft: 'pelican', alternatives: ['heron'],
   summary: 'Fly the Haddon family round Marenza at sunset: the Rocca Celeste ruins, Marina Sabbia, Porto Celeste and San Telmo, gently, then land on 27.',
   time: 'golden', wind: { from: 255, speed: 4, gust: 1.5, turbulence: 0.4 }, fuel: 0.6, payload: 260,
   start: { type: 'air', x: -4200, y: 330, z: 1900, heading: 110, speed: 52, flaps: 0, throttle: 0.6, gearDown: false },
