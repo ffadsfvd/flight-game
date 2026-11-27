@@ -35,9 +35,10 @@ export function createEffectsDirector(scene, worldEmitters) {
     const back = tmp.set(0, 0, spec.engine === 'jet' ? 4.6 : 1.5).applyQuaternion(body.quaternion).add(body.position);
     const hurt = 1 - body.engine.health;
     // A hurt engine trails smoke from the moment it is damaged: a thin grey wisp at first, darker
-    // and thicker as the engine gets worse (or runs too hot).
+    // and thicker as the engine gets worse (or runs too hot). The puffs stay small and thin out
+    // within a few seconds, so the trail reads behind the aircraft without veiling it.
     if (body.engine.running && (hurt > 0.04 || body.engine.temperature > 215)) {
-      if (random() < dt * (16 + hurt * 46)) smoke.emit(back.x, back.y, back.z, body.velocity.x * 0.2, 0.5, body.velocity.z * 0.2, { life: 4, size: 1.3 + hurt * 2, grow: 3.4, alpha: 0.32 + hurt * 0.45, color: [0.3 - hurt * 0.12, 0.29 - hurt * 0.12, 0.29 - hurt * 0.12], drag: 1.2, lift: 0.8 });
+      if (random() < dt * (30 + hurt * 40)) smoke.emit(back.x, back.y, back.z, body.velocity.x * 0.2, 0.4, body.velocity.z * 0.2, { life: 2.6, size: 0.55 + hurt * 1.2, grow: 1.6 + hurt * 1.2, alpha: 0.26 + hurt * 0.4, color: [0.3 - hurt * 0.12, 0.29 - hurt * 0.12, 0.29 - hurt * 0.12], drag: 1.2, lift: 0.8 });
     }
     if (smokeOn && !body.onGround) {
       const tail = tmp2.set(0, -0.2, spec.engine === 'jet' ? 4.6 : 4.4).applyQuaternion(body.quaternion).add(body.position);

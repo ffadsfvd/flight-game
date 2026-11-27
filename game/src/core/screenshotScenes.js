@@ -45,7 +45,7 @@ export function stageScreenshot(name, game) {
     session.body.landingLights = true;
     // A long lens from close behind and a little left: the runway sits large in the middle of the
     // next target ring with the approach lights leading in, Marina Sabbia's roofs on the right.
-    Object.assign(game.cameras.chaseFraming, { height: 1.0, distance: 2.5, lookAhead: 400, lookUp: -12, yaw: -0.12, fov: 30, lookSide: 28 });
+    Object.assign(game.cameras.chaseFraming, { height: 1.0, distance: 2.2, lookAhead: 400, lookUp: -11, yaw: -0.1, fov: 30, lookSide: 24 });
     game.traffic.place('Vento duster', 0.58);
     game.traffic.place('Marenza circuit', 0.16);
     for (let i = 0; i < 70; i += 1) pilot.frame('press-on', true);
