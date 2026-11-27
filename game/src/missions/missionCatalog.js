@@ -12,6 +12,7 @@ import { lagoonTouchdown } from './career/islandWork/lagoonTouchdown.js';
 import { postcardsFromSolvara } from './career/islandWork/postcardsFromSolvara.js';
 import { heritageSurvey } from './career/islandWork/heritageSurvey.js';
 import { islandHopperCargo } from './career/islandWork/islandHopperCargo.js';
+import { theLongHop } from './career/islandWork/theLongHop.js';
 import { marketDayShuttle } from './career/islandWork/marketDayShuttle.js';
 import { setteDeckLanding } from './career/islandWork/setteDeckLanding.js';
 import { sunsetSightseers } from './career/islandWork/sunsetSightseers.js';
@@ -38,6 +39,7 @@ import { nightMail } from './career/nightAndStorm/nightMail.js';
 import { orsaGale } from './career/nightAndStorm/orsaGale.js';
 import { darkWater } from './career/nightAndStorm/darkWater.js';
 import { lightsOnTheDeck } from './career/nightAndStorm/lightsOnTheDeck.js';
+import { bringHerHome } from './career/nightAndStorm/bringHerHome.js';
 import { snowsOfMonteNesta } from './career/expedition/snowsOfMonteNesta.js';
 import { iceOnVeloSaddle } from './career/expedition/iceOnVeloSaddle.js';
 import { silentWings } from './career/expedition/silentWings.js';
@@ -55,10 +57,10 @@ export const CHAPTERS = [
 
 export const MISSIONS = [
   firstSolo, corvoCanyon, highstripShortField, nightCircuits,
-  mailRunToOrsa, lagoonTouchdown, postcardsFromSolvara, heritageSurvey, islandHopperCargo, marketDayShuttle, setteDeckLanding, sunsetSightseers, ignaraHoneymoon, lumenoGardenTour,
+  mailRunToOrsa, lagoonTouchdown, postcardsFromSolvara, heritageSurvey, islandHopperCargo, theLongHop, marketDayShuttle, setteDeckLanding, sunsetSightseers, ignaraHoneymoon, lumenoGardenTour,
   flareOnGannetSkerry, fireOnCalvera, coralKeysDrop, medevacToMarenza, fireOnNesta, reefDoctor, offTheMountain,
   skyBallet, barnstormer, wingOfTheLead, beachBannerRun, ignaraRingRun, mesaGrandPrix, celesteCoastSprint, archipelagoCup,
-  deadStick, stormFront, nightMail, orsaGale, darkWater, lightsOnTheDeck,
+  deadStick, stormFront, nightMail, orsaGale, darkWater, lightsOnTheDeck, bringHerHome,
   snowsOfMonteNesta, iceOnVeloSaddle, silentWings, nestaHutSupply, grandTour,
 ];
 

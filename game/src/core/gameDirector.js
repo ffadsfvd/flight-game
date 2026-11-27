@@ -6,7 +6,7 @@ import { missionById } from '../missions/missionCatalog.js';
 import { createMissionRunner } from '../missions/missionRunner.js';
 import { applyFlightResult, buyAircraft, buyUpgrade, careerSummary, createCareer } from '../career/careerProgress.js';
 import { careerRank } from '../career/careerProgress.js';
-import { damageEffects } from '../flight/damageModel.js';
+import { applyStartingDamage, damageEffects } from '../flight/damageModel.js';
 import { UPGRADES, aircraftById, tunedSpec } from '../aircraft/aircraftCatalog.js';
 import { createCockpitPanel } from '../aircraft/cockpitPanel.js';
 import { createWindField } from '../flight/windField.js';
@@ -363,6 +363,8 @@ export function createGameDirector({ view, world, shotMode = false }) {
     session.body.flightAssist = settings.flightAssist;
     // Damage left by the last sortie stays on the aircraft until it is repaired at a turnaround.
     applyCarriedCondition(career, id, session.body, def?.fuel ?? 1);
+    // Some missions start with the aircraft already hurt (bringing a damaged aircraft home).
+    applyStartingDamage(session.body, def?.damage);
     controls.mouse.state.sensitivity = 0.0045 * settings.mouseSensitivity;
     cockpitFor(session.rig);
     runner.start(def);

@@ -18,7 +18,7 @@ export const medevacToMarenza = {
   cargo: true,
   bonus: [
     { type: 'par', seconds: 190, label: 'Route gates under 3:10' },
-    { type: 'soft', fpm: 200, label: 'Patient-soft touchdown, under 200 fpm' },
-    { type: 'intact', label: 'No damage to the aircraft' },
+    { type: 'soft', fpm: 200, label: 'Soft touchdown, under 200 fpm' },
+    { type: 'intact', label: 'No new damage' },
   ],
 };

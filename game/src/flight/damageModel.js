@@ -120,6 +120,18 @@ export function damageEffects(body) {
   return list;
 }
 
+/** Puts a mission's starting damage on the body: { engine, wing, side, gear } as health 0..1 and bend. */
+export function applyStartingDamage(body, damage) {
+  if (!damage) return;
+  if (damage.engine !== undefined) body.engine.health = Math.min(body.engine.health, damage.engine);
+  if (damage.wing) {
+    body.wingPull = damage.side ?? 1;
+    body.wingBend = Math.max(body.wingBend ?? 0, damage.wing);
+    body.airframe = Math.min(body.airframe, 1 - damage.wing);
+  }
+  if (damage.gear !== undefined) body.gearHealth = Math.min(body.gearHealth, damage.gear);
+}
+
 /** Is anything on the aircraft damaged? */
 export function isDamaged(body) {
   return body.airframe < 0.999 || body.engine.health < 0.999 || body.gearHealth < 0.999 || body.flapsJammed;

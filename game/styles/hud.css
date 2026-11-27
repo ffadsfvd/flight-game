@@ -50,7 +50,7 @@ body { font-family: var(--font); font-size: calc(16px * var(--ui)); color: var(-
 #hud-mission-tracker .stat b { display: block; font-size: 1.15em; color: var(--text); }
 #hud-mission-tracker .stat span { font-size: 0.66em; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
 #hud-mission-tracker .goals { margin-top: 0.45em; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 0.3em; }
-#hud-mission-tracker .goal { display: flex; align-items: baseline; gap: 0.4em; font-size: 0.8em; line-height: 1.32; color: var(--muted); }
+#hud-mission-tracker .goal { display: flex; align-items: baseline; gap: 0.4em; font-size: 0.83em; line-height: 1.3; color: var(--muted); }
 #hud-mission-tracker .goal b { width: 0.95em; flex: none; text-align: center; }
 #hud-mission-tracker .goal em { margin-left: auto; font-style: normal; font-weight: 700; white-space: nowrap; color: var(--accent); }
 #hud-mission-tracker .goal.is-met { color: var(--text); } #hud-mission-tracker .goal.is-met b, #hud-mission-tracker .goal.is-met em { color: var(--good); }

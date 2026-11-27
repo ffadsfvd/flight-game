@@ -196,6 +196,55 @@ async function flyTour(page, id, log) {
 }
 
 const PLAYS = {
+  async 'bring-her-home'(page, log) {
+    // Real-input damaged-aircraft mission: the Wren starts with the engine capped, the left wing
+    // pulling and a cracked gear leg; the test pilot holds the wings level against the pull on the
+    // way to the final, then flies the approach guide down to a soft landing on 09.
+    let s = await page.evaluate(READ);
+    log(`  start damage: ${s.damage.join(', ')}`);
+    let last = 0;
+    for (let i = 0; i < 4000; i += 1) {
+      s = await page.evaluate(READ);
+      if (s.state !== 'flying' || s.guideDist !== null) break;
+      if (Date.now() - last > 3000) {
+        last = Date.now();
+        log(`  alt ${s.alt.toFixed(0)} m ${s.kt.toFixed(0)} kt hdg ${s.hdg.toFixed(0)} -> ${s.bearing?.toFixed(0)} bank ${s.bank.toFixed(0)}`);
+      }
+      const digit = s.alt > 180 ? 5 : 7;
+      if (Math.abs(s.throttle - digit / 10) > 0.01) await page.press(`Digit${digit}`);
+      const pitchTarget = Math.max(-5, Math.min(6, (150 - s.alt) * 0.05 + (s.kt - 75) * 0.25));
+      await step(page, s, { heading: s.bearing ?? s.hdg, vs: 0, maxBank: 18, pitchTarget });
+    }
+    if (s.state === 'flying') s = await flyLanding(page, { vref: 63, flapsDown: 2, log });
+    return finish(page, s);
+  },
+  async 'long-hop'(page, log) {
+    // Real-input fuel decision: fast cruise north from Coral Keys, K to press on when the bingo call
+    // comes near Orsa Cay, then the approach guide down to runway 09 at Marenza on what is left.
+    let s = await page.evaluate(READ);
+    let last = 0;
+    let answered = false;
+    for (let i = 0; i < 5000; i += 1) {
+      s = await page.evaluate(READ);
+      if (s.state !== 'flying' || s.guideDist !== null) break;
+      if (s.bingoPending && !answered) {
+        log(`  bingo near Orsa: ${s.stats}; pressing on with K`);
+        await page.press('KeyK');
+        answered = true;
+        continue;
+      }
+      if (Date.now() - last > 3000) {
+        last = Date.now();
+        log(`  ${s.kind} alt ${s.alt.toFixed(0)} m ${s.kt.toFixed(0)} kt hdg ${s.hdg.toFixed(0)} -> ${s.bearing?.toFixed(0)} ${s.stats}`);
+      }
+      if (Math.abs(s.throttle - 0.8) > 0.01) await page.press('Digit8');
+      const pitchTarget = Math.max(-5, Math.min(7, (190 - s.alt) * 0.05 + (s.kt - 90) * 0.2));
+      await step(page, s, { heading: s.bearing ?? s.hdg, vs: 0, maxBank: 25, pitchTarget });
+    }
+    log(`  decision: ${s.decision}`);
+    if (s.state === 'flying') s = await flyLanding(page, { vref: 63, flapsDown: 2, log });
+    return finish(page, s);
+  },
   async 'banner-run'(page, log) {
     // Real-input ring run: the festival banner towed through the seven beach gates on the bearing
     // bug at about 72 kt, power for the height and the nose for the speed; every gate inside the
@@ -369,6 +418,8 @@ const PLAYS = {
 };
 
 const only = args.only ? String(args.only).split(',') : Object.keys(PLAYS).filter((id) => id !== 'first-solo');
+// Plays that end, as flown, in a safe divert at bingo rather than at the mission's destination.
+const DIVERT_PLAYS = new Set();
 const outcomes = [];
 for (const id of only) {
   const chrome = await launchChrome({ port: 9339 });
@@ -381,7 +432,8 @@ for (const id of only) {
     log(`started: ${s.state} ${s.mission}`);
     const t0 = Date.now();
     s = await PLAYS[id](page, log);
-    const ok = s.state === 'results' && s.result && s.result.success;
+    const accepted = s.result && (s.result.success || (DIVERT_PLAYS.has(id) && s.result.severity === 'divert'));
+    const ok = s.state === 'results' && accepted;
     const errors = page.consoleMessages.filter((m) => m.type === 'error' || m.type === 'exception');
     outcomes.push({ id, ok: ok && !errors.length });
     console.log(`${ok && !errors.length ? 'PASS' : 'FAIL'}  ${id} played to the end in ${((Date.now() - t0) / 1000).toFixed(0)} s  (${s.state}${s.result ? `, ${s.result.success ? 'success' : 'fail'}, score ${s.result.score}${s.result.cause ? `, ${s.result.cause}` : ''}` : ''}${errors.length ? `, console errors: ${errors.map((e) => e.text).join(' | ')}` : ''})`);

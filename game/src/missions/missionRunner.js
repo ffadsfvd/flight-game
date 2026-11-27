@@ -178,7 +178,7 @@ export function createMissionRunner(ctx) {
       const gustKt = Math.max(0, ((def?.wind?.gust ?? 1) - 1) * KT);
       approach = { targetKt: spec.vApproach * KT + gustKt * 0.5, toleranceKt: 7 + gustKt * 0.4 };
       discipline = createFlyingDiscipline();
-      bonus = def ? createBonusGoalTracker(def, spec) : null;
+      bonus = def ? createBonusGoalTracker(def, spec, ctx.body) : null;
       bingo = createBingoDecision(def);
       recorder.reset();
       planner.reset();
