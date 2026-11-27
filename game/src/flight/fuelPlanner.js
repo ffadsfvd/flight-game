@@ -1,7 +1,7 @@
-// Fuel planning from the real engine: the fuel flow now and at cruise, the endurance and range
-// it leaves, the reserve kept for a safe arrival (six minutes at cruise), and the bingo fuel: that
-// reserve plus the fuel to reach the nearest of the archipelago's airfields. Below bingo the
-// sortie needs a decision; below the reserve it is an emergency.
+// Fuel planning from the real engine: the fuel flow now and at cruise, the endurance and the range
+// to dry tanks at the current power, the reserve kept for a safe arrival (six minutes at cruise),
+// and the bingo fuel: that reserve plus the fuel to reach the nearest of the archipelago's
+// airfields. Below bingo the sortie needs a decision; below the reserve it is an emergency.
 import { AIRFIELDS } from '../world/airfieldDirectory.js';
 import { fuelBurnAt, fuelFlow } from './engineModel.js';
 
@@ -75,7 +75,7 @@ export function createFuelPlanner() {
       plan.reserveKg = reserveFuel(spec);
       plan.toNearestKg = fuelForDistance(spec, near.distance);
       plan.bingoKg = plan.reserveKg + plan.toNearestKg;
-      plan.rangeNm = useFlow > 0 ? (Math.max(0, body.engine.fuel - plan.reserveKg) / useFlow) * useSpeed / 1852 : 0;
+      plan.rangeNm = useFlow > 0 ? (body.engine.fuel / useFlow) * useSpeed / 1852 : 0;
       plan.nearest = near.field;
       plan.nearestNm = near.distance / 1852;
       plan.state = body.engine.fuel <= plan.reserveKg ? 'reserve' : body.engine.fuel <= plan.bingoKg ? 'bingo' : 'ok';

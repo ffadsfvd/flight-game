@@ -124,7 +124,7 @@ export function createFlyingDiscipline() {
         turn.last = body.heading;
         turn.time += dt;
         turn.maxBank = Math.max(turn.maxBank, bank);
-        if (Math.abs(body.beta) > 0.05) turn.slip += dt;
+        if (Math.abs(body.beta) > 0.105) turn.slip += dt;
         levelTime = 0;
       } else if (turn) {
         levelTime += dt;
@@ -133,7 +133,7 @@ export function createFlyingDiscipline() {
           turn = null;
           if (Math.abs(t.turned) >= 30 && t.time > 2) {
             const low = body.agl * FT < 500;
-            if (t.slip / t.time > 0.3) fault('turn', 'BALL OUT IN THE TURN');
+            if (t.slip / t.time > 0.35) fault('turn', 'BALL OUT IN THE TURN');
             else if (!aerobatic && low && t.maxBank > 50) fault('turn', `STEEP TURN LOW · ${Math.round(t.maxBank)}°`);
             else award('turn', 'COORDINATED TURN', 15);
           }

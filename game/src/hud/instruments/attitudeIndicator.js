@@ -1,5 +1,5 @@
 // Attitude indicator: sky and earth rolled with the bank and shifted with the pitch, a pitch
-// ladder, the bank scale with its pointer and the orange miniature aircraft.
+// ladder, the bank scale with its pointer, the orange miniature aircraft and the slip ball.
 import { drawGlass, INSTRUMENT_FONT } from './gaugeKit.js';
 
 export function drawAttitudeIndicator(ctx, x, y, r, d) {
@@ -95,5 +95,32 @@ export function drawAttitudeIndicator(ctx, x, y, r, d) {
   ctx.arc(0, 0, r * 0.04, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
+  drawSlipBall(ctx, x, y, r, d.slipDeg ?? 0);
   drawGlass(ctx, x, y, r);
+}
+
+/** The inclinometer under the miniature aircraft: a ball in a curved tube, centred when the turn is coordinated. */
+function drawSlipBall(ctx, x, y, r, slipDeg) {
+  ctx.save();
+  ctx.translate(x, y + r * 0.62);
+  const half = r * 0.34;
+  ctx.fillStyle = 'rgba(10,12,16,0.75)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+  ctx.lineWidth = r * 0.02;
+  ctx.beginPath();
+  ctx.roundRect(-half, -r * 0.065, half * 2, r * 0.13, r * 0.065);
+  ctx.fill();
+  ctx.stroke();
+  for (const s of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(s * r * 0.075, -r * 0.075);
+    ctx.lineTo(s * r * 0.075, r * 0.075);
+    ctx.stroke();
+  }
+  const offset = Math.max(-1, Math.min(1, slipDeg / 9)) * (half - r * 0.06);
+  ctx.fillStyle = Math.abs(slipDeg) > 6 ? '#ffb02e' : '#f4f1ea';
+  ctx.beginPath();
+  ctx.arc(offset, 0, r * 0.055, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }

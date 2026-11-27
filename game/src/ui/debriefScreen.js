@@ -12,7 +12,6 @@ const MEDALS = ['bronze', 'silver', 'gold'];
 const TICK = { met: '✓', failed: '✗', open: '○', current: '▸' };
 
 const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
-const cr = (n) => `${n.toLocaleString('en-US')} cr`;
 
 function medalRow(result) {
   if (!result.medals) return '';
@@ -32,9 +31,9 @@ function touchdownReport(result) {
     const tone = toneFor(r.max ? r.points / r.max : 0);
     return `<tr><td>${r.item.replace('Touchdown sink rate', 'Sink rate')}</td><td>${r.value}</td><td class="tone-${tone}">${r.verdict}</td></tr>`;
   });
-  if (result.targetKt && landing.kt) {
-    const diff = Math.round(landing.kt - result.targetKt);
-    rows.splice(1, 0, `<tr><td>Speed</td><td>${landing.kt} kt</td><td class="tone-${Math.abs(diff) <= 6 ? 'good' : Math.abs(diff) <= 12 ? 'warn' : 'bad'}">${diff === 0 ? 'on target' : `${diff > 0 ? '+' : ''}${diff} vs ${result.targetKt}`}</td></tr>`);
+  if (result.targetKt && landing.thresholdKt) {
+    const diff = Math.round(landing.thresholdKt - result.targetKt);
+    rows.splice(1, 0, `<tr><td>Speed</td><td>${landing.thresholdKt} kt <small>at the fence</small></td><td class="tone-${Math.abs(diff) <= 5 ? 'good' : Math.abs(diff) <= 10 ? 'warn' : 'bad'}">${diff === 0 ? 'on target' : `${diff > 0 ? '+' : ''}${diff} vs ${result.targetKt}`}</td></tr>`);
   }
   const where = landing.runway ? `${landing.runway.code} ${landing.endName ?? ''}` : 'off field';
   return `<h3>Touchdown <span class="debrief-grade">${landing.grade}</span> <small>${landing.score}/100 · ${where}</small></h3><table class="result-table debrief-table">${rows.join('')}</table>`;
@@ -73,24 +72,24 @@ function fuelAndDamage(result) {
   if (result.decision) rows.push(['Bingo', result.decision.kind === 'divert' ? `diverted at ${result.decision.fuelKg} kg` : `pressed on at ${result.decision.fuelKg} kg${result.decision.auto ? ' (no answer)' : ''}`, 'warn']);
   const dmg = result.damage;
   if (dmg) {
-    const parts = [['Engine', dmg.engine], ['Airframe', dmg.airframe], ['Gear', dmg.gear]].filter(([, v]) => v < 0.995);
+    const effect = (part) => (dmg.effects ?? []).find((e) => e.part === part)?.text.toLowerCase();
+    const parts = [['Engine', dmg.engine, effect('ENGINE')], ['Airframe', dmg.airframe, effect('WING')], ['Gear', dmg.gear, effect('GEAR')]].filter(([, v]) => v < 0.995);
     if (!parts.length) rows.push(['Damage', 'none', 'good']);
-    for (const [k, v] of parts) rows.push([k, `${Math.round(v * 100)}%`, v > 0.75 ? 'warn' : 'bad']);
-    for (const e of dmg.effects ?? []) rows.push([e.part === 'WING' ? 'Wing' : e.part.charAt(0) + e.part.slice(1).toLowerCase(), e.text.toLowerCase(), e.level === 'danger' ? 'bad' : 'warn']);
-    for (const e of (dmg.log ?? []).slice(0, 2)) rows.push([clock(e.t), e.text, 'bad']);
+    for (const [k, v, what] of parts) rows.push([k, `${Math.round(v * 100)}%${what ? ` · ${what}` : ''}`, v > 0.75 ? 'warn' : 'bad']);
+    const first = (dmg.log ?? [])[0];
+    if (first) rows.push([clock(first.t), first.text, 'bad']);
   }
   const outcome = result.decision ? `<p class="debrief-decision">${result.decision.outcome}.</p>` : '';
   return `<h3>Fuel &amp; damage</h3><table class="result-table debrief-table">${rows.map(([k, v, tone]) => `<tr><td>${k}</td><td class="${tone ? `tone-${tone}` : ''}">${v}</td></tr>`).join('')}</table>${outcome}`;
 }
 
-function careerBlock(result, progress, career) {
+function careerStrip(result, progress, career) {
   const rank = progress?.rank;
   const s = careerSummary(career);
-  const promoted = progress?.promoted ? `<p class="debrief-promoted">Promoted to ${rank.name}!</p>` : '';
-  const challenges = (progress?.challenges ?? []).map((ch) => `<p class="debrief-promoted">Challenge: ${ch.title} (+${ch.reward.money} cr)</p>`).join('');
-  const earned = `+${cr(result.money)}${result.repairs ? ` · repairs −${cr(result.repairs)}` : ''} · +${result.xp} XP`;
-  return `<h3>Career</h3>${rank ? `<div class="debrief-rank"><span>${rank.name}</span><span class="debrief-bar wide"><i class="tone-good" style="width:${Math.round(rank.fraction * 100)}%"></i></span><small>${rank.next ? `${rank.toNext} XP to ${rank.next}` : 'Top rank'}</small></div>` : ''}
-  <table class="result-table debrief-table"><tr><td>Earned</td><td>${earned}</td></tr><tr><td>Credits</td><td>${cr(career.money)}</td></tr><tr><td>Medals</td><td>${s.medals} / ${s.missions} <small>(${s.gold} gold)</small></td></tr><tr><td>Missions</td><td>${s.passed} / ${s.missions}</td></tr><tr><td>Aircraft</td><td>${s.aircraft} / ${s.aircraftTotal}</td></tr></table>${promoted}${challenges}`;
+  const news = [progress?.promoted ? `Promoted to ${rank.name}!` : '', ...(progress?.challenges ?? []).map((ch) => `Challenge: ${ch.title} +${ch.reward.money} cr`)].filter(Boolean).join(' · ');
+  const tile = (value, label) => `<div class="debrief-tile"><b>${value}</b><span>${label}</span></div>`;
+  return `<div class="debrief-career">${rank ? `<div class="debrief-rank"><span>${rank.name}</span><span class="debrief-bar wide"><i class="tone-good" style="width:${Math.round(rank.fraction * 100)}%"></i></span><small>${rank.next ? `${rank.toNext} XP to ${rank.next}` : 'Top rank'}${news ? ` · <em>${news}</em>` : ''}</small></div>` : ''}
+  ${tile(`+${result.money.toLocaleString('en-US')}`, `cr earned${result.repairs ? ` · −${result.repairs} repairs` : ''}`)}${tile(`+${result.xp}`, 'XP')}${tile(career.money.toLocaleString('en-US'), 'credits')}${tile(`${s.medals}/${s.missions}`, `medals · ${s.gold} gold`)}${tile(`${s.passed}/${s.missions}`, 'missions')}${tile(`${s.aircraft}/${s.aircraftTotal}`, 'aircraft')}</div>`;
 }
 
 function turnaround(career, aircraftId, aircraftName) {
@@ -101,10 +100,10 @@ function turnaround(career, aircraftId, aircraftName) {
   const upgrade = suggestedUpgrade(career, aircraftId);
   const buttons = [
     `<button class="btn" data-action="repair" ${damaged && career.money >= quote ? '' : 'disabled'}>${damaged ? `Repair ${parts} · ${quote} cr` : 'No repairs needed'}</button>`,
-    `<button class="btn" data-action="top-up" ${c.topUp > 0 || career.money < TOP_UP.price ? 'disabled' : ''}>${c.topUp > 0 ? 'Tanks topped up for the next sortie' : `Top up +${TOP_UP.fraction * 100}% fuel · ${TOP_UP.price} cr`}</button>`,
-    upgrade ? `<button class="btn" data-action="upgrade" data-arg="${upgrade.id}" ${career.money < upgrade.price ? 'disabled' : ''}>Fit ${upgrade.name} (${upgrade.describe}) · ${upgrade.price} cr</button>` : '<button class="btn" disabled>All upgrades fitted</button>',
+    `<button class="btn" data-action="top-up" ${c.topUp > 0 || career.money < TOP_UP.price ? 'disabled' : ''}>${c.topUp > 0 ? 'Tanks topped up' : `Top up +${TOP_UP.fraction * 100}% fuel · ${TOP_UP.price} cr`}</button>`,
+    upgrade ? `<button class="btn" data-action="upgrade" data-arg="${upgrade.id}" ${career.money < upgrade.price ? 'disabled' : ''}>Fit ${upgrade.name} · ${upgrade.price} cr</button>` : '<button class="btn" disabled>All upgrades fitted</button>',
   ].join('');
-  return `<div class="debrief-turnaround"><div><b>Turnaround · ${aircraftName}</b><small>${damaged ? 'Damage stays on the aircraft until it is repaired' : 'Ready for the next sortie'}</small></div>${buttons}</div>`;
+  return `<div class="debrief-turnaround-label"><b>Turnaround · ${aircraftName}</b><small>${damaged ? 'Damage stays on until repaired' : 'Ready for the next sortie'}</small></div>${buttons}`;
 }
 
 /** HTML for the debrief; paintDebriefCharts draws the recorder chart once it is in the page. */
@@ -118,10 +117,10 @@ export function debriefHtml(result, progress, career, aircraftId) {
   return `<div class="replay-tag">● REPLAY · ${replay}</div><div class="sheet debrief">
   <div class="debrief-head"><div><div class="result-banner ${tone}">${banner}</div><div class="debrief-title">${result.title}</div><div class="debrief-sub">${sub}</div></div>${medalRow(result)}</div>
   <div class="result-cause"><b>What happened:</b> ${what}</div>
-  <div class="debrief-recorder"><canvas class="debrief-chart" width="1100" height="200"></canvas></div>
-  <div class="debrief-columns"><div>${left}</div><div>${scoreBreakdown(result)}</div><div>${fuelAndDamage(result)}${careerBlock(result, progress, career)}</div></div>
-  ${result.missionId || result.damage ? turnaround(career, aircraftId, result.aircraft) : ''}
-  <div class="btn-row"><button class="btn" data-action="retry">Retry <small>Enter</small></button><button class="btn" data-action="board">Mission board</button></div></div>`;
+  <div class="debrief-recorder"><canvas class="debrief-chart" width="1100" height="172"></canvas></div>
+  <div class="debrief-columns"><div>${left}</div><div>${scoreBreakdown(result)}</div><div>${fuelAndDamage(result)}</div></div>
+  ${careerStrip(result, progress, career)}
+  <div class="debrief-actions">${result.missionId || result.damage ? turnaround(career, aircraftId, result.aircraft) : ''}<button class="btn" data-action="retry">Retry <small>Enter</small></button><button class="btn" data-action="board">Mission board</button></div></div>`;
 }
 
 /** Draws the flight recorder into the debrief's canvas. */

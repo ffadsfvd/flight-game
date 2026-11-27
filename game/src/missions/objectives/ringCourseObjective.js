@@ -41,6 +41,10 @@ export function createRingCourseObjective(stage) {
     get band() {
       return band;
     },
+    /** Index of the next ring to fly. */
+    get next() {
+      return next;
+    },
     begin(ctx) {
       rings = buildCourseRings(stage.course, ctx.world.terrain, stage.radius);
       markers = createRingMarkers(ctx.scene, rings);

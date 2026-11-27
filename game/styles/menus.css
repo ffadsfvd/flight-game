@@ -106,11 +106,16 @@ td.debrief-muted { color: var(--muted); font-weight: 400; text-align: right; }
 .debrief-goals li.goal-failed { color: #c3c9d2; }
 .debrief-streak { font-size: 0.8em; color: var(--accent); margin-top: 0.3em; line-height: 1.3; }
 .debrief-decision { font-size: 0.82em; color: #ffc46a; margin: 0.3em 0 0; line-height: 1.3; }
-.debrief-turnaround { display: grid; grid-template-columns: 1.05fr 1fr 1fr 1.25fr; gap: 0.5em; align-items: center; margin-top: 0.55em; padding-top: 0.5em; border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9em; }
-.debrief-turnaround .btn { margin: 0; font-size: 0.85em; text-align: center; padding: 0.45em 0.5em; }
-.debrief-turnaround small { display: block; color: var(--muted); font-size: 0.8em; }
-.debrief .btn-row { margin-top: 0.5em; }
-.debrief .btn-row .btn { padding: 0.4em 0.9em; }
+.debrief-career { display: grid; grid-template-columns: 2.3fr repeat(6, 1fr); gap: 0.45em; align-items: stretch; margin-top: 0.5em; padding-top: 0.45em; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+.debrief-career .debrief-rank { margin: 0; font-size: 0.86em; align-self: center; }
+.debrief-career .debrief-rank em { font-style: normal; color: #ffc46a; font-weight: 700; }
+.debrief-tile { background: rgba(255, 255, 255, 0.06); border-radius: 0.35em; padding: 0.2em 0.4em; text-align: center; }
+.debrief-tile b { display: block; font-size: 1.25em; color: var(--accent); }
+.debrief-tile span { display: block; font-size: 0.64em; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.debrief-actions { display: grid; grid-template-columns: 1fr 1.1fr 1fr 1fr 0.8fr 0.9fr; gap: 0.45em; align-items: center; margin-top: 0.5em; font-size: 0.88em; }
+.debrief-actions .btn { margin: 0; text-align: center; padding: 0.45em 0.4em; font-size: 0.88em; }
+.debrief-actions .btn small { float: none; margin-left: 0.4em; }
+.debrief-turnaround-label small { display: block; color: var(--muted); font-size: 0.82em; }
 .debrief-medals { display: flex; gap: 0.45em; align-items: center; }
 .debrief-medal { display: flex; flex-direction: column; align-items: center; width: 4.2em; opacity: 0.32; filter: grayscale(0.7); }
 .debrief-medal.is-earned { opacity: 1; filter: none; }

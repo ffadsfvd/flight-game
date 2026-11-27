@@ -102,9 +102,13 @@ export function paintFlightRecorder(canvas, record, { font = 'Bahnschrift, "Sego
   ctx.lineWidth = 2.5;
   ctx.stroke();
 
-  // Airspeed line.
+  // Airspeed line, lightly smoothed (five samples) so gust ripples do not hide the profile.
+  const smooth = samples.map((s, i) => {
+    const near = samples.slice(Math.max(0, i - 2), i + 3);
+    return near.reduce((sum, n) => sum + n.kt, 0) / near.length;
+  });
   ctx.beginPath();
-  samples.forEach((s, i) => (i ? ctx.lineTo(x(s.t), yKt(s.kt)) : ctx.moveTo(x(s.t), yKt(s.kt))));
+  samples.forEach((s, i) => (i ? ctx.lineTo(x(s.t), yKt(smooth[i])) : ctx.moveTo(x(s.t), yKt(smooth[i]))));
   ctx.strokeStyle = '#5fe3d0';
   ctx.lineWidth = 2.5;
   ctx.stroke();

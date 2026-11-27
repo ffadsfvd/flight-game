@@ -83,6 +83,8 @@ export function createMissionRunner(ctx) {
   let startFuel = 0;
   let damageLog = [];
   let diverted = null;
+  let fenceKt = null;
+  let fenceDistance = null;
   const recorder = createFlightDataRecorder();
   const planner = createFuelPlanner();
 
@@ -185,6 +187,8 @@ export function createMissionRunner(ctx) {
       landings = [];
       damageLog = [];
       diverted = null;
+      fenceKt = null;
+      fenceDistance = null;
       ctx.time = 0;
       ctx.cleanup = (fn) => cleanups.push(fn);
       ctx.report = report;
@@ -232,6 +236,9 @@ export function createMissionRunner(ctx) {
       }
       const current = objectives[index];
       const guide = runner.guidance();
+      // The speed over the threshold, for the touchdown report's speed against the target.
+      if (guide && fenceDistance !== null && fenceDistance > 0 && guide.distance <= 0 && !body.onGround) fenceKt = Math.round(body.airspeed * KT);
+      fenceDistance = guide ? guide.distance : null;
       discipline.update(dt, body, ctx.controls, guide, { kind: current?.kind ?? 'free', approach: guide ? approach : null });
       if (!mission) return null;
       bonus.update(dt, ctx, runner, approach);
@@ -265,8 +272,9 @@ export function createMissionRunner(ctx) {
     /** The checklist of main goals (a window of four around the current one) and bonus goals. */
     checklist() {
       if (!mission) return [];
+      // A one-stage mission's only main goal is the objective line itself: list the bonus goals.
       const from = stageDefs.length > 4 ? Math.max(0, Math.min(index - 1, stageDefs.length - 4)) : 0;
-      const main = stageDefs.slice(from, from + 4).map((s, k) => {
+      const main = stageDefs.length < 2 ? [] : stageDefs.slice(from, from + 4).map((s, k) => {
         const i = from + k;
         return { text: stageGoal(s), status: i < index ? 'met' : i === index ? 'current' : 'open', main: true };
       });
@@ -303,7 +311,8 @@ export function createMissionRunner(ctx) {
       return mission ? bingo.panel(mission.reward?.money ?? 0) : null;
     },
     markers() {
-      return objectives[index]?.markers(ctx) ?? [];
+      const hazards = (mission?.hazards ?? []).map((h) => ({ x: h.x, z: h.z, kind: 'area', radius: h.radius, active: true, label: h.label ?? 'BIRDS', color: '#ff9a4a' }));
+      return [...(objectives[index]?.markers(ctx) ?? []), ...hazards];
     },
     others() {
       return objectives[index]?.others?.(ctx) ?? [];
@@ -376,7 +385,8 @@ export function createMissionRunner(ctx) {
     }
     // A crash, ditching or belly landing is repaired at once; lesser damage waits for the turnaround.
     const repairs = severityCondition !== undefined ? Math.round((1 - condition) * 500) : 0;
-    const landing = objectives.map((o) => o.report).filter(Boolean).at(-1) ?? landings.at(-1) ?? null;
+    const found = objectives.map((o) => o.report).filter(Boolean).at(-1) ?? landings.at(-1) ?? null;
+    const landing = found ? { ...found, thresholdKt: fenceKt } : null;
     const impact = ending && ending.severity !== 'fail' ? { kt: Math.round(body.airspeed * KT), fpm: Math.max(0, Math.round(-body.verticalSpeed * 196.85)), pitch: Math.round(body.pitch), bank: Math.round(body.bank), flaps: body.flapSetting, gear: body.gearDown, engine: body.engine.running, fuelKg: Math.round(body.engine.fuel ?? 0) } : null;
     const d = bingo.decision;
     let decision = null;

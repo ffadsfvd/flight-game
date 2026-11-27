@@ -77,7 +77,7 @@ export function createAircraftSimulation(world, wind) {
   };
 
   /** Starts a flight in `spec` at `placement` (see placeAircraft). */
-  sim.start = function start(spec, placement, { birds = true, random = Math.random, icing } = {}) {
+  sim.start = function start(spec, placement, { birds = true, random = Math.random, icing, flocks = [] } = {}) {
     sim.body = createAircraftBody(spec);
     placeAircraft(sim.body, placement);
     // Icing conditions carry over when a test or a scene re-places the aircraft mid-flight.
@@ -85,7 +85,7 @@ export function createAircraftSimulation(world, wind) {
     sim.body.ice = 0;
     sim.body.antiIce = false;
     sim.peakIce = 0;
-    sim.damage = createDamageTracker({ birds, random });
+    sim.damage = createDamageTracker({ birds, random, flocks });
     sim.landing = createLandingMonitor(placement.speed > 10);
     sim.ended = null;
     sim.recorder.clear();

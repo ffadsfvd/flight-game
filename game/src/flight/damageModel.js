@@ -5,9 +5,9 @@
 // flaps jammed where they were. Careful flying inside the aircraft's limits never causes damage.
 import { enginePowerCap } from './engineModel.js';
 
-/** Per-flight damage bookkeeping. */
-export function createDamageTracker({ birds = true, random = Math.random } = {}) {
-  return { birds, random, overspeedTime: 0, overstressTime: 0, birdCooldown: 25, birdStrikes: 0, log: [] };
+/** Per-flight damage bookkeeping; `flocks` are a mission's bird colonies [{ x, z, radius, topFt }]. */
+export function createDamageTracker({ birds = true, random = Math.random, flocks = [] } = {}) {
+  return { birds, random, flocks: flocks.map((f) => ({ ...f, hit: false })), overspeedTime: 0, overstressTime: 0, birdCooldown: 25, birdStrikes: 0, log: [] };
 }
 
 function record(tracker, event) {
@@ -17,7 +17,8 @@ function record(tracker, event) {
 
 /** Bends the airframe; the damaged wing (1 = left, -1 = right) makes the aircraft pull its way. */
 function hurtAirframe(body, amount, side) {
-  if (body.airframe >= 0.999) body.wingPull = side;
+  if ((body.wingBend ?? 0) < 0.001) body.wingPull = side;
+  body.wingBend = Math.min(1, (body.wingBend ?? 0) + amount);
   body.airframe = Math.max(0, body.airframe - amount);
 }
 
@@ -66,6 +67,14 @@ export function stepDamage(body, tracker, dt) {
     events.push(record(tracker, { kind: 'gear', part: 'gear', text: 'Gear doors damaged: lowered above limit speed' }));
   }
   tracker.birdCooldown -= dt;
+  // A mission's bird colony: flown through below its top, it is a strike every time; above it, never.
+  for (const flock of tracker.flocks) {
+    if (flock.hit || body.airspeed < 22) continue;
+    if (Math.hypot(body.position.x - flock.x, body.position.z - flock.z) < flock.radius && body.agl * 3.281 < flock.topFt) {
+      flock.hit = true;
+      events.push(applyBirdStrike(body, tracker, { engineHit: flock.part !== 'wing', side: flock.side ?? 1, severity: flock.severity ?? 0.35 }));
+    }
+  }
   if (tracker.birds && tracker.birdCooldown <= 0 && body.agl < 170 && body.airspeed > 22) {
     if (tracker.random() < dt * 0.006) events.push(applyBirdStrike(body, tracker));
   }
@@ -102,7 +111,7 @@ export function damageEffects(body) {
   const cap = enginePowerCap(body.engine);
   if (!body.engine.running && body.engine.failed) list.push({ part: 'ENGINE', text: 'STOPPED', level: 'danger' });
   else if (cap < 0.995) list.push({ part: 'ENGINE', text: `POWER CAPPED ${Math.round(cap * 100)}%`, level: cap < 0.8 ? 'danger' : 'warn' });
-  if (body.airframe < 0.97) list.push({ part: 'WING', text: `PULLS ${body.wingPull < 0 ? 'RIGHT' : 'LEFT'}`, level: body.airframe < 0.7 ? 'danger' : 'warn' });
+  if ((body.wingBend ?? 0) > 0.02) list.push({ part: 'WING', text: `PULLS ${body.wingPull < 0 ? 'RIGHT' : 'LEFT'}`, level: body.wingBend > 0.25 ? 'danger' : 'warn' });
   if (body.gearHealth < 0.97) {
     const stuck = body.spec.gearRetracts && !gearWillRetract(body);
     list.push({ part: 'GEAR', text: stuck ? "STUCK DOWN · LAND SOFT" : `LAND UNDER ${Math.round(gearLimits(body).limitFpm / 10) * 10} FPM`, level: body.gearHealth < 0.5 ? 'danger' : 'warn' });

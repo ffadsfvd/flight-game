@@ -24,6 +24,7 @@ export function updateReadout(r, body, controls, extras = {}) {
   r.heading = body.heading;
   r.pitch = body.pitch;
   r.bank = body.bank;
+  r.slipDeg = body.onGround ? 0 : (body.beta * 180) / Math.PI;
   r.gForce = body.gForce;
   r.aoaDeg = (body.alpha * 180) / Math.PI;
   r.stall = body.onGround ? 0 : body.stall;

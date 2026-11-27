@@ -5,9 +5,10 @@
 // mission ends in success. --debrief saves each mission's debrief screen to tmp/debrief-<id>.jpg.
 // Run `node serve.ts` first.   node tools/mission-smoke-test.mjs [--only=<id>] [--debrief]
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { launchChrome, openPage, sleep } from './cdp.mjs';
 
-const DRIVER = String.raw`(async (id) => {
+export const DRIVER = String.raw`(async (id) => {
   const THREE = window.__solvara.three;
   const g = window.__solvara.game;
   const { missionById } = window.__solvara.missions;
@@ -188,34 +189,39 @@ const DRIVER = String.raw`(async (id) => {
   return { id, ok: Boolean(r && r.success && r.missionId === id), why: r ? (r.cause || 'score ' + r.score + ' ' + r.medal) : g.state };
 })`;
 
-const chrome = await launchChrome({ port: 9339 });
-let failed = 0;
-try {
-  const page = await openPage(chrome.port, 'http://localhost:8080/?shot=none&unlock=all');
-  await page.waitFor('Boolean(window.__solvara && window.__solvara.game)', 30000);
-  await sleep(1500);
-  const only = process.argv.find((a) => a.startsWith('--only='))?.slice(7);
-  const ids = (await page.evaluate('window.__solvara.missions.MISSIONS.map((m) => m.id)')).filter((id) => !only || id === only);
-  for (const id of ids) {
-    const r = await page.evaluate(`${DRIVER}(${JSON.stringify(id)})`);
-    console.log(`${r.ok ? 'PASS' : 'FAIL'}  ${id}  ${r.why}`);
-    if (!r.ok) failed += 1;
-    if (process.argv.includes('--debrief')) {
-      mkdirSync('tmp', { recursive: true });
-      await page.evaluate('window.__solvara.game.render(), 1');
-      writeFileSync(`tmp/debrief-${id}.jpg`, await page.screenshot({ quality: 82 }));
+async function main() {
+  const chrome = await launchChrome({ port: 9339 });
+  let failed = 0;
+  try {
+    const page = await openPage(chrome.port, 'http://localhost:8080/?shot=none&unlock=all');
+    await page.waitFor('Boolean(window.__solvara && window.__solvara.game)', 30000);
+    await sleep(1500);
+    const only = process.argv.find((a) => a.startsWith('--only='))?.slice(7);
+    const ids = (await page.evaluate('window.__solvara.missions.MISSIONS.map((m) => m.id)')).filter((id) => !only || id === only);
+    for (const id of ids) {
+      const r = await page.evaluate(`${DRIVER}(${JSON.stringify(id)})`);
+      console.log(`${r.ok ? 'PASS' : 'FAIL'}  ${id}  ${r.why}`);
+      if (!r.ok) failed += 1;
+      if (process.argv.includes('--debrief')) {
+        mkdirSync('tmp', { recursive: true });
+        await page.evaluate('window.__solvara.game.render(), 1');
+        writeFileSync(`tmp/debrief-${id}.jpg`, await page.screenshot({ quality: 82 }));
+      }
+      const log = await page.evaluate('JSON.stringify(window.__fireLog || null)');
+      if (log !== 'null' && only) console.log(log);
     }
-    const log = await page.evaluate('JSON.stringify(window.__fireLog || null)');
-    if (log !== 'null' && only) console.log(log);
+    const errors = page.consoleMessages.filter((m) => m.type === 'error' || m.type === 'exception');
+    if (errors.length) {
+      failed += 1;
+      console.log(`FAIL  console errors: ${errors.map((e) => e.text).slice(0, 3).join(' | ')}`);
+    }
+    page.close();
+  } finally {
+    await chrome.close();
   }
-  const errors = page.consoleMessages.filter((m) => m.type === 'error' || m.type === 'exception');
-  if (errors.length) {
-    failed += 1;
-    console.log(`FAIL  console errors: ${errors.map((e) => e.text).slice(0, 3).join(' | ')}`);
-  }
-  page.close();
-} finally {
-  await chrome.close();
+  console.log(failed ? `${failed} failed` : 'all missions completed');
+  process.exit(failed ? 1 : 0);
 }
-console.log(failed ? `${failed} failed` : 'all missions completed');
-process.exit(failed ? 1 : 0);
+
+// Run as a script; when imported (the screenshot tool builds a career save with DRIVER) do nothing.
+if (import.meta.url === pathToFileURL(process.argv[1]).href) await main();

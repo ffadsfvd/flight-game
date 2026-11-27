@@ -350,7 +350,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     const freeStart = (FREE_STARTS.find((s) => s.id === settings.freeStart) ?? FREE_STARTS[0]).start;
     const placement = placementFor(def?.start ?? freeStart, spec, world);
     // Birds strike only where a mission briefs them (coastal cliffs, the beach) and in free flight.
-    session.start(id, upgrades, placement, { birds: settings.birdStrikes && !shotMode && (!def || def.birds === true), fuelFraction: def?.fuel ?? 1, icing: def?.icing ?? null });
+    session.start(id, upgrades, placement, { birds: settings.birdStrikes && !shotMode && (!def || def.birds === true), flocks: (def?.hazards ?? []).filter((h) => h.kind === 'birds'), fuelFraction: def?.fuel ?? 1, icing: def?.icing ?? null });
     dropBanner();
     if (def?.banner) {
       banner = createTowBanner(def.banner);

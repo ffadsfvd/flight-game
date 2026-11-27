@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { missionById } from '../missions/missionCatalog.js';
 import { createSeededRandom } from './seededRandom.js';
 import { approachPlacement } from './flightSession.js';
+import { createScenePilot } from './scenePilot.js';
 
 const STEP = 1 / 60;
 
@@ -26,40 +27,56 @@ export function stageScreenshot(name, game) {
     game.backdrop.setAngle(80);
     for (let i = 0; i < 240; i += 1) game.frame(STEP);
   } else if (name === 'cover') {
-    // Final to runway 09 at Marenza International at golden hour, about 230 ft and 960 m from the
-    // threshold on the 3-degree path, just in from the coast: the chase camera close behind and a little
-    // to the left, the aircraft in the middle of the frame clear of the HUD, the approach lights
-    // leading to the runway, Marina Sabbia on its beach with the sea beyond on the right, the
-    // Casale Vento farms and a crop duster spraying them on the left, the hills behind the field.
-    game.startMission(missionById('first-solo'));
-    game.runner.skipTo(2);
-    const spec = session.spec;
-    session.simulation.start(spec, { ...approachPlacement(spec, 'marenza', 0, 960, { flaps: 2 }), bank: 5, throttle: 0.32 }, { birds: false });
+    // A mid-career sortie on its final leg, flown for real from the take-off at Orsa Cay by the
+    // scene pilot: the medevac Wren took a gull through the engine climbing out (power capped), hit
+    // bingo fuel at the first gate and pressed on, and is now on short final to runway 09 at
+    // Marenza through the glide-path gates, its discipline streak running, the ambulance waiting.
+    // The chase camera sits close behind and a little to the left, Marina Sabbia on its beach and
+    // the sea on the right, the Casale Vento farms and a crop duster on the left.
+    game.startMission(missionById('medevac'));
+    const pilot = createScenePilot(game);
+    pilot.flyUntil(() => {
+      const g = game.runner.guidance();
+      return Boolean(g && g.distance < 1000);
+    }, 600);
     session.body.landingLights = true;
-    game.controls.controls.throttle = 0.32;
     Object.assign(game.cameras.chaseFraming, { height: 1.15, distance: 1.45, lookAhead: 600, lookUp: -46, yaw: -0.08, fov: 44, lookSide: 45 });
     game.traffic.place('Vento duster', 0.58);
-    // The club Wren ahead has just gone round over the far end; the Pelican holds short of 09.
     game.traffic.place('Marenza circuit', 0.16);
-    run(game, 1.6);
-    // The 3D glide-path frames would stand between the camera and the runway: hide them here.
-    game.runnerContext.scene.getObjectByName('glide-path-gates').visible = false;
-    game.hud.radio.say('dario', 'SV-102, Marenza Tower, runway 09, wind 075 at 6, cleared to land.', { priority: true });
+    for (let i = 0; i < 70; i += 1) pilot.frame('press-on', true);
+    game.hud.radio.say('dario', 'Medevac 102, Marenza Tower, runway 09, wind 040 at 10, cleared to land, ambulance waiting.', { priority: true });
     game.hud.radio.hold();
-    run(game, 0.4);
+    game.hud.popup.hold();
+    for (let i = 0; i < 20; i += 1) pilot.frame('press-on', true);
+  } else if (name === 'debrief') {
+    // The debrief of that same medevac, flown start to finish by the scene pilot with the real
+    // flight model: the take-off at Orsa, the gull strike, the bingo call answered by pressing on,
+    // the route gates, the final and the touchdown on 09, over the replay of the landing.
+    game.startMission(missionById('medevac'));
+    const pilot = createScenePilot(game);
+    pilot.flyUntil(() => game.state !== 'flying', 700);
+    for (let i = 0; i < 200; i += 1) game.frame(STEP);
   } else if (name === 'cockpit') {
+    // Corvo Canyon from the cockpit: the scene pilot flies the first three rings for real (each
+    // inside the speed band, so the discipline streak is running), then the shot is framed a
+    // little before ring four with both canyon walls in the sun.
     game.startMission(missionById('canyon-run'));
     const objective = game.runner.objective;
-    const ring = objective.jumpTo(3, game.runnerContext, 31.4);
+    const pilot = createScenePilot(game);
+    pilot.flyUntil(() => objective.next >= 3, 120);
+    const fuel = session.body.engine.fuel;
+    const ring = objective.rings[3];
     const n = ring.normal;
     const p = ring.position.clone().addScaledVector(n, -145);
     const heading = (THREE.MathUtils.radToDeg(Math.atan2(n.x, -n.z)) + 360) % 360;
     session.simulation.start(session.spec, { x: p.x, y: p.y + 2, z: p.z, heading, pitch: 1, speed: 52, flaps: 0, throttle: 0.82 }, { birds: false });
+    session.body.engine.fuel = fuel;
     game.controls.controls.throttle = 0.82;
     game.cameras.view = 'cockpit';
     run(game, 1.2);
     game.hud.radio.say('ines', 'Ring three. Keep your eyes outside, not on the walls.', { priority: true });
     game.hud.radio.hold();
+    game.hud.popup.hold();
     run(game, 0.3);
     // Glance down a little so the whole panel, the stick, the throttle and the pilot's gloves are
     // in the frame (the glance is applied to the cockpit camera directly, as a held free look).

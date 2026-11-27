@@ -1,14 +1,21 @@
 // Takes the entry's screenshots: serves nothing itself (run `node serve.ts` first), opens each
 // ?shot= URL from shots.json in desktop Chrome at 1280x800, waits for window.__shotReady and saves
 // a JPEG through the DevTools Protocol, lowering the quality until the file fits the size budget.
-// Then it builds tmp/contact-sheet.jpg the way the judge sees the entry (cover 768x480 on top,
-// the others small beneath) for review. --review also renders the review-only scenes (the
-// shoreline from high and low, night and storm) to tmp/review-*.jpg, without touching screenshots/.
+// Before the shots it builds a real mid-career save: a fresh career plays the first missions of
+// the career with the mission driver of the smoke test (real results, pay, medals, rank) and buys
+// two aircraft by the hangar's own rules; that save is restored before every shot, so each scene
+// shows the same career. Then it builds tmp/contact-sheet.jpg the way the judge sees the entry
+// (cover 768x480 on top, the others small beneath) for review. --review also renders the
+// review-only scenes to tmp/review-*.jpg without touching screenshots/.
 //   node tools/take-screenshots.mjs [--only=1-cover.jpg] [--budget=235000] [--review]
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { launchChrome, openPage, sleep } from './cdp.mjs';
+import { DRIVER } from './mission-smoke-test.mjs';
 
 const REVIEW_SCENES = ['coast-high', 'coast-low', 'night', 'storm', 'orsa', 'nesta', 'ice', 'ice-cockpit'];
+const SAVE_KEY = 'solvara-skies.career.v1';
+const CAREER_MISSIONS = ['first-solo', 'canyon-run', 'highstrip', 'night-circuits', 'mail-run', 'lagoon', 'rescue-drop'];
+const CAREER_PURCHASES = ['swallow', 'heron'];
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => {
   const [k, ...v] = a.replace(/^--/, '').split('=');
@@ -19,12 +26,48 @@ const shots = JSON.parse(readFileSync('shots.json', 'utf8'));
 mkdirSync('screenshots', { recursive: true });
 mkdirSync('tmp', { recursive: true });
 
+/** Plays the career's first missions in a fresh profile and returns the saved career JSON. */
+async function buildCareerSave(chrome) {
+  const page = await openPage(chrome.port, 'http://localhost:8080/?shot=none');
+  await page.waitFor('Boolean(window.__solvara && window.__solvara.game)', 30000);
+  await sleep(800);
+  for (const id of CAREER_MISSIONS) {
+    const r = await page.evaluate(`${DRIVER}(${JSON.stringify(id)})`);
+    console.log(`career: ${id} ${r.ok ? 'passed' : 'FAILED'} (${r.why})`);
+  }
+  const summary = await page.evaluate(`(async () => {
+    const { buyAircraft, careerSummary, careerRank } = await import('/src/career/careerProgress.js');
+    const { saveCareer } = await import('/src/save/saveStore.js');
+    const career = window.__solvara.game.career;
+    for (const id of ${JSON.stringify(CAREER_PURCHASES)}) buyAircraft(career, id);
+    career.selected = 'wren';
+    career.fleet = {};
+    saveCareer(career);
+    return JSON.stringify({ rank: careerRank(career).name, money: career.money, ...careerSummary(career) });
+  })()`);
+  console.log(`career save: ${summary}`);
+  const save = await page.evaluate(`localStorage.getItem('${SAVE_KEY}')`);
+  page.close();
+  return save;
+}
+
+/** Opens a scene with the career save in place. */
+async function openScene(chrome, query, save) {
+  const page = await openPage(chrome.port, 'http://localhost:8080/?shot=none');
+  await page.waitFor('Boolean(window.__solvara && window.__solvara.game)', 30000);
+  await page.evaluate(`localStorage.setItem('${SAVE_KEY}', ${JSON.stringify(save)}), 1`);
+  page.consoleMessages.length = 0;
+  await page.goto(`http://localhost:8080/${query}`);
+  return page;
+}
+
 const chrome = await launchChrome({ port: 9335 });
 try {
+  const save = await buildCareerSave(chrome);
   if (args.review) {
     for (const scene of REVIEW_SCENES) {
-      const page = await openPage(chrome.port, `http://localhost:8080/?shot=${scene}`);
-      await page.waitFor('window.__shotReady === true', 60000);
+      const page = await openScene(chrome, `?shot=${scene}`, save);
+      await page.waitFor('window.__shotReady === true', 90000);
       await sleep(400);
       writeFileSync(`tmp/review-${scene}.jpg`, await page.screenshot({ quality: 85 }));
       const errors = page.consoleMessages.filter((m) => m.type === 'error' || m.type === 'exception');
@@ -35,9 +78,9 @@ try {
   for (const shot of shots) {
     if (args.review && !args.only) break;
     if (args.only && args.only !== shot.name) continue;
-    const page = await openPage(chrome.port, `http://localhost:8080/${shot.query}`);
+    const page = await openScene(chrome, shot.query, save);
     try {
-      await page.waitFor('window.__shotReady === true', 60000);
+      await page.waitFor('window.__shotReady === true', 120000);
     } catch (error) {
       console.log(`${shot.name}: ${error.message}`);
       for (const m of page.consoleMessages) console.log(`  [${m.type}] ${m.text}`);
