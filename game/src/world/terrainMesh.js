@@ -164,7 +164,7 @@ export function createTerrainMesh(terrain) {
       } else if (h < beach) {
         color.copy(P.sand).lerp(P.wetSand, smoothstep(1.2, 0.3, h) * 0.6);
       } else {
-        color.copy(P.grass).lerp(P.dryGrass, smoothstep(0.35, 0.75, n1));
+        color.copy(P.grass).lerp(P.dryGrass, smoothstep(0.35, 0.75, n1) * 0.7);
         color.lerp(P.lush, smoothstep(0.55, 0.2, n1) * smoothstep(240, 40, h) * 0.6);
         color.lerp(P.sand, smoothstep(beach + 4, beach, h) * 0.65);
         const forest = h < 720 ? forestDensity(terrain, x, z, h) : 0;
@@ -191,7 +191,8 @@ export function createTerrainMesh(terrain) {
         if (mown > 0) color.lerp(P.mowed, mown * (0.7 + 0.3 * n2));
         for (const town of TOWNS) {
           const dt = Math.hypot(x - town.x, z - town.z) / town.radius;
-          if (dt < 1) color.lerp(PALETTE.town, smoothstep(1, 0.35, dt) * 0.55);
+          // Dusty streets and yards in patches, gardens between them, so a town never sits on a sand plain.
+          if (dt < 1) color.lerp(PALETTE.town, smoothstep(1, 0.35, dt) * (0.2 + 0.3 * n2));
         }
       }
       fieldAttr[i] = fieldMark;

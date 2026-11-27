@@ -66,7 +66,10 @@ export function createChaseCamera() {
       const lookAhead = scratch.look.copy(path).multiplyScalar(framing.lookAhead);
       if (look.x || look.y) lookAhead.set(0, 0, 0);
       camera.up.copy(up);
-      camera.lookAt(scratch.look.add(body.position).addScaledVector(up, framing.lookUp));
+      scratch.look.add(body.position).addScaledVector(up, framing.lookUp);
+      // A staged shot can aim a little to one side of the flight path (metres to the right).
+      if (framing.lookSide) scratch.look.addScaledVector(side.crossVectors(path, UP).normalize(), framing.lookSide);
+      camera.lookAt(scratch.look);
     },
   };
 }

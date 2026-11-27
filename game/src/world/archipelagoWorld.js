@@ -13,6 +13,7 @@ import { buildTowns } from './townBuilder.js';
 import { plantForests } from './forestPlanter.js';
 import { buildLandmarks } from './landmarkBuilder.js';
 import { buildRivers } from './riverBuilder.js';
+import { buildCountryside } from './countrysideBuilder.js';
 import { AIRFIELDS, isOnRunway, toRunwayFrame } from './airfieldDirectory.js';
 import { canopyHeight, forestDensity } from './vegetationMap.js';
 import { updateLightPoints } from './lightPoints.js';
@@ -30,7 +31,8 @@ export function createArchipelagoWorld(scene) {
   const forests = plantForests(terrain);
   const landmarks = buildLandmarks(terrain);
   const rivers = buildRivers(terrain);
-  scene.add(sky.mesh, terrainMesh, sea.mesh, clouds.group, airfields.group, towns.group, forests.group, landmarks.group, rivers);
+  const countryside = buildCountryside(terrain);
+  scene.add(sky.mesh, terrainMesh, sea.mesh, clouds.group, airfields.group, towns.group, forests.group, landmarks.group, rivers, countryside.group);
   const colliders = [...airfields.colliders, ...landmarks.colliders];
   const local = new THREE.Vector3();
   const decks = AIRFIELDS.filter((f) => f.kind === 'platform');
@@ -95,6 +97,7 @@ export function createArchipelagoWorld(scene) {
     towns,
     forests,
     landmarks,
+    countryside,
     surfaceAt,
     obstacleAt,
     /** Height of whatever the aircraft would land on at (x, z): terrain, sea level or a deck. */

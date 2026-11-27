@@ -63,7 +63,7 @@ export function createCloudLayer(seed = 11) {
     const puffs = 3 + Math.floor(random() * 5);
     const warmth = random();
     for (let p = 0; p < puffs; p += 1) {
-      const material = new THREE.SpriteMaterial({ map: textures[(c + p) % textures.length], transparent: true, depthWrite: false, fog: true, opacity: 0.95 });
+      const material = new THREE.SpriteMaterial({ map: textures[(c + p) % textures.length], transparent: true, depthWrite: false, fog: false, opacity: 0.95 });
       material.userData.warmth = warmth;
       material.userData.lift = p / puffs;
       materials.push(material);
@@ -77,10 +77,11 @@ export function createCloudLayer(seed = 11) {
   return {
     group,
     setLighting(light) {
-      const lit = light.sunColor.clone().lerp(new THREE.Color('#ffffff'), 0.5);
-      const shade = light.hemiSky.clone().lerp(light.fogColor, 0.45);
+      // Creamy sunlit tops warmed by the hour, soft lilac-grey bases, never muddy.
+      const lit = light.sunColor.clone().lerp(new THREE.Color('#ffffff'), 0.62);
+      const shade = light.hemiSky.clone().lerp(new THREE.Color('#ffffff'), 0.4).lerp(light.fogColor, 0.25);
       for (const material of materials) {
-        const mix = 0.45 + material.userData.warmth * 0.35 + material.userData.lift * 0.2;
+        const mix = 0.62 + material.userData.warmth * 0.24 + material.userData.lift * 0.14;
         material.color.copy(shade).lerp(lit, mix * (1 - light.storm * 0.7));
         if (light.storm) material.color.multiplyScalar(0.55);
         material.opacity = light.storm ? 0.98 : 0.95;

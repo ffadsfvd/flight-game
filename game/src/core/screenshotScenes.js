@@ -26,17 +26,19 @@ export function stageScreenshot(name, game) {
     game.backdrop.setAngle(80);
     for (let i = 0; i < 240; i += 1) game.frame(STEP);
   } else if (name === 'cover') {
-    // Short final to runway 09 at Marenza International at golden hour, about 150 ft AGL and
-    // 640 m from the threshold on the 3° path, seen through a long lens from behind and a little
-    // to the left: the aircraft in the lower third, the approach lights leading to the runway
-    // with its edge lights, PAPI and markings, Porto Celeste and the hills beyond.
+    // Final to runway 09 at Marenza International at golden hour, about 230 ft and 960 m from the
+    // threshold on the 3-degree path, just in from the coast: the chase camera close behind and a little
+    // to the left, the aircraft in the middle of the frame clear of the HUD, the approach lights
+    // leading to the runway, Marina Sabbia on its beach with the sea beyond on the right, the
+    // Casale Vento farms and a crop duster spraying them on the left, the hills behind the field.
     game.startMission(missionById('first-solo'));
     game.runner.skipTo(2);
     const spec = session.spec;
-    session.simulation.start(spec, { ...approachPlacement(spec, 'marenza', 0, 640, { flaps: 2 }), bank: 4, throttle: 0.32 }, { birds: false });
+    session.simulation.start(spec, { ...approachPlacement(spec, 'marenza', 0, 960, { flaps: 2 }), bank: 5, throttle: 0.32 }, { birds: false });
     session.body.landingLights = true;
     game.controls.controls.throttle = 0.32;
-    Object.assign(game.cameras.chaseFraming, { height: 2.6, distance: 3.4, lookAhead: 750, lookUp: -52, yaw: -0.1, fov: 24 });
+    Object.assign(game.cameras.chaseFraming, { height: 1.15, distance: 1.45, lookAhead: 600, lookUp: -46, yaw: -0.08, fov: 44, lookSide: 45 });
+    game.traffic.place('Vento duster', 0.58);
     // The club Wren ahead has just gone round over the far end; the Pelican holds short of 09.
     game.traffic.place('Marenza circuit', 0.16);
     run(game, 1.6);

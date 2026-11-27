@@ -46,6 +46,10 @@ export function trafficRoutes(terrain) {
       points: overGround([[-3000, 2420, 8], [-2600, 2420, 7], [-2200, 2420, 7], [-1880, 2430, 12], [-1760, 2465, 48], [-1880, 2500, 13], [-2200, 2510, 7], [-2600, 2510, 7], [-3000, 2500, 12], [-3120, 2465, 48]]),
     },
     {
+      name: 'Vento duster', aircraft: 'kestrel', livery: 'farmCoop', speed: 33, phase: 0.1, callsign: 'SV-356', spray: true, activity: 'spraying the Casale Vento farms beside the approach',
+      points: overGround([[-4120, 2808, 9], [-3960, 2806, 7], [-3800, 2808, 7], [-3700, 2812, 12], [-3600, 2828, 46], [-3690, 2858, 14], [-3800, 2866, 7], [-3960, 2866, 7], [-4120, 2860, 12], [-4220, 2830, 46]]),
+    },
+    {
       name: 'Mail run', aircraft: 'wren', livery: 'islandPost', speed: 46, phase: 0.7, callsign: 'SV-150', activity: 'on the mail run',
       points: [[-2900, 2200, 380], [-4400, -200, 450], [-5300, -2300, 380], [-6100, -3500, 300], [-4800, -3900, 380], [-3900, -1500, 480], [-3300, 900, 450]].map(([x, z, y]) => new THREE.Vector3(x, y, z)),
     },
