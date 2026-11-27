@@ -1,7 +1,8 @@
 // The Solvara career: six chapters of missions, one small file per mission under career/, each
 // with its giver, aircraft, start, weather (wind, light, icing), briefing dialogue, stages and pay.
 // Stage types: takeoff, rings (with rivals: a race; engineOff: soaring), land (water, short field,
-// engine failure), reach, supply-drop, firefighting, photo, aerobatics, formation and search.
+// engine failure), reach, supply-drop, firefighting, photo, aerobatics, formation, search and
+// sightseeing (a passenger tour scored on comfort).
 import { firstSolo } from './career/flightSchool/firstSolo.js';
 import { corvoCanyon } from './career/flightSchool/corvoCanyon.js';
 import { highstripShortField } from './career/flightSchool/highstripShortField.js';
@@ -13,6 +14,8 @@ import { heritageSurvey } from './career/islandWork/heritageSurvey.js';
 import { islandHopperCargo } from './career/islandWork/islandHopperCargo.js';
 import { marketDayShuttle } from './career/islandWork/marketDayShuttle.js';
 import { setteDeckLanding } from './career/islandWork/setteDeckLanding.js';
+import { sunsetSightseers } from './career/islandWork/sunsetSightseers.js';
+import { ignaraHoneymoon } from './career/islandWork/ignaraHoneymoon.js';
 import { flareOnGannetSkerry } from './career/rescueService/flareOnGannetSkerry.js';
 import { fireOnCalvera } from './career/rescueService/fireOnCalvera.js';
 import { coralKeysDrop } from './career/rescueService/coralKeysDrop.js';
@@ -42,7 +45,7 @@ import { grandTour } from './career/expedition/grandTour.js';
 
 export const CHAPTERS = [
   { id: 1, name: 'Flight School', subtitle: 'Marenza Flight School with Ines Varga', rank: 0 },
-  { id: 2, name: 'Island Work', subtitle: 'Freight, mail and survey flying for Brightwater and the Gazette', rank: 1 },
+  { id: 2, name: 'Island Work', subtitle: 'Freight, mail, survey and tour flying for Brightwater, the Gazette and Celeste Air Tours', rank: 1 },
   { id: 3, name: 'Rescue Service', subtitle: 'Supply drops, a medevac and fire duty with Rescue Control and Fire Base Calvera', rank: 1 },
   { id: 4, name: 'Racing and Airshow', subtitle: 'Display flying, formation, banners and the races of the summer season', rank: 2 },
   { id: 5, name: 'Night and Storm', subtitle: 'Engine failure, squall lines, gales, the night mail and night work at sea', rank: 2 },
@@ -51,7 +54,7 @@ export const CHAPTERS = [
 
 export const MISSIONS = [
   firstSolo, corvoCanyon, highstripShortField, nightCircuits,
-  mailRunToOrsa, lagoonTouchdown, postcardsFromSolvara, heritageSurvey, islandHopperCargo, marketDayShuttle, setteDeckLanding,
+  mailRunToOrsa, lagoonTouchdown, postcardsFromSolvara, heritageSurvey, islandHopperCargo, marketDayShuttle, setteDeckLanding, sunsetSightseers, ignaraHoneymoon,
   flareOnGannetSkerry, fireOnCalvera, coralKeysDrop, medevacToMarenza, fireOnNesta, reefDoctor, offTheMountain,
   skyBallet, barnstormer, wingOfTheLead, beachBannerRun, ignaraRingRun, mesaGrandPrix, celesteCoastSprint, archipelagoCup,
   deadStick, stormFront, nightMail, orsaGale, darkWater, lightsOnTheDeck,

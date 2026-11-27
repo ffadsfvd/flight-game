@@ -148,7 +148,56 @@ async function finish(page, s) {
   return s;
 }
 
+/** Flies a sightseeing tour gently: shallow banks, soft pitch changes, sights in their height bands, terrain ahead cleared. */
+async function flyTour(page, id, log) {
+  const TOUR = `(() => { const g = window.__solvara.game; const b = g.session.body; const t = g.world.terrain;
+    const def = window.__solvara.missions.missionById('${id}'); const stage = def.stages[g.runner.stageIndex];
+    const info = g.state === 'flying' ? g.runner.trackerInfo() : null;
+    const seen = info && info.stats ? Number(/(\\d+) \\//.exec(info.stats.find((r) => r[0] === 'SIGHTS')?.[1] ?? '0')?.[1] ?? 0) : 0;
+    const sight = stage && stage.type === 'sightseeing' ? stage.sights[seen] : null;
+    let ahead = 0; const h = b ? b.heading * Math.PI / 180 : 0;
+    for (const d of [150, 400, 700, 1000, 1400]) ahead = Math.max(ahead, t.heightAt(b.position.x + Math.sin(h) * d, b.position.z - Math.cos(h) * d));
+    return { sightseeing: Boolean(stage && stage.type === 'sightseeing'), seen, sight, sightGround: sight ? Math.max(0, t.heightAt(sight.x, sight.z)) : 0, ahead: Math.max(0, ahead),
+      comfort: info && info.stats ? info.stats.find((r) => r[0] === 'COMFORT')?.[1] : null }; })()`;
+  let s = await page.evaluate(READ);
+  let last = 0;
+  for (let i = 0; i < 6000; i += 1) {
+    s = await page.evaluate(READ);
+    if (s.state !== 'flying') return s;
+    const tour = await page.evaluate(TOUR);
+    if (!tour.sightseeing || !tour.sight) return s;
+    const sight = tour.sight;
+    let wanted = sight.maxFt !== undefined ? tour.sightGround + Math.min(sight.maxFt / 3.281 * 0.6, 240) : sight.minFt !== undefined ? tour.sightGround + sight.minFt / 3.281 + 120 : tour.sightGround + 200;
+    wanted = Math.max(wanted, tour.ahead + 130);
+    if (Date.now() - last > 4000) {
+      last = Date.now();
+      log(`  sight ${tour.seen + 1} (${sight.name}) comfort ${tour.comfort} alt ${s.alt.toFixed(0)} m -> ${wanted.toFixed(0)} m, ${s.kt.toFixed(0)} kt, bank ${s.bank.toFixed(0)}, hdg ${s.hdg.toFixed(0)} -> ${s.bearing?.toFixed(0)}, ${s.stats}`);
+    }
+    const climbing = wanted - s.alt > 40;
+    // Full power for the climbs, power back for the descents, otherwise about 72 kt; the nose holds
+    // a gentle climb or descent rate toward the wanted height: never more than 750 fpm down.
+    const altErr = wanted - s.alt;
+    const vsTarget = Math.max(-750, Math.min(900, altErr * 5));
+    const digit = climbing ? 9 : altErr < -60 ? 3 : Math.max(3, Math.min(8, Math.round(5 + (72 - s.kt) * 0.25)));
+    if (Math.abs(s.throttle - digit / 10) > 0.01) await page.press(`Digit${digit}`);
+    // Soft attitude limits keep the passengers comfortable: never more than 7 degrees up or 5 down.
+    const pitchTarget = Math.max(-5, Math.min(7, 2 + (vsTarget - s.vs) * 0.005 + (s.kt - 75) * 0.1));
+    await step(page, s, { heading: s.bearing ?? s.hdg, vs: vsTarget, maxBank: 22, pitchTarget });
+  }
+  return s;
+}
+
 const PLAYS = {
+  async 'sunset-tour'(page, log) {
+    let s = await flyTour(page, 'sunset-tour', log);
+    if (s.state !== 'flying') return s;
+    const vref = await page.evaluate('window.__solvara.game.session.spec.vApproach * 1.944');
+    s = await flyLanding(page, { vref, flapsDown: 2, log });
+    return finish(page, s);
+  },
+  async 'ignara-honeymoon'(page, log) {
+    return finish(page, await flyTour(page, 'ignara-honeymoon', log));
+  },
   async lagoon(page, log) {
     await page.press('KeyF');
     const s = await flyLanding(page, { vref: 56, flapsDown: 2, water: true, log });

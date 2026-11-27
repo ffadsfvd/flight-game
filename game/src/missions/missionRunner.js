@@ -12,6 +12,7 @@ import { createPhotoObjective } from './objectives/photoObjective.js';
 import { createAerobaticsObjective } from './objectives/aerobaticsObjective.js';
 import { createFormationObjective } from './objectives/formationObjective.js';
 import { createSearchObjective } from './objectives/searchObjective.js';
+import { createSightseeingObjective } from './objectives/sightseeingObjective.js';
 import { overallCondition } from '../flight/damageModel.js';
 import { nearestAirfield } from '../world/airfieldDirectory.js';
 
@@ -26,6 +27,7 @@ const FACTORIES = {
   aerobatics: createAerobaticsObjective,
   formation: createFormationObjective,
   search: createSearchObjective,
+  sightseeing: createSightseeingObjective,
 };
 
 /** Creates a runner around the shared mission context (see gameDirector). */

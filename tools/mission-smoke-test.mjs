@@ -121,6 +121,17 @@ const DRIVER = String.raw`(async (id) => {
         const holdY = ground(fx, fz) + 45;
         for (let i = 0; i < 60 * 5.6; i += 1) { const body = b(); c.pitch = THREE.MathUtils.clamp((holdY + (i > 96 ? 110 : 0) - body.position.y) * 0.03 - body.verticalSpeed * 0.08 + 0.1, -0.5, 0.7); if (i === 96) actions = ['action']; step(); }
       }
+    } else if (kind === 'sightseeing') {
+      // Level, gentle passes over each sight inside its height band, so comfort stays full.
+      const t = def.stages[g.runner.stageIndex];
+      for (const sight of t.sights) {
+        const agl = sight.maxFt !== undefined ? Math.min(180, sight.maxFt / 3.28 - 40) : (sight.minFt ?? 0) / 3.28 + 140;
+        place({ x: sight.x - 200, y: ground(sight.x, sight.z) + Math.max(agl, 120), z: sight.z, heading: 90, speed: s.spec.vApproach * 1.4, throttle: 0.6, gearDown: false });
+        c.pitch = 0; c.roll = 0; c.throttle = 0.6;
+        step(60 * 6);
+        if (g.runner.objective !== o) break;
+      }
+      step(10);
     } else if (kind === 'photo') {
       const t = def.stages[g.runner.stageIndex];
       for (const lid of t.targets) {

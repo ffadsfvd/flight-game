@@ -10,6 +10,9 @@ export const CHARACTERS = {
   teo: { name: 'Teo Ranieri', role: 'Rival racer, team Scirocco', callsign: 'Scirocco One', skin: '#d9a87e', hair: '#c79a3a', hairStyle: 'swept', shirt: '#1f3f8a', backdrop: '#1c2a52', shades: true },
   nadia: { name: 'Nadia Ferro', role: 'Solvara Gazette photographer', callsign: 'Gazette', skin: '#b9825a', hair: '#6a2c1a', hairStyle: 'long', shirt: '#7a4ab0', backdrop: '#3a2458' },
   pia: { name: 'Pia Lund', role: 'Unicom 122.75', callsign: 'Solvara Radio', skin: '#f0c9a8', hair: '#8a5a2a', hairStyle: 'bob', shirt: '#3a6a4a', backdrop: '#1e3a2e', headset: true },
+  rosa: { name: 'Rosa Bellini', role: 'Celeste Air Tours', callsign: 'Celeste Tours', skin: '#c9946a', hair: '#3a1e14', hairStyle: 'long', shirt: '#2a8a9a', backdrop: '#17464f', glasses: true },
+  walt: { name: 'Walt Haddon', role: 'Passenger, row two', callsign: 'Passenger', skin: '#efc7a4', hair: '#b89a6a', hairStyle: 'short', shirt: '#d84a7a', backdrop: '#4a2238', shades: true },
+  sofi: { name: 'Sofi Bruni', role: 'Passenger, honeymoon', callsign: 'Passenger', skin: '#d9a47c', hair: '#1e1410', hairStyle: 'swept', shirt: '#f2e6d0', backdrop: '#5a3a2a' },
 };
 
 /** The character for an id (the instructor if unknown). */
