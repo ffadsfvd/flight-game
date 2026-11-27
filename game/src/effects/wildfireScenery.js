@@ -6,28 +6,42 @@ import * as THREE from 'three';
 import { mergeColoredParts } from '../core/geometryMerge.js';
 import { createSeededRandom } from '../core/seededRandom.js';
 
-/** A flame tongue on a 128 px canvas: white-yellow core, orange body, red fringe, soft edges. */
+/** Flame tongues on a 128 px canvas: a tall central lick and smaller side licks with ragged tips,
+ *  a white-yellow core low down, an orange body and a red fringe, so a cluster reads as fire. */
 export function flameTexture() {
   const canvas = document.createElement('canvas');
   canvas.width = 128;
   canvas.height = 128;
   const ctx = canvas.getContext('2d');
-  ctx.filter = 'blur(2.5px)';
-  ctx.translate(64, 124);
-  const g = ctx.createRadialGradient(0, -34, 2, 0, -46, 70);
-  g.addColorStop(0, 'rgba(255,250,215,1)');
-  g.addColorStop(0.3, 'rgba(255,205,90,0.95)');
-  g.addColorStop(0.62, 'rgba(255,110,20,0.75)');
-  g.addColorStop(1, 'rgba(190,30,0,0)');
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.moveTo(0, -2);
-  ctx.bezierCurveTo(-40, -14, -34, -62, -8, -92);
-  ctx.bezierCurveTo(-2, -102, 4, -112, 2, -120);
-  ctx.bezierCurveTo(18, -96, 40, -64, 34, -30);
-  ctx.bezierCurveTo(30, -12, 16, -2, 0, -2);
-  ctx.closePath();
-  ctx.fill();
+  ctx.filter = 'blur(1.6px)';
+  ctx.translate(64, 126);
+  const lick = (dx, height, width, lean) => {
+    ctx.beginPath();
+    ctx.moveTo(dx - width, 0);
+    ctx.bezierCurveTo(dx - width * 1.1, -height * 0.35, dx - width * 0.35 + lean * 0.3, -height * 0.6, dx + lean, -height);
+    ctx.bezierCurveTo(dx + width * 0.25 + lean * 0.4, -height * 0.7, dx + width * 0.9, -height * 0.45, dx + width * 0.8, -height * 0.18);
+    ctx.bezierCurveTo(dx + width * 1.05, -height * 0.1, dx + width, 0, dx + width, 0);
+    ctx.closePath();
+    ctx.fill();
+  };
+  const body = ctx.createLinearGradient(0, 0, 0, -124);
+  body.addColorStop(0, 'rgba(255,150,40,0.9)');
+  body.addColorStop(0.45, 'rgba(255,95,15,0.8)');
+  body.addColorStop(1, 'rgba(170,20,0,0)');
+  ctx.fillStyle = body;
+  lick(0, 122, 30, 6);
+  lick(-26, 78, 18, -8);
+  lick(27, 90, 18, 10);
+  lick(-8, 104, 14, -12);
+  // The hot core: white-yellow, low and wide where the fuel burns.
+  const core = ctx.createLinearGradient(0, 0, 0, -80);
+  core.addColorStop(0, 'rgba(255,252,225,1)');
+  core.addColorStop(0.5, 'rgba(255,215,110,0.85)');
+  core.addColorStop(1, 'rgba(255,170,60,0)');
+  ctx.fillStyle = core;
+  lick(0, 78, 20, 4);
+  lick(-18, 46, 12, -5);
+  lick(19, 54, 12, 6);
   // Point sprites sample with gl_PointCoord (y down), so the canvas is used unflipped.
   const texture = new THREE.CanvasTexture(canvas);
   texture.flipY = false;
@@ -231,13 +245,40 @@ export function buildWildfireScenery(scene, terrain, fires) {
   const firebreak = new THREE.Mesh(breakGeometry, new THREE.MeshLambertMaterial({ color: '#9a7a55', side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 }));
   firebreak.receiveShadow = true;
   group.add(firebreak);
-  const hx = (minX + maxX) / 2 + 90;
-  const hz = breakZ + 55;
+  // The farm stands just below the break, on the downslope side of the eastern fire.
+  const hx = maxX - 50;
+  const hz = breakZ + 24;
   const house = new THREE.Mesh(farmhouseGeometry(), vertexMaterial);
   house.position.set(hx, ground(hx, hz) - 0.3, hz);
   house.rotation.y = 0.3;
   house.castShadow = true;
   group.add(house);
+  // Unburnt pines and oaks round the fire, and the farm's own trees, so the slope reads as forest.
+  const pines = [];
+  for (const f of fires) {
+    for (let i = 0; i < 34; i += 1) {
+      const a = random() * Math.PI * 2;
+      const r = f.radius * (1.55 + random() * 1.2);
+      const x = f.x + Math.cos(a) * r;
+      const z = f.z + Math.sin(a) * r;
+      if (Math.abs(z - breakZ) < 12) continue;
+      if (fires.some((o) => Math.hypot(x - o.x, z - o.z) < o.radius * 1.45)) continue;
+      pines.push([x, z, 0.8 + random() * 0.6]);
+    }
+  }
+  for (let i = 0; i < 7; i += 1) pines.push([hx + (random() - 0.5) * 50, hz + 10 + random() * 25, 0.7 + random() * 0.4]);
+  const pineGeometry = mergeColoredParts([
+    { geometry: new THREE.CylinderGeometry(0.25, 0.4, 3, 5).translate(0, 1.5, 0), color: '#5b4330' },
+    { geometry: new THREE.ConeGeometry(2.8, 6.5, 7).translate(0, 5.2, 0), color: '#3f6b2e' },
+    { geometry: new THREE.ConeGeometry(2.1, 5, 7).translate(0, 8.2, 0), color: '#4a7a34' },
+  ]);
+  const pineMesh = new THREE.InstancedMesh(pineGeometry, vertexMaterial, pines.length);
+  pines.forEach(([x, z, k], i) => {
+    m.compose(p.set(x, ground(x, z) - 0.3, z), q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), x), s.set(k, k * (0.9 + (i % 3) * 0.12), k));
+    pineMesh.setMatrixAt(i, m);
+  });
+  pineMesh.castShadow = true;
+  group.add(pineMesh);
 
   scene.add(group);
   return {

@@ -50,7 +50,7 @@ function puffTexture() {
 const sharedTexture = { value: null };
 
 /** Creates a particle pool of `max` particles; `additive` for fire and sparks, `texture` for a sprite other than the soft puff. */
-export function createParticleSystem(scene, { max = 2000, additive = false, name = 'particles', texture = null } = {}) {
+export function createParticleSystem(scene, { max = 2000, additive = false, name = 'particles', texture = null, renderOrder = null } = {}) {
   if (!sharedTexture.value) sharedTexture.value = puffTexture();
   const positions = new Float32Array(max * 3);
   const sizes = new Float32Array(max);
@@ -82,7 +82,7 @@ export function createParticleSystem(scene, { max = 2000, additive = false, name
   const points = new THREE.Points(geometry, material);
   points.frustumCulled = false;
   points.name = name;
-  points.renderOrder = additive ? 6 : 5;
+  points.renderOrder = renderOrder ?? (additive ? 6 : 5);
   scene.add(points);
   let cursor = 0;
   let alive = 0;

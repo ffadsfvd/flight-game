@@ -13,7 +13,8 @@ const tmp2 = new THREE.Vector3();
 export function createEffectsDirector(scene, worldEmitters) {
   const smoke = createParticleSystem(scene, { max: 3200, name: 'smoke' });
   const fire = createParticleSystem(scene, { max: 1600, name: 'fire' });
-  const flames = createParticleSystem(scene, { max: 2600, additive: true, name: 'flames', texture: flameTexture() });
+  // Flames draw before the water so a curtain falling in front of them hides them.
+  const flames = createParticleSystem(scene, { max: 2600, additive: true, name: 'flames', texture: flameTexture(), renderOrder: 4 });
   const sparks = createParticleSystem(scene, { max: 900, additive: true, name: 'sparks' });
   const water = createParticleSystem(scene, { max: 1800, name: 'water' });
   const fires = [];
@@ -132,10 +133,10 @@ export function createEffectsDirector(scene, worldEmitters) {
           const r = f.radius * (0.25 + 0.75 * Math.sqrt(random()));
           const x = f.x + Math.cos(a) * r;
           const z = f.z + Math.sin(a) * r;
-          const size = 4 + random() * 7;
+          const size = 6 + random() * 8;
           const y = groundAt(x, z, f.y) + size * 0.3;
           const hot = random();
-          flames.emit(x, y, z, wind.x * 0.25, 2.5 + random() * 3, wind.z * 0.25, { life: 0.45 + random() * 0.5, size, grow: -size * 0.9, alpha: 0.95, color: [1, 0.5 + hot * 0.45, 0.2 + hot * 0.3], drag: 1.4, lift: 3 });
+          flames.emit(x, y, z, wind.x * 0.25, 2.5 + random() * 3, wind.z * 0.25, { life: 0.45 + random() * 0.5, size, grow: -size * 0.6, alpha: 0.95, color: [1, 0.82 + hot * 0.18, 0.62 + hot * 0.3], drag: 1.4, lift: 3 });
           if (random() < 0.35) flames.emit(x, y + size * 0.4, z, wind.x * 0.3, 4 + random() * 3, wind.z * 0.3, { life: 0.35 + random() * 0.3, size: size * 0.6, grow: -size, alpha: 0.85, color: [1, 0.86, 0.55], drag: 1.2, lift: 3 });
           // Embers that climb with the heat and drift off with the wind.
           if (random() < 0.12) sparks.emit(x, y + 2, z, (random() - 0.5) * 4, 5 + random() * 7, (random() - 0.5) * 4, { life: 2.4 + random() * 2.2, size: 0.5 + random() * 0.4, grow: -0.08, alpha: 1, color: [1, 0.55 + random() * 0.25, 0.18], drag: 0.7, lift: 0.6 });
