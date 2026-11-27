@@ -3,9 +3,9 @@
 export const medevacToMarenza = {
   id: 'medevac', chapter: 3, title: 'Medevac to Marenza', kind: 'Medical evacuation', giver: 'lena', aircraft: 'wren',
   summary: 'Fly an injured fisherman from Orsa Cay to Marenza International as fast as the gates allow, on low tanks, then land gently.',
-  time: 'golden', wind: { from: 40, speed: 5, gust: 2, turbulence: 0.5 }, fuel: 0.26, payload: 90,
+  time: 'golden', wind: { from: 40, speed: 5, gust: 2, turbulence: 0.5 }, fuel: 0.3, payload: 90,
   start: { type: 'runway', field: 'orsa', end: 0 },
-  briefing: [['lena', 'A fisherman with a broken leg at Orsa Cay. The ambulance meets you on the Marenza apron. There was no time to fill the tanks.'], ['lena', 'Fly the route gates fast, but the landing must be soft: your patient feels every bump. Gulls nest on the cliffs past the end of 04, up to 300 feet: climb hard or turn away early.'], ['lena', 'If you hit bingo before the halfway gate, it is your call: back to Orsa, or on to the hospital.']],
+  briefing: [['lena', 'A fisherman with a broken leg at Orsa Cay. The ambulance meets you on the Marenza apron. There was no time to fill the tanks.'], ['lena', 'Fly the route gates fast, but the landing must be soft: your patient feels every bump. Gulls nest on the cliffs past the end of 04, up to 300 feet: climb hard or turn away early.'], ['lena', 'If you hit bingo before the halfway gate, it is your call: back to Orsa, or on to the hospital. Fly the gates at 75% power and you land with fuel to spare; full power all the way and it gets tight.']],
   stages: [
     { type: 'takeoff', altitudeFt: 300, say: ['lena', 'Patient aboard. Go, go, go.'] },
     { type: 'rings', radius: 40, par: 190, band: [65, 125], label: 'Fly the route gates to Marenza', hint: 'Climb at full power, then 75%: the tanks are low; the last gate is your final at 70 kt',

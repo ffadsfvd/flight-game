@@ -211,8 +211,11 @@ async function flyFirefight(page, log) {
     const h = b.heading * Math.PI / 180; let ahead = 0;
     // The highest ground in a fan ahead (a turn can carry her over the ground to the side).
     for (const fan of [-0.9, -0.45, 0, 0.45, 0.9]) for (const d of [0, 120, 260, 450, 700]) ahead = Math.max(ahead, t.heightAt(b.position.x + Math.sin(h + fan) * d, b.position.z - Math.cos(h + fan) * d));
+    // Straight ahead only, for the last part of a run-in down the clearest line.
+    let narrow = 0;
+    for (const fan of [-0.12, 0, 0.12]) for (const d of [0, 80, 160, 260, 380]) narrow = Math.max(narrow, t.heightAt(b.position.x + Math.sin(h + fan) * d, b.position.z - Math.cos(h + fan) * d));
     return { fires: fires.map((f) => ({ x: f.x, z: f.z, r: f.radius })), impact: { x: b.position.x + v.x * fall * 0.75, z: b.position.z + v.z * fall * 0.75 },
-      x: b.position.x, z: b.position.z, vx: v.x, vz: v.z, tank: b.water / b.spec.waterCapacity, ahead: Math.max(0, ahead) }; })()`;
+      x: b.position.x, z: b.position.z, vx: v.x, vz: v.z, tank: b.water / b.spec.waterCapacity, ahead: Math.max(0, ahead), aheadNarrow: Math.max(0, narrow) }; })()`;
   // The clearest run-in line through a hot spot (the heading whose ground, from 1.5 km before the
   // hot spot to 600 m past it, stays lowest), and the highest ground along it.
   const RUN = (fx, fz) => `(() => { const t = window.__solvara.game.world.terrain; let best = null;
@@ -254,7 +257,8 @@ async function flyFirefight(page, log) {
   let flapsSet = s.flaps;
   let dropped = 0;
   let run = null;
-  for (let i = 0; i < 40000; i += 1) {
+  const fightStart = Date.now();
+  for (let i = 0; Date.now() - fightStart < 40 * 60000; i += 1) {
     s = await page.evaluate(READ);
     if (s.state !== 'flying') break;
     const f = await page.evaluate(FIRE);
@@ -277,8 +281,10 @@ async function flyFirefight(page, log) {
         log(`  run-in on the hot spot at ${run.x.toFixed(0)}, ${run.z.toFixed(0)} heading ${run.heading.toFixed(0)}, ground ${run.ground.toFixed(0)} m, line top ${run.top.toFixed(0)} m`);
       }
       const g = track(f, run.x, run.z, run.heading, 1500, runMemo);
-      // On the run-in the line's own ground sets the height; elsewhere clear whatever is ahead.
-      const wanted = g.onLine && g.p.along > -1300 ? Math.max(run.ground + 55, run.top + 32, f.ahead + 28) : Math.max(150, run.top + 60, f.ahead + 90);
+      // On the run-in the line's own ground sets the height (about 200 ft over the flames, as the
+      // briefing asks), with the ground and the trees straight ahead cleared; elsewhere clear
+      // whatever is ahead.
+      const wanted = g.onLine && g.p.along > -1300 ? Math.max(run.ground + 55, run.top + 32, f.aheadNarrow + 38) : Math.max(150, run.top + 60, f.ahead + 90);
       // Release once the water will land 40 m short of the middle: the curtain runs on over it.
       const speed = Math.max(1, Math.hypot(f.vx, f.vz));
       const along = ((run.x - f.impact.x) * f.vx + (run.z - f.impact.z) * f.vz) / speed;
@@ -322,8 +328,9 @@ async function flyFirefight(page, log) {
       const digit = phase === 'descend' ? (flare || s.kt > 62 ? 2 : 4) : wanted - s.alt > 25 ? 9 : 6;
       if (Math.abs(s.throttle - digit / 10) > 0.01) await page.press(`Digit${digit}`);
       const pitchTarget = phase === 'descend' ? (flare ? 3 : Math.max(-5, Math.min(6, 1 + (s.kt - 60) * 0.35))) : Math.max(-6, Math.min(9, (wanted - s.alt) * 0.06 + (s.kt - 78) * 0.25));
-      // Down the lane the line is tracked straight (no going back to the entry point).
-      const heading = phase === 'descend' ? lane.heading - Math.max(-30, Math.min(30, g.p.cross * 0.12)) : g.heading;
+      // Down the lane the line is tracked straight (no going back to the entry point); low over the
+      // water after a missed touchdown, climb straight ahead before turning back for the lane.
+      const heading = phase === 'descend' ? lane.heading - Math.max(-30, Math.min(30, g.p.cross * 0.12)) : s.alt < 60 ? s.hdg : g.heading;
       await step(page, s, { heading, vs, maxBank: phase === 'descend' ? 12 : 28, pitchTarget });
     } else if (phase === 'scoop') {
       // On the floats at 30 kt+: hold the nose down so she stays on the water until the tank is full.
