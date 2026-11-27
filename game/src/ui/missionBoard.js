@@ -1,6 +1,7 @@
-// The mission board: the career's chapters with a card per mission (kind, giver, aircraft, best
-// medal), locked chapters greyed out until the rank allows them.
+// The mission board: the career's chapters with a card per mission (kind, giver, aircraft, pay and
+// the credits its bonus goals add, best medal), locked chapters greyed out until the rank allows them.
 import { CHAPTERS, MISSIONS } from '../missions/missionCatalog.js';
+import { bonusGoalsFor } from '../missions/bonusGoals.js';
 import { aircraftById } from '../aircraft/aircraftCatalog.js';
 import { characterById } from '../career/characterRoster.js';
 import { careerRank, isMissionUnlocked } from '../career/careerProgress.js';
@@ -16,10 +17,12 @@ export function missionBoardHtml(career) {
       const record = career.missions[m.id];
       const open = isMissionUnlocked(career, m);
       const medal = record?.medal ?? 'none';
+      const bonus = bonusGoalsFor(m, aircraftById(m.aircraft));
+      const bonusCr = bonus.reduce((s, g) => s + g.reward, 0);
       return `<div class="mission-card${open ? '' : ' is-locked'}" ${open ? `data-action="brief" data-arg="${m.id}"` : ''}>
         <span class="medal medal-${medal}">${record?.passed ? MEDAL[medal] || '✓' : ''}</span>
         <div class="kind">${m.kind}</div><div class="name">${m.title}</div>
-        <div class="meta">${characterById(m.giver).name} · ${aircraftById(m.aircraft).name} · ${m.reward.money} cr</div></div>`;
+        <div class="meta">${characterById(m.giver).name} · ${aircraftById(m.aircraft).name} · ${m.reward.money} cr + ${bonus.length} bonus goals ${bonusCr} cr</div></div>`;
     }).join('');
     const locked = rank.index < chapter.rank;
     return `<h3>Chapter ${chapter.id}: ${chapter.name}${locked ? ` · unlocks at ${RANKS[chapter.rank].name}` : ''}</h3><p>${chapter.subtitle}</p><div class="mission-grid">${cards}</div>`;

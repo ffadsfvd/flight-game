@@ -245,6 +245,13 @@ export function createGameDirector({ view, world, shotMode = false }) {
         }
         refresh();
       },
+      repair: (aid) => {
+        if (repairAircraft(career, aid)) {
+          sfx.play('stage');
+          save();
+        }
+        refresh();
+      },
       free: () => startMission(null),
       back: () => back(menuReturn),
     };

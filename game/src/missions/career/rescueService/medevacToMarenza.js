@@ -8,7 +8,7 @@ export const medevacToMarenza = {
   briefing: [['lena', 'A fisherman with a broken leg at Orsa Cay. The ambulance meets you on the Marenza apron. There was no time to fill the tanks.'], ['lena', 'Fly the route gates fast, but the landing must be soft: your patient feels every bump. Gulls nest on the cliffs past the end of 04, up to 300 feet: climb hard or turn away early.'], ['lena', 'If you hit bingo before the halfway gate, it is your call: back to Orsa, or on to the hospital.']],
   stages: [
     { type: 'takeoff', altitudeFt: 300, say: ['lena', 'Patient aboard. Go, go, go.'] },
-    { type: 'rings', radius: 40, par: 190, band: [65, 125], label: 'Fly the route gates to Marenza', hint: 'Full power, climb over the gates; the last one is your final at 70 kt',
+    { type: 'rings', radius: 40, par: 190, band: [65, 125], label: 'Fly the route gates to Marenza', hint: 'Climb at full power, then 75%: the tanks are low; the last gate is your final at 70 kt',
       course: [[-4900, -1800, 300, true], [-5300, 200, 300, true], [-5800, 2500, 165, true], [-4700, 2950, 100, true]],
       say: ['lena', 'Marenza knows you are coming. The last gate puts you on final for runway 09.'] },
     { type: 'land', field: 'marenza', end: 0, say: ['dario', 'Medevac 102, Marenza Tower, runway 09, cleared to land, ambulance waiting.'] },

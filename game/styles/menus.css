@@ -49,6 +49,8 @@
 .aircraft-card .role { font-size: 0.8em; color: var(--muted); }
 .aircraft-card dl { display: grid; grid-template-columns: auto 1fr; gap: 0.1em 0.6em; font-size: 0.82em; margin: 0.5em 0; }
 .aircraft-card dt { color: var(--muted); } .aircraft-card dd { margin: 0; }
+.hangar-condition { font-size: 0.8em; color: var(--good); margin: 0.2em 0; }
+.hangar-condition.is-damaged { color: #ff9a8a; }
 .upgrade { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; margin: 0.2em 0; }
 .upgrade button { font: 700 0.85em var(--font); padding: 0.2em 0.5em; border-radius: 0.3em; border: 1px solid var(--panel-edge); background: rgba(255, 255, 255, 0.08); color: var(--text); cursor: pointer; }
 .upgrade button:disabled { opacity: 0.4; cursor: default; }
