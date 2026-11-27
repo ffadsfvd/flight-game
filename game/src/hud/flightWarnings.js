@@ -1,6 +1,7 @@
 // Cockpit warnings worked out from the flight state: STALL, PULL UP (terrain closing fast), LOW
-// FUEL, OVERSPEED, OVERHEAT, ENGINE OUT, GEAR UP on a low approach, FLAPS beyond their speed,
-// ICING, BANK ANGLE and over-G. Returns the active list so the HUD and the sound can both use it.
+// FUEL, BINGO FUEL and BELOW RESERVE from the fuel plan, OVERSPEED, OVERHEAT, ENGINE OUT, GEAR UP on
+// a low approach, FLAPS beyond their speed, ICING, BANK ANGLE and over-G. Returns the active list so
+// the HUD and the sound can both use it.
 
 /** The warnings active for a readout: [{ id, text, level: 'warn'|'danger' }]. */
 export function activeWarnings(d, { approachActive = false, runwayApproach = false } = {}) {
@@ -18,6 +19,8 @@ export function activeWarnings(d, { approachActive = false, runwayApproach = fal
   else if (d.temp > d.tempRed) list.push({ id: 'overheat', text: 'ENGINE HOT', level: 'danger' });
   else if (d.temp > d.tempRed - 20) list.push({ id: 'hot', text: 'TEMP HIGH', level: 'warn' });
   if (d.fuelFrac < 0.12) list.push({ id: 'fuel', text: d.fuelKg < 1 ? 'NO FUEL' : 'LOW FUEL', level: d.fuelFrac < 0.05 ? 'danger' : 'warn' });
+  else if (d.fuelState === 'reserve') list.push({ id: 'fuel', text: 'BELOW RESERVE', level: 'warn' });
+  else if (d.fuelState === 'bingo') list.push({ id: 'fuel', text: 'BINGO FUEL', level: 'warn' });
   if (d.gearRetracts && runwayApproach && !d.gearDown && d.aglFt < 600 && d.vsFpm < -150) list.push({ id: 'gear', text: 'GEAR UP', level: 'danger' });
   if (d.gearRetracts && approachActive && !runwayApproach && d.gearDown && d.aglFt < 600) list.push({ id: 'gear', text: 'GEAR DOWN ON WATER', level: 'danger' });
   if (d.flaps > 0.05 && d.kt > d.vfeKt) list.push({ id: 'flaps', text: 'FLAP SPEED', level: 'warn' });

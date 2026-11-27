@@ -480,6 +480,7 @@ export function createGameDirector({ view, world, shotMode = false }) {
     }
     updateReadout(readout, body, controls.controls, { ...guidanceExtras(guidance), refuelling: session.refuelling, icing: session.simulation.icing });
     readout.bandKt = runner.speedBand();
+    readout.fuelState = runner.mission ? runner.fuelPlan.state : 'ok';
     const rank = careerRank(career);
     const approachTarget = runner.approachTarget;
     hud.update({
