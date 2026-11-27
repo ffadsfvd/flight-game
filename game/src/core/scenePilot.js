@@ -171,7 +171,7 @@ export function createScenePilot(game) {
       c.throttle += clamp(throttleTarget - c.throttle, -0.5 * STEP, 0.5 * STEP);
       const unique = [...new Set(queue.splice(0))];
       if (render) game.frameFixed(STEP, unique);
-      else game.updateFlying(STEP, unique);
+      else game.updateFlying(STEP, unique, { quiet: true });
       return game.state === 'flying';
     },
     /** Flies until `stop()` is true or the flight ends; returns true if stopped by the condition. */

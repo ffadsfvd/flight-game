@@ -441,8 +441,8 @@ export function createGameDirector({ view, world, shotMode = false }) {
     return { bug: runner.bearing(), course: guidance.heading, cdi: Math.max(-1, Math.min(1, -guidance.locDev / 2.5)), glide: guidance.glideDev };
   }
 
-  /** One in-flight frame; `actionsOverride` lets screenshot scenes inject actions. */
-  function updateFlying(dt, actionsOverride = null) {
+  /** One in-flight frame; `actionsOverride` lets screenshot scenes inject actions, `quiet` skips the HUD while fast-forwarding. */
+  function updateFlying(dt, actionsOverride = null, { quiet = false } = {}) {
     const actions = actionsOverride ?? controls.update(dt, true);
     for (const a of actions) {
       if (a === 'pause') {
@@ -473,7 +473,8 @@ export function createGameDirector({ view, world, shotMode = false }) {
       if (result) ending = { result, timer: result.severity === 'crash' ? 2.6 : 1.6 };
       if (!mission && !ending) atc.update(dt, session.body, session.spec.registration);
     }
-    feedHud(dt);
+    // A scene fast-forwarding minutes of flight skips drawing the HUD; its last frames draw it.
+    if (!quiet) feedHud(dt);
   }
 
   function feedHud(dt, force = false) {
