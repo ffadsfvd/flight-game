@@ -40,13 +40,18 @@ function angleDiff(a, b) {
 }
 
 /** One step of a keyboard autopilot: holds keys toward a heading, vertical speed and airspeed. */
-async function pilotStep(page, s, { heading, vs, kt, maxBank = 22 }) {
+async function pilotStep(page, s, { heading, vs, kt, maxBank = 22, gentle = false }) {
   const desiredBank = Math.max(-maxBank, Math.min(maxBank, angleDiff(heading, s.hdg) * 1.2));
   const bankError = desiredBank - s.bank;
   const vsError = vs - s.vs;
   const keys = [];
   if (Math.abs(bankError) > 4) keys.push([bankError > 0 ? 'KeyD' : 'KeyA', Math.min(260, 40 + Math.abs(bankError) * 6)]);
-  if (Math.abs(vsError) > 150) keys.push([vsError > 0 ? 'KeyS' : 'KeyW', Math.min(420, 60 + Math.abs(vsError) * 0.35)]);
+  if (gentle) {
+    // Attitude first: the sink-rate error sets a pitch target, short pulses hold that pitch.
+    const targetPitch = Math.max(-7, Math.min(7, 1 + vsError * 0.006));
+    const pitchError = targetPitch - s.pitch;
+    if (Math.abs(pitchError) > 1.2) keys.push([pitchError > 0 ? 'KeyS' : 'KeyW', Math.min(160, 30 + Math.abs(pitchError) * 14)]);
+  } else if (Math.abs(vsError) > 150) keys.push([vsError > 0 ? 'KeyS' : 'KeyW', Math.min(420, 60 + Math.abs(vsError) * 0.35)]);
   if (kt !== undefined && Math.abs(s.kt - kt) > 4) keys.push([s.kt < kt ? 'ShiftLeft' : 'ControlLeft', Math.min(400, Math.abs(s.kt - kt) * 30)]);
   if (!keys.length) {
     await sleep(80);
@@ -167,7 +172,7 @@ try {
   s = await read(page);
   check('lagoon mission starts in the Heron', s.state === 'flying' && s.mission === 'lagoon');
   await page.press('KeyF');
-  for (let i = 0; i < 900; i += 1) {
+  for (let i = 0; i < 1600; i += 1) {
     s = await read(page);
     if (s.state !== 'flying') break;
     if (s.onWater) {
@@ -177,11 +182,15 @@ try {
       await page.keyUp('KeyB');
       continue;
     }
+    // Power is set with the number keys (a fixed setting trimmed by the speed error), not by
+    // holding Shift/Ctrl: with the CDP round trip a held ramp overshoots and the approach
+    // porpoises, which made this step flaky. Pitch pulses are short so the sink rate settles.
     const flare = s.agl < 30;
-    const glideVs = s.glide === null ? -250 : -330 - 500 * Math.max(-1, Math.min(1, s.glide));
+    const glideVs = s.glide === null ? -250 : -330 - 400 * Math.max(-1, Math.min(1, s.glide));
     const heading = s.guideHdg === null ? s.bearing ?? 70 : s.guideHdg - Math.max(-25, Math.min(25, s.guideLat * 0.25));
-    await pilotStep(page, s, { heading, vs: flare ? -190 : glideVs, kt: flare ? 48 : 60, maxBank: s.agl < 120 ? 8 : 20 });
-    if (s.agl < 20) await page.press('Digit1');
+    const digit = flare ? 1 : Math.max(2, Math.min(8, Math.round(4 + (60 - s.kt) * 0.3)));
+    if (Math.abs(s.throttle - digit / 10) > 0.01) await page.press(`Digit${digit}`);
+    await pilotStep(page, s, { heading, vs: flare ? -150 : glideVs, maxBank: s.agl < 120 ? 8 : 20, gentle: true });
   }
   for (let i = 0; i < 40 && s.state === 'flying'; i += 1) {
     await sleep(250);

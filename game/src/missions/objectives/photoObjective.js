@@ -24,9 +24,21 @@ export function createPhotoObjective(stage) {
       let best = null;
       for (const t of targets) {
         if (t.done) continue;
-        toTarget.set(t.x, t.y ?? 0, t.z).sub(camera.position);
-        const d = toTarget.length();
-        const angle = THREE.MathUtils.radToDeg(forward.angleTo(toTarget.normalize()));
+        // A landmark counts from its waterline to its top, so centring the lighthouse's lamp, the
+        // volcano's summit or the mast on its mountain all frame it: sample points up the column.
+        const ground = ctx.world ? Math.max(0, ctx.world.terrain.heightAt(t.x, t.z)) : 0;
+        const top = ground + (t.height ?? 40);
+        let angle = Infinity;
+        let d = 0;
+        for (let k = 0; k <= 12; k += 1) {
+          toTarget.set(t.x, (top * k) / 12, t.z).sub(camera.position);
+          const dk = toTarget.length();
+          const ak = THREE.MathUtils.radToDeg(forward.angleTo(toTarget.normalize()));
+          if (ak < angle) {
+            angle = ak;
+            d = dk;
+          }
+        }
         if (d >= near && d <= far && angle < 18 && (!best || angle < best.angle)) best = { t, d, angle };
       }
       if (!best) {
