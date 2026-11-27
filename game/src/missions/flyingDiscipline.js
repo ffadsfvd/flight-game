@@ -118,7 +118,9 @@ export function createFlyingDiscipline() {
         turn.last = body.heading;
         turn.time += dt;
         turn.maxBank = Math.max(turn.maxBank, bank);
-        if (Math.abs(body.beta) > 0.105) turn.slip += dt;
+        // The ball counts as out past 8° of sideslip: a gentle keyboard turn stays inside it, a
+        // skid with the rudder against the turn or a slow, steep turn without rudder does not.
+        if (Math.abs(body.beta) > 0.14) turn.slip += dt;
         levelTime = 0;
       } else if (turn) {
         levelTime += dt;

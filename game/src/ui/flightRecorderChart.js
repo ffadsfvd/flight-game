@@ -80,7 +80,7 @@ export function paintFlightRecorder(canvas, record, { font = 'Bahnschrift, "Sego
   ctx.beginPath();
   samples.forEach((s, i) => (i ? ctx.lineTo(x(s.t), yAlt(s.altFt)) : ctx.moveTo(x(s.t), yAlt(s.altFt))));
   ctx.strokeStyle = '#ffc46a';
-  ctx.lineWidth = 2.5;
+  ctx.lineWidth = 4;
   ctx.stroke();
 
   // Airspeed line, lightly smoothed (five samples) so gust ripples do not hide the profile.
@@ -91,7 +91,7 @@ export function paintFlightRecorder(canvas, record, { font = 'Bahnschrift, "Sego
   ctx.beginPath();
   samples.forEach((s, i) => (i ? ctx.lineTo(x(s.t), yKt(smooth[i])) : ctx.moveTo(x(s.t), yKt(smooth[i]))));
   ctx.strokeStyle = '#5fe3d0';
-  ctx.lineWidth = 2.5;
+  ctx.lineWidth = 4;
   ctx.stroke();
 
   // Event marks: a line down the plot, the icon on the profile, the label in one of two rows.
@@ -103,8 +103,8 @@ export function paintFlightRecorder(canvas, record, { font = 'Bahnschrift, "Sego
     const mx = x(m.t);
     const near = samples.reduce((best, s) => (Math.abs(s.t - m.t) < Math.abs(best.t - m.t) ? s : best), samples[0]);
     ctx.strokeStyle = style.color;
-    ctx.globalAlpha = m.kind === 'ring' ? 0.35 : 0.7;
-    ctx.lineWidth = m.kind === 'ring' ? 1 : 1.5;
+    ctx.globalAlpha = m.kind === 'ring' ? 0.45 : 0.8;
+    ctx.lineWidth = m.kind === 'ring' ? 1.5 : 2.5;
     ctx.setLineDash(m.kind === 'ring' ? [2, 3] : [4, 3]);
     ctx.beginPath();
     ctx.moveTo(mx, pad.top - 4);
