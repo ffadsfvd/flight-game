@@ -6,7 +6,7 @@
 // Run `node serve.ts` first.   node tools/mission-smoke-test.mjs [--only=<id>] [--debrief]
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { launchChrome, openPage, sleep } from './cdp.mjs';
+import { launchChrome, openPage, sleep, testsRunHeadless } from './cdp.mjs';
 
 export const DRIVER = String.raw`(async (id) => {
   const THREE = window.__solvara.three;
@@ -190,7 +190,7 @@ export const DRIVER = String.raw`(async (id) => {
 })`;
 
 async function main() {
-  const chrome = await launchChrome({ port: 9339 });
+  const chrome = await launchChrome({ port: 9339, headless: testsRunHeadless() });
   let failed = 0;
   try {
     const page = await openPage(chrome.port, 'http://localhost:8080/?shot=none&unlock=all');

@@ -3,7 +3,7 @@
 //   node tools/peek.mjs --q=?shot=cover --out=tmp/peek.jpg --wait=4000 --keys=ShiftLeft:3000,wait:500,KeyS:1500
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { launchChrome, openPage, sleep } from './cdp.mjs';
+import { launchChrome, openPage, sleep, testsRunHeadless } from './cdp.mjs';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => {
   const [k, ...v] = a.replace(/^--/, '').split('=');
@@ -11,7 +11,7 @@ const args = Object.fromEntries(process.argv.slice(2).map((a) => {
 }));
 const query = args.q ?? '';
 const out = args.out ?? 'tmp/peek.jpg';
-const chrome = await launchChrome({ port: 9334 });
+const chrome = await launchChrome({ port: 9334, headless: testsRunHeadless() });
 try {
   const page = await openPage(chrome.port, `http://localhost:8080/${query}`);
   await sleep(Number(args.wait ?? 4000));

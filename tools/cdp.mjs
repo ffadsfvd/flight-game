@@ -9,6 +9,15 @@ import { join } from 'node:path';
 export const CHROME = process.env.CHROME_PATH ?? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * The test tools (smoke test, input test, playthroughs, peek, tune-flight) run Chrome headless so they never
+ * open a window or take the focus from whoever uses the computer. Pass --visible (or set FLIGHT_VISIBLE=1)
+ * to watch a run. take-screenshots and measure-fps always use a visible window: real GPU renders and frame rates.
+ */
+export function testsRunHeadless() {
+  return !process.argv.includes('--visible') && process.env.FLIGHT_VISIBLE !== '1';
+}
+
 /** Launches Chrome; returns { port, process, close() }. */
 export async function launchChrome({ port = 9333, width = 1280, height = 800, headless = false } = {}) {
   const profile = mkdtempSync(join(tmpdir(), 'flight-chrome-'));

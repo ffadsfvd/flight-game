@@ -1,7 +1,7 @@
 // Development helper for tuning the flight model: runs scripted control inputs through the real
 // simulation inside the page (no rendering) and prints a trace.
 //   node tools/tune-flight.mjs --aircraft=wren --script=takeoff
-import { launchChrome, openPage, sleep } from './cdp.mjs';
+import { launchChrome, openPage, sleep, testsRunHeadless } from './cdp.mjs';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => {
   const [k, ...v] = a.replace(/^--/, '').split('=');
@@ -9,7 +9,7 @@ const args = Object.fromEntries(process.argv.slice(2).map((a) => {
 }));
 const aircraft = args.aircraft ?? 'wren';
 const script = args.script ?? 'takeoff';
-const chrome = await launchChrome({ port: 9336 });
+const chrome = await launchChrome({ port: 9336, headless: testsRunHeadless() });
 try {
   const page = await openPage(chrome.port, 'http://localhost:8080/?shot=none');
   await sleep(4000);
