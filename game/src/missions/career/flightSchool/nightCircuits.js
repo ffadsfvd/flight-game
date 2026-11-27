@@ -7,7 +7,7 @@ export const nightCircuits = {
   briefing: [['ines', 'Same circuit as your first solo, but the horizon is gone. Over the bay there is nothing outside, so the attitude indicator is your horizon.'], ['ines', 'Find the approach lights and the PAPI early. Two white, two red, all the way down.']],
   stages: [
     { type: 'takeoff', altitudeFt: 500, say: ['dario', 'SV-102, night circuits approved, runway 09 lights are up, cleared for take-off.'] },
-    { type: 'rings', radius: 36, par: 220, label: 'Fly the night circuit through the rings', hint: 'Trust the attitude indicator over the dark sea; 750 ft, 80 kt',
+    { type: 'rings', radius: 36, par: 220, band: [70, 100], label: 'Fly the night circuit through the rings', hint: 'Trust the attitude indicator over the dark sea; 750 ft, 80 kt',
       course: [[-700, 2950, 150], [-100, 3560, 200], [-1300, 4100, 230], [-3000, 4100, 230], [-4300, 3620, 190], [-4100, 2950, 71, true]],
       say: ['ines', 'Crosswind turn now. Watch the town lights slide under the wing.'] },
     { type: 'land', field: 'marenza', end: 0, say: ['dario', 'SV-102, runway 09, cleared to land. The lights are yours.'] },

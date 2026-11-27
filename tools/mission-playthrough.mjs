@@ -1,10 +1,12 @@
 // Plays whole missions with real input through the DevTools Protocol, the way a player would:
 // clicks New Career, the mission card and Fly, then holds and taps keys (W/S/A/D, number keys for
-// power, F flaps, B brakes, Space for the camera shutter) until the results screen. Runtime.evaluate
-// only READS the game state for the test pilot's decisions and the final verdict.
+// power, F flaps, B brakes, Space for the camera shutter, K to press on at bingo) until the results
+// screen. Runtime.evaluate only READS the game state for the test pilot's decisions and the verdict.
 //   node tools/mission-playthrough.mjs [--only=postcards,orsa-gale]   (run `node serve.ts` first)
-// Missions: lagoon (story mission 6), postcards (7), orsa-gale (Gale at Orsa Cay), sette-night
-// (Lights on the Deck). Run one Chrome at a time: a hidden tab pauses the game.
+// Missions: medevac (a bird strike on the climb-out, the bingo call answered with K, the route
+// gates in their speed band), banner-run (seven beach gates, the discipline streak), lagoon,
+// postcards, orsa-gale, sette-night and the three sightseeing tours. Run one Chrome at a time: a
+// hidden tab pauses the game.
 import { launchChrome, openPage, sleep } from './cdp.mjs';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => {
@@ -21,7 +23,13 @@ const READ = `(() => { const g = window.__solvara.game; const b = g.session.body
     bearing: flying ? g.runner.bearing() : null, glide: guide ? guide.glideDev : null, guideHdg: guide ? guide.heading : null,
     guideLat: guide ? guide.lateral : null, guideDist: guide ? guide.distance : null,
     stats: info && info.stats ? info.stats.map((r) => r.join(':')).join(' ') : '', next: info ? info.next : '',
-    result: window.__lastResult ? { success: window.__lastResult.success, cause: window.__lastResult.cause ?? null, score: window.__lastResult.score } : null }; })()`;
+    ringY: g.runner.objective && g.runner.objective.rings && g.runner.objective.rings[g.runner.objective.next] ? g.runner.objective.rings[g.runner.objective.next].position.y : null,
+    ringIndex: g.runner.objective && g.runner.objective.rings ? g.runner.objective.next : null,
+    kind: g.runner.objective ? g.runner.objective.kind : null,
+    bingoPending: Boolean(g.runner.bingo && g.runner.bingo.pending), decision: g.runner.bingo && g.runner.bingo.decision ? g.runner.bingo.decision.state : null,
+    discipline: g.runner.discipline ? { points: g.runner.discipline.state.points, streak: g.runner.discipline.state.streak, best: g.runner.discipline.state.bestStreak } : null,
+    damage: b ? window.__solvara.systems.damageEffects(b).map((e) => e.part + ' ' + e.text) : [],
+    result: window.__lastResult ? { success: window.__lastResult.success, cause: window.__lastResult.cause ?? null, score: window.__lastResult.score, decision: window.__lastResult.decision ? window.__lastResult.decision.kind : null, damageLog: window.__lastResult.damage ? window.__lastResult.damage.log.map((d) => d.text) : [], bestStreak: window.__lastResult.discipline ? window.__lastResult.discipline.bestStreak : 0, severity: window.__lastResult.severity } : null }; })()`;
 
 function angleDiff(a, b) {
   return ((a - b + 540) % 360) - 180;
@@ -188,6 +196,115 @@ async function flyTour(page, id, log) {
 }
 
 const PLAYS = {
+  async 'banner-run'(page, log) {
+    // Real-input ring run: the festival banner towed through the seven beach gates on the bearing
+    // bug at about 72 kt, power for the height and the nose for the speed; every gate inside the
+    // 60-90 kt band grows the discipline streak.
+    let s = await page.evaluate(READ);
+    let last = 0;
+    for (let i = 0; i < 4000; i += 1) {
+      s = await page.evaluate(READ);
+      if (s.state !== 'flying') break;
+      if (Date.now() - last > 3000) {
+        last = Date.now();
+        log(`  ring ${s.ringIndex} alt ${s.alt.toFixed(0)} m -> ${s.ringY?.toFixed(0)} ${s.kt.toFixed(0)} kt hdg ${s.hdg.toFixed(0)} -> ${s.bearing?.toFixed(0)} streak ${s.discipline?.streak} (${s.discipline?.points} pts)`);
+      }
+      const targetAlt = s.ringY ?? s.alt;
+      const low = targetAlt - s.alt;
+      const digit = Math.max(3, Math.min(9, Math.round(7 + low * 0.12)));
+      if (Math.abs(s.throttle - digit / 10) > 0.01) await page.press(`Digit${digit}`);
+      const pitchTarget = Math.max(-4, Math.min(7, 2 + low * 0.08 + (s.kt - 72) * 0.25));
+      await step(page, s, { heading: s.bearing ?? s.hdg, vs: 0, maxBank: 15, pitchTarget });
+    }
+    log(`  gates done: best streak ${s.discipline?.best}, ${s.discipline?.points} pts`);
+    return finish(page, s);
+  },
+  async 'first-solo'(page, log) {
+    // Real-input First Solo: take-off on 09, the circuit's rings on the bearing bug at 80 kt, then the
+    // approach guide down to runway 09. (Not in the default run: the first ring lies on the runway
+    // line, so this simple pilot often meets it before 500 ft and has to come back round for it.)
+    await page.press('Digit0');
+    let s = await page.evaluate(READ);
+    for (let i = 0; i < 80 && s.kt < 52; i += 1) {
+      await sleep(250);
+      s = await page.evaluate(READ);
+    }
+    await page.keyDown('KeyS');
+    for (let i = 0; i < 40; i += 1) {
+      await sleep(100);
+      s = await page.evaluate(READ);
+      if (!s.onGround && s.agl > 10) break;
+    }
+    await page.keyUp('KeyS');
+    const runway = s.hdg;
+    let last = 0;
+    for (let i = 0; i < 6000; i += 1) {
+      s = await page.evaluate(READ);
+      if (s.state !== 'flying' || s.guideDist !== null) break;
+      if (Date.now() - last > 4000) {
+        last = Date.now();
+        log(`  ${s.kind} ring ${s.ringIndex} alt ${s.alt.toFixed(0)} m -> ${s.ringY?.toFixed(0)} ${s.kt.toFixed(0)} kt hdg ${s.hdg.toFixed(0)} -> ${s.bearing?.toFixed(0)} streak ${s.discipline?.streak} (${s.discipline?.points} pts)`);
+      }
+      const heading = s.kind === 'takeoff' ? runway : s.bearing ?? s.hdg;
+      const targetAlt = s.kind === 'takeoff' ? s.alt + 60 : s.ringY ?? s.alt;
+      const high = s.alt - targetAlt;
+      const digit = s.kind === 'takeoff' ? 0 : high > 30 ? 3 : high < -30 ? 8 : 6;
+      if (Math.abs(s.throttle - (digit === 0 ? 1 : digit / 10)) > 0.01) await page.press(`Digit${digit}`);
+      const pitchTarget = Math.max(-6, Math.min(9, (targetAlt - s.alt) * 0.06 + (s.kt - 80) * 0.25));
+      await step(page, s, { heading, vs: 0, maxBank: 25, pitchTarget });
+    }
+    log(`  circuit done: streak best ${s.discipline?.best}, ${s.discipline?.points} pts`);
+    if (s.state === 'flying') s = await flyLanding(page, { vref: 62, flapsDown: 2, log });
+    return finish(page, s);
+  },
+  async medevac(page, log) {
+    // Real-input medevac: full power off Orsa's runway 04, a straight climb-out through the gull
+    // colony past the runway end (the bird strike caps the engine), the route gates flown on the
+    // bearing bug inside their speed band (the discipline streak), K to press on when the bingo
+    // call comes, then the approach guide down to runway 09 at Marenza.
+    await page.press('Digit0');
+    let s = await page.evaluate(READ);
+    for (let i = 0; i < 80 && s.kt < 52; i += 1) {
+      await sleep(250);
+      s = await page.evaluate(READ);
+    }
+    await page.keyDown('KeyS');
+    for (let i = 0; i < 40; i += 1) {
+      await sleep(100);
+      s = await page.evaluate(READ);
+      if (!s.onGround && s.agl > 10) break;
+    }
+    await page.keyUp('KeyS');
+    const runway = s.hdg;
+    let last = 0;
+    let pressedOn = false;
+    for (let i = 0; i < 6000; i += 1) {
+      s = await page.evaluate(READ);
+      if (s.state !== 'flying' || s.guideDist !== null) break;
+      if (s.bingoPending && !pressedOn) {
+        log(`  bingo: ${s.stats}; pressing on with K`);
+        await page.press('KeyK');
+        pressedOn = true;
+        continue;
+      }
+      if (Date.now() - last > 4000) {
+        last = Date.now();
+        log(`  ${s.kind} ring ${s.ringIndex} alt ${s.alt.toFixed(0)} m -> ${s.ringY?.toFixed(0)} ${s.kt.toFixed(0)} kt hdg ${s.hdg.toFixed(0)} -> ${s.bearing?.toFixed(0)} streak ${s.discipline?.streak} damage ${s.damage.join(', ') || 'none'}`);
+      }
+      // Straight ahead to 350 ft (through the gulls), then the bearing bug to each gate.
+      const heading = s.kind === 'takeoff' || s.agl < 350 ? runway : s.bearing ?? s.hdg;
+      const targetAlt = s.ringY ?? 300;
+      const high = s.alt - targetAlt;
+      // Full power for the climb and the run to the gates; power back to come down to a lower gate.
+      const digit = s.ringIndex === 3 || high > 40 ? (high > 40 ? 3 : 5) : 0;
+      if (Math.abs(s.throttle - (digit === 0 ? 1 : digit / 10)) > 0.01) await page.press(`Digit${digit}`);
+      const pitchTarget = Math.max(-9, Math.min(9, (targetAlt - s.alt) * 0.06 + (s.kt - 72) * 0.25));
+      await step(page, s, { heading, vs: 0, maxBank: 28, pitchTarget });
+    }
+    log(`  final: decision ${s.decision}, damage ${s.damage.join(', ') || 'none'}, streak best ${s.discipline?.best}`);
+    if (s.state === 'flying') s = await flyLanding(page, { vref: 63, flapsDown: 2, log });
+    return finish(page, s);
+  },
   async 'sunset-tour'(page, log) {
     let s = await flyTour(page, 'sunset-tour', log);
     if (s.state !== 'flying') return s;
@@ -251,7 +368,7 @@ const PLAYS = {
   },
 };
 
-const only = args.only ? String(args.only).split(',') : Object.keys(PLAYS);
+const only = args.only ? String(args.only).split(',') : Object.keys(PLAYS).filter((id) => id !== 'first-solo');
 const outcomes = [];
 for (const id of only) {
   const chrome = await launchChrome({ port: 9339 });
@@ -268,6 +385,7 @@ for (const id of only) {
     const errors = page.consoleMessages.filter((m) => m.type === 'error' || m.type === 'exception');
     outcomes.push({ id, ok: ok && !errors.length });
     console.log(`${ok && !errors.length ? 'PASS' : 'FAIL'}  ${id} played to the end in ${((Date.now() - t0) / 1000).toFixed(0)} s  (${s.state}${s.result ? `, ${s.result.success ? 'success' : 'fail'}, score ${s.result.score}${s.result.cause ? `, ${s.result.cause}` : ''}` : ''}${errors.length ? `, console errors: ${errors.map((e) => e.text).join(' | ')}` : ''})`);
+    if (s.result) console.log(`      decision: ${s.result.decision ?? 'none'} · damage: ${s.result.damageLog.join('; ') || 'none'} · best discipline streak: ${s.result.bestStreak}`);
     page.close();
   } catch (error) {
     outcomes.push({ id, ok: false });

@@ -126,6 +126,9 @@ try {
     await pilotStep(page, s, { heading: s.bearing ?? 90, vs: s.agl > 520 ? -250 : s.agl < 420 ? 350 : 0, kt: 75 });
   }
   check('flies through a ring', s.stage >= 1 && /^[1-9]/.test(s.rings), s.rings);
+  const disc = await page.evaluate('JSON.stringify(window.__solvara.game.runner.discipline.state)');
+  const d = JSON.parse(disc);
+  check('the discipline score judges the real flying', d.points > 0 && d.good > 0, `${d.points} pts, ${d.good} clean, best streak ${d.bestStreak}, ${d.faults} faults`);
 
   // Pause and resume.
   await page.press('Escape');
@@ -148,6 +151,9 @@ try {
     s = await read(page);
   }
   check('crash ends the flight with a results screen', s.state === 'results' && s.result && !s.result.success, s.result ? s.result.cause : 'no result');
+  const debrief = await page.evaluate('JSON.stringify({ banner: document.querySelector("#screen-mission-results .result-banner")?.textContent, cause: document.querySelector("#screen-mission-results .result-cause")?.textContent, chart: Boolean(document.querySelector("#screen-mission-results canvas.debrief-chart")), report: document.querySelector("#screen-mission-results h3")?.textContent })');
+  const db = JSON.parse(debrief);
+  check('the crash debrief names the cause, with the crash report and the flight recorder', db.banner === 'CRASHED' && /Flew into|Crashed into|Caught a wingtip|Tail strike|Flipped|Prop strike|broke up|Stalled|collapsed|Clipped|flipped/.test(db.cause ?? '') && db.chart && /Crash report/.test(db.report ?? ''), `${db.banner}: ${db.cause}`);
   await page.press('Enter');
   await sleep(600);
   s = await read(page);
